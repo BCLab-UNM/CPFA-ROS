@@ -17,6 +17,7 @@
 #include <geometry_msgs/Twist.h>
 #include <nav_msgs/Odometry.h>
 #include <apriltags_ros/AprilTagDetectionArray.h>
+#include "mobility/PheromoneTrail.h"
 
 // Include Controllers
 #include "PickUpController.h"
@@ -46,6 +47,10 @@ void closeFingers();// Close fingers to 0 degrees
 void raiseWrist();  // Return wrist back to 0 degrees
 void lowerWrist();  // Lower wrist to 50 degrees
 void mapAverage();  // constantly averages last 100 positions from map
+
+// Return pose of tag in odom
+geometry_msgs::Pose2D calculateTagPose(apriltags_ros::AprilTagDetection tag);
+float distanceToCenter();
 
 // Numeric Variables for rover positioning
 geometry_msgs::Pose2D currentLocation;
@@ -124,6 +129,7 @@ ros::Publisher wristAnglePublish;
 ros::Publisher infoLogPublisher;
 ros::Publisher driveControlPublish;
 ros::Publisher heartbeatPublisher;
+ros::Publisher pheromoneTrailPublish;
 
 // Subscribers
 ros::Subscriber joySubscriber;
@@ -132,6 +138,7 @@ ros::Subscriber targetSubscriber;
 ros::Subscriber obstacleSubscriber;
 ros::Subscriber odometrySubscriber;
 ros::Subscriber mapSubscriber;
+ros::Subscriber pheromoneTrailSubscriber;
 
 
 // Timers
@@ -161,6 +168,7 @@ void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& tagInf
 void obstacleHandler(const std_msgs::UInt8::ConstPtr& message);
 void odometryHandler(const nav_msgs::Odometry::ConstPtr& message);
 void mapHandler(const nav_msgs::Odometry::ConstPtr& message);
+void pheromoneTrailHandler(const mobility::PheromoneTrail& messsage);
 void mobilityStateMachine(const ros::TimerEvent&);
 void publishStatusTimerEventHandler(const ros::TimerEvent& event);
 void targetDetectedReset(const ros::TimerEvent& event);
@@ -214,6 +222,7 @@ int main(int argc, char **argv) {
     obstacleSubscriber = mNH.subscribe((publishedName + "/obstacle"), 10, obstacleHandler);
     odometrySubscriber = mNH.subscribe((publishedName + "/odom/filtered"), 10, odometryHandler);
     mapSubscriber = mNH.subscribe((publishedName + "/odom/ekf"), 10, mapHandler);
+    pheromoneTrailSubscriber = mNH.subscribe("/pheromones", 10, pheromoneTrailHandler);
 
     status_publisher = mNH.advertise<std_msgs::String>((publishedName + "/status"), 1, true);
     stateMachinePublish = mNH.advertise<std_msgs::String>((publishedName + "/state_machine"), 1, true);
@@ -228,6 +237,7 @@ int main(int argc, char **argv) {
     targetDetectedTimer = mNH.createTimer(ros::Duration(0), targetDetectedReset, true);
 
     publish_heartbeat_timer = mNH.createTimer(ros::Duration(heartbeat_publish_interval), publishHeartBeatTimerEventHandler);
+    pheromoneTrailPublish = mNH.advertise<mobility::PheromoneTrail>("/pheromones", 10, true);
 
     tfListener = new tf::TransformListener();
     std_msgs::String msg;
@@ -689,6 +699,9 @@ void joyCmdHandler(const sensor_msgs::Joy::ConstPtr& message) {
     }
 }
 
+void pheromoneTrailHandler(const mobility::PheromoneTrail& messsage) {
+    return;
+}
 
 void publishStatusTimerEventHandler(const ros::TimerEvent&) {
     std_msgs::String msg;
@@ -789,3 +802,32 @@ void publishHeartBeatTimerEventHandler(const ros::TimerEvent&) {
     msg.data = "";
     heartbeatPublisher.publish(msg);
 }
+
+geometry_msgs::Pose2D calculateTagPose(apriltags_ros::AprilTagDetection tag) {
+    // Calculates pose of an April Tag in Odom frame
+    geometry_msgs::Pose2D tagPose;
+    float cameraHeight = 0.205;
+
+    // Projection of line directly from the camera lens to tag onto the floor
+    // Also the distance from the rover to the tag
+    float tagDistanceToRover = sqrt(pow(tag.pose.pose.position.z, 2) - pow(cameraHeight, 2));
+    // Angle between the tag and the rover, relative to the heading of the rover
+    float theta = asin(-tag.pose.pose.position.x / tagDistanceToRover);
+
+    // Distance from the tag to the nest
+    float tagDistanceToCenter = distanceToCenter() + tagDistanceToRover * abs(cos(theta));
+
+    // Rotate vector with along heading of rover with tag distance to center
+    // to get pose of tag
+    tagPose.x = tagDistanceToCenter * cos(currentLocation.theta + theta);
+    tagPose.y = tagDistanceToCenter * sin(currentLocation.theta + theta);
+
+    return tagPose;
+}
+
+
+float distanceToCenter() {
+    // Returns the distance of the rover to the nest
+    return hypot(centerLocation.x - currentLocation.x, centerLocation.y - currentLocation.y);
+}
+
