@@ -49,7 +49,7 @@ void lowerWrist();  // Lower wrist to 50 degrees
 void mapAverage();  // constantly averages last 100 positions from map
 
 // Return pose of tag in odom
-geometry_msgs::Pose2D calculateTagPose(apriltags_ros::AprilTagDetection tag);
+geometry_msgs::PoseStamped getTagPose(apriltags_ros::AprilTagDetection tag);
 float distanceToCenter();
 
 // Numeric Variables for rover positioning
@@ -130,6 +130,7 @@ ros::Publisher infoLogPublisher;
 ros::Publisher driveControlPublish;
 ros::Publisher heartbeatPublisher;
 ros::Publisher pheromoneTrailPublish;
+ros::Publisher transformPublish;;
 
 // Subscribers
 ros::Subscriber joySubscriber;
@@ -238,6 +239,7 @@ int main(int argc, char **argv) {
 
     publish_heartbeat_timer = mNH.createTimer(ros::Duration(heartbeat_publish_interval), publishHeartBeatTimerEventHandler);
     pheromoneTrailPublish = mNH.advertise<mobility::PheromoneTrail>("/pheromones", 10, true);
+    transformPublish = mNH.advertise<geometry_msgs::PoseStamped>("/transformedPose", 10, true);
 
     tfListener = new tf::TransformListener();
     std_msgs::String msg;
@@ -540,11 +542,13 @@ void sendDriveCommand(double linearVel, double angularError)
 
 void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& message) {
 
+
     // If in manual mode do not try to automatically pick up the target
     if (currentMode == 1 || currentMode == 0) return;
 
     // if a target is detected and we are looking for center tags
     if (message->detections.size() > 0 && !reachedCollectionPoint) {
+
         float cameraOffsetCorrection = 0.020; //meters;
 
         centerSeen = false;
@@ -554,6 +558,8 @@ void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& messag
 
         // this loop is to get the number of center tags
         for (int i = 0; i < message->detections.size(); i++) {
+            getTagPose(message->detections[i]);
+
             if (message->detections[i].id == 256) {
                 geometry_msgs::PoseStamped cenPose = message->detections[i].pose;
 
@@ -803,26 +809,30 @@ void publishHeartBeatTimerEventHandler(const ros::TimerEvent&) {
     heartbeatPublisher.publish(msg);
 }
 
-geometry_msgs::Pose2D calculateTagPose(apriltags_ros::AprilTagDetection tag) {
-    // Calculates pose of an April Tag in Odom frame
-    geometry_msgs::Pose2D tagPose;
-    float cameraHeight = 0.205;
+geometry_msgs::PoseStamped getTagPose(apriltags_ros::AprilTagDetection tag) {
+    // Transforms pose of tag in camera_link to odom
+    geometry_msgs::PoseStamped tagPoseOdom;
+    string x = "";
 
-    // Projection of line directly from the camera lens to tag onto the floor
-    // Also the distance from the rover to the tag
-    float tagDistanceToRover = sqrt(pow(tag.pose.pose.position.z, 2) - pow(cameraHeight, 2));
-    // Angle between the tag and the rover, relative to the heading of the rover
-    float theta = asin(-tag.pose.pose.position.x / tagDistanceToRover);
+    try { //attempt to get the transform of the camera frame to odom frame.
+        tfListener->waitForTransform(publishedName + "/camera_link", publishedName + "/odom", ros::Time::now(), ros::Duration(1.0));
+        tfListener->transformPose(publishedName + "/odom", tag.pose, tagPoseOdom);
+    }
 
-    // Distance from the tag to the nest
-    float tagDistanceToCenter = distanceToCenter() + tagDistanceToRover * abs(cos(theta));
+    catch(tf::TransformException& ex) {
+        ROS_INFO("Received an exception trying to transform a point from \"camer_link\" to \"odom\": %s", ex.what());
+        x = "Exception thrown " + (string)ex.what();
+        std_msgs::String msg;
+        stringstream ss;
+        ss << "Exception in getTagPose() " + (string)ex.what();
+        msg.data = ss.str();
+        infoLogPublisher.publish(msg);
+    }
 
-    // Rotate vector with along heading of rover with tag distance to center
-    // to get pose of tag
-    tagPose.x = tagDistanceToCenter * cos(currentLocation.theta + theta);
-    tagPose.y = tagDistanceToCenter * sin(currentLocation.theta + theta);
 
-    return tagPose;
+    transformPublish.publish(tagPoseOdom);
+
+    return tagPoseOdom;
 }
 
 
