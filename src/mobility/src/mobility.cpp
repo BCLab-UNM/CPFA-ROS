@@ -17,6 +17,7 @@
 #include <geometry_msgs/Twist.h>
 #include <nav_msgs/Odometry.h>
 #include <apriltags_ros/AprilTagDetectionArray.h>
+#include "mobility/PheromoneTrail.h"
 
 // Include Controllers
 #include "PickUpController.h"
@@ -46,6 +47,10 @@ void closeFingers();// Close fingers to 0 degrees
 void raiseWrist();  // Return wrist back to 0 degrees
 void lowerWrist();  // Lower wrist to 50 degrees
 void mapAverage();  // constantly averages last 100 positions from map
+
+// Return pose of tag in odom
+geometry_msgs::PoseStamped getTagPose(apriltags_ros::AprilTagDetection tag);
+float distanceToCenter();
 
 // Numeric Variables for rover positioning
 geometry_msgs::Pose2D currentLocation;
@@ -124,6 +129,8 @@ ros::Publisher wristAnglePublish;
 ros::Publisher infoLogPublisher;
 ros::Publisher driveControlPublish;
 ros::Publisher heartbeatPublisher;
+ros::Publisher pheromoneTrailPublish;
+ros::Publisher transformPublish;;
 
 // Subscribers
 ros::Subscriber joySubscriber;
@@ -132,6 +139,7 @@ ros::Subscriber targetSubscriber;
 ros::Subscriber obstacleSubscriber;
 ros::Subscriber odometrySubscriber;
 ros::Subscriber mapSubscriber;
+ros::Subscriber pheromoneTrailSubscriber;
 
 
 // Timers
@@ -161,6 +169,7 @@ void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& tagInf
 void obstacleHandler(const std_msgs::UInt8::ConstPtr& message);
 void odometryHandler(const nav_msgs::Odometry::ConstPtr& message);
 void mapHandler(const nav_msgs::Odometry::ConstPtr& message);
+void pheromoneTrailHandler(const mobility::PheromoneTrail& messsage);
 void mobilityStateMachine(const ros::TimerEvent&);
 void publishStatusTimerEventHandler(const ros::TimerEvent& event);
 void targetDetectedReset(const ros::TimerEvent& event);
@@ -214,6 +223,7 @@ int main(int argc, char **argv) {
     obstacleSubscriber = mNH.subscribe((publishedName + "/obstacle"), 10, obstacleHandler);
     odometrySubscriber = mNH.subscribe((publishedName + "/odom/filtered"), 10, odometryHandler);
     mapSubscriber = mNH.subscribe((publishedName + "/odom/ekf"), 10, mapHandler);
+    pheromoneTrailSubscriber = mNH.subscribe("/pheromones", 10, pheromoneTrailHandler);
 
     status_publisher = mNH.advertise<std_msgs::String>((publishedName + "/status"), 1, true);
     stateMachinePublish = mNH.advertise<std_msgs::String>((publishedName + "/state_machine"), 1, true);
@@ -228,6 +238,8 @@ int main(int argc, char **argv) {
     targetDetectedTimer = mNH.createTimer(ros::Duration(0), targetDetectedReset, true);
 
     publish_heartbeat_timer = mNH.createTimer(ros::Duration(heartbeat_publish_interval), publishHeartBeatTimerEventHandler);
+    pheromoneTrailPublish = mNH.advertise<mobility::PheromoneTrail>("/pheromones", 10, true);
+    transformPublish = mNH.advertise<geometry_msgs::PoseStamped>("/transformedPose", 10, true);
 
     tfListener = new tf::TransformListener();
     std_msgs::String msg;
@@ -530,11 +542,13 @@ void sendDriveCommand(double linearVel, double angularError)
 
 void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& message) {
 
+
     // If in manual mode do not try to automatically pick up the target
     if (currentMode == 1 || currentMode == 0) return;
 
     // if a target is detected and we are looking for center tags
     if (message->detections.size() > 0 && !reachedCollectionPoint) {
+
         float cameraOffsetCorrection = 0.020; //meters;
 
         centerSeen = false;
@@ -544,6 +558,8 @@ void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& messag
 
         // this loop is to get the number of center tags
         for (int i = 0; i < message->detections.size(); i++) {
+            getTagPose(message->detections[i]);
+
             if (message->detections[i].id == 256) {
                 geometry_msgs::PoseStamped cenPose = message->detections[i].pose;
 
@@ -689,6 +705,9 @@ void joyCmdHandler(const sensor_msgs::Joy::ConstPtr& message) {
     }
 }
 
+void pheromoneTrailHandler(const mobility::PheromoneTrail& messsage) {
+    return;
+}
 
 void publishStatusTimerEventHandler(const ros::TimerEvent&) {
     std_msgs::String msg;
@@ -789,3 +808,36 @@ void publishHeartBeatTimerEventHandler(const ros::TimerEvent&) {
     msg.data = "";
     heartbeatPublisher.publish(msg);
 }
+
+geometry_msgs::PoseStamped getTagPose(apriltags_ros::AprilTagDetection tag) {
+    // Transforms pose of tag in camera_link to odom
+    geometry_msgs::PoseStamped tagPoseOdom;
+    string x = "";
+
+    try { //attempt to get the transform of the camera frame to odom frame.
+        tfListener->waitForTransform(publishedName + "/camera_link", publishedName + "/odom", ros::Time::now(), ros::Duration(1.0));
+        tfListener->transformPose(publishedName + "/odom", tag.pose, tagPoseOdom);
+    }
+
+    catch(tf::TransformException& ex) {
+        ROS_INFO("Received an exception trying to transform a point from \"camer_link\" to \"odom\": %s", ex.what());
+        x = "Exception thrown " + (string)ex.what();
+        std_msgs::String msg;
+        stringstream ss;
+        ss << "Exception in getTagPose() " + (string)ex.what();
+        msg.data = ss.str();
+        infoLogPublisher.publish(msg);
+    }
+
+
+    transformPublish.publish(tagPoseOdom);
+
+    return tagPoseOdom;
+}
+
+
+float distanceToCenter() {
+    // Returns the distance of the rover to the nest
+    return hypot(centerLocation.x - currentLocation.x, centerLocation.y - currentLocation.y);
+}
+
