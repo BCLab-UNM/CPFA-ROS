@@ -1,6 +1,7 @@
 #include "CPFASearchController.h"
 
 CPFASearchController::CPFASearchController() {
+  searchState = START;
   rng = new random_numbers::RandomNumberGenerator();
 }
 
@@ -37,3 +38,47 @@ geometry_msgs::Pose2D CPFASearchController::continueInterruptedSearch(geometry_m
 
   return newGoalLocation;
 }
+
+/**
+ * This function decides which state function to call based on the value
+ * of the searchState variable.
+ */
+void CPFASearchController::search() {
+    // Result myResult;
+
+    switch(searchState) {
+        case START:
+            start();
+            break;
+        case SET_SEARCH_LOCATION:
+            setSearchLocation();
+            break;
+        case TRAVEL_TO_SEARCH_SITE:
+            travelToSearchSite();
+            break;
+        case SEARCH_WITH_UNINFORMED_WALK:
+            searchWithUninformedWalk();
+            break;
+        case SEARCH_WITH_INFORMED_WALK:
+            searchWithInformedWalk();
+            break;
+        case SENSE_LOCAL_RESOURCE_DENSITY:
+            senseLocalResourceDensity();
+    }
+    
+    // return myResult;
+}
+
+void CPFASearchController::start() {}
+
+void CPFASearchController::setSearchLocation() {}
+
+void CPFASearchController::travelToSearchSite() {}
+
+void CPFASearchController::searchWithUninformedWalk() {}
+
+void CPFASearchController::searchWithInformedWalk() {}
+
+void CPFASearchController::senseLocalResourceDensity() {}
+
+void CPFASearchController::returnToNest() {}

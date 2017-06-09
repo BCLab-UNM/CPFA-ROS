@@ -15,7 +15,19 @@ class CPFASearchController {
 
   public:
 
+    enum CPFAState
+    {
+        START,
+        SET_SEARCH_LOCATION,
+        TRAVEL_TO_SEARCH_SITE,
+        SEARCH_WITH_UNINFORMED_WALK,
+        SEARCH_WITH_INFORMED_WALK,
+        SENSE_LOCAL_RESOURCE_DENSITY
+    };
+
     CPFASearchController();
+
+    /** functions for basic search for testing etc. **/
 
     // performs search pattern
     geometry_msgs::Pose2D search(geometry_msgs::Pose2D currentLocation);
@@ -23,9 +35,39 @@ class CPFASearchController {
     // continues search pattern after interruption
     geometry_msgs::Pose2D continueInterruptedSearch(geometry_msgs::Pose2D currentLocation, geometry_msgs::Pose2D oldGoalLocation);
 
+
+
+
+    /** functions for CPFA search **/
+    
+    // CPFA state machine search; will eventually replace search defined above
+    void search();
+
   private:
 
+    // CPFA state functions
+    void start();
+    void setSearchLocation();
+    void travelToSearchSite();
+    void searchWithUninformedWalk();
+    void searchWithInformedWalk();
+    void senseLocalResourceDensity();
+    void returnToNest();
+    
+    // CPFA Parameters
+    double probabilityOfSwitchingToSearching;
+    double probabilityOfReturningToNest;
+    double uninformedSearchVariation;
+    double rateOfInformedSearchDecay;
+    double rateOfSiteFidelity;
+    double rateOfLayingPheromone;
+    double rateOfPheromoneDecay;
+    
+    CPFAState searchState;
     random_numbers::RandomNumberGenerator* rng;
+    int localResourceDensity;
+    geometry_msgs::Pose2D siteFidelityLocation;
+    std::vector<geometry_msgs::Pose2D> pheromones;
 };
 
 #endif /* CPFA_SEARCH_CONTROLLER */
