@@ -22,7 +22,7 @@ add_executable(
   mobility 
   src/PickUpController.cpp
   src/DropOffController.cpp
-  src/SearchController.cpp
+  src/CPFASearchController.cpp
   src/mobility.cpp
 )
 

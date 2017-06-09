@@ -21,7 +21,7 @@
 // Include Controllers
 #include "PickUpController.h"
 #include "DropOffController.h"
-#include "SearchController.h"
+#include "CPFASearchController.h"
 
 // To handle shutdown signals so the node quits
 // properly in response to "rosnode kill"
@@ -37,7 +37,7 @@ random_numbers::RandomNumberGenerator* rng;
 // Create controllers
 PickUpController pickUpController;
 DropOffController dropOffController;
-SearchController searchController;
+CPFASearchController searchController;
 
 // Mobility Logic Functions
 void sendDriveCommand(double linearVel, double angularVel);

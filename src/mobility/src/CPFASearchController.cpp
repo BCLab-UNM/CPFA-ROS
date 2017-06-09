@@ -1,13 +1,13 @@
-#include "SearchController.h"
+#include "CPFASearchController.h"
 
-SearchController::SearchController() {
+CPFASearchController::CPFASearchController() {
   rng = new random_numbers::RandomNumberGenerator();
 }
 
 /**
  * This code implements a basic random walk search.
  */
-geometry_msgs::Pose2D SearchController::search(geometry_msgs::Pose2D currentLocation) {
+geometry_msgs::Pose2D CPFASearchController::search(geometry_msgs::Pose2D currentLocation) {
   geometry_msgs::Pose2D goalLocation;
 
   //select new heading from Gaussian distribution around current heading
@@ -24,7 +24,7 @@ geometry_msgs::Pose2D SearchController::search(geometry_msgs::Pose2D currentLoca
  * Continues search pattern after interruption. For example, avoiding the
  * center or collisions.
  */
-geometry_msgs::Pose2D SearchController::continueInterruptedSearch(geometry_msgs::Pose2D currentLocation, geometry_msgs::Pose2D oldGoalLocation) {
+geometry_msgs::Pose2D CPFASearchController::continueInterruptedSearch(geometry_msgs::Pose2D currentLocation, geometry_msgs::Pose2D oldGoalLocation) {
   geometry_msgs::Pose2D newGoalLocation;
 
   //remainingGoalDist avoids magic numbers by calculating the dist
