@@ -3,6 +3,7 @@
 
 #include <geometry_msgs/Pose2D.h>
 #include <random_numbers/random_numbers.h>
+#include "Pheromone.h"
 
 /**
  * This class implements the search control algorithm for the rovers. The code
@@ -28,18 +29,12 @@ class CPFASearchController {
     CPFASearchController();
 
     /** functions for basic search for testing etc. **/
-
     // performs search pattern
     geometry_msgs::Pose2D search(geometry_msgs::Pose2D currentLocation);
-
     // continues search pattern after interruption
     geometry_msgs::Pose2D continueInterruptedSearch(geometry_msgs::Pose2D currentLocation, geometry_msgs::Pose2D oldGoalLocation);
 
-
-
-
-    /** functions for CPFA search **/
-    
+    /** functions for CPFA search **/    
     // CPFA state machine search; will eventually replace search defined above
     void search();
 
@@ -67,7 +62,7 @@ class CPFASearchController {
     random_numbers::RandomNumberGenerator* rng;
     int localResourceDensity;
     geometry_msgs::Pose2D siteFidelityLocation;
-    std::vector<geometry_msgs::Pose2D> pheromones;
+    std::vector<Pheromone> pheromones;
 };
 
 #endif /* CPFA_SEARCH_CONTROLLER */
