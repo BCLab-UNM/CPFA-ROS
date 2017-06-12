@@ -1,11 +1,14 @@
+#include <ros/ros.h>
 #include "CPFASearchController.h"
+
 
 CPFASearchController::CPFASearchController() {
   searchState = START;
+  searchLocationType = RANDOM;
   rng = new random_numbers::RandomNumberGenerator();
 }
 
-/**
+/**.
  * This code implements a basic random walk search.
  */
 geometry_msgs::Pose2D CPFASearchController::search(geometry_msgs::Pose2D currentLocation) {
@@ -43,15 +46,14 @@ geometry_msgs::Pose2D CPFASearchController::continueInterruptedSearch(geometry_m
  * This function decides which state function to call based on the value
  * of the searchState variable.
  */
-void CPFASearchController::search() {
+geometry_msgs::Pose2D CPFASearchController::CPFAStateMachine(geometry_msgs::Pose2D currentLocation, geometry_msgs::Pose2D centerLocation) {
     // Result myResult;
 
     switch(searchState) {
         case START:
             start();
-            break;
         case SET_SEARCH_LOCATION:
-            setSearchLocation();
+            setSearchLocation(currentLocation);
             break;
         case TRAVEL_TO_SEARCH_SITE:
             travelToSearchSite();
@@ -66,12 +68,46 @@ void CPFASearchController::search() {
             senseLocalResourceDensity();
     }
     
-    // return myResult;
+    return targetLocation; // will place into Result struct later
 }
 
-void CPFASearchController::start() {}
+void CPFASearchController::start() {
+    searchState = SET_SEARCH_LOCATION;
 
-void CPFASearchController::setSearchLocation() {}
+    probabilityOfSwitchingToSearching = 0.5;
+    probabilityOfReturningToNest = 0.5;
+    uninformedSearchVariation = 2*M_PI;
+    rateOfInformedSearchDecay = exp(5);
+    rateOfSiteFidelity = 10;
+    rateOfLayingPheromone = 10;
+    rateOfPheromoneDecay = exp(10);
+    travelStepSize = 0.5;
+
+    // set heading for randoms search
+    targetLocation.theta = rng->uniformReal(0, 2 * M_PI);
+
+    /* Will get from congfig file
+     Need max distance from center
+    maxDistanceFromNest = 6;*/
+}
+
+void CPFASearchController::setSearchLocation(geometry_msgs::Pose2D currentLocation) {
+    if(searchLocationType == SITE_FIDELITY){
+        // TODO
+        return;
+    }
+
+    if(searchLocationType == PHERMONE){
+        //TODO
+        return;
+    }
+
+    // searchLocationType == RANDOM
+    targetLocation.x = currentLocation.x + travelStepSize*cos(targetLocation.theta);
+    targetLocation.y = currentLocation.y + travelStepSize*sin(targetLocation.theta);
+
+    searchState = TRAVEL_TO_SEARCH_SITE;
+}
 
 void CPFASearchController::travelToSearchSite() {}
 
@@ -81,4 +117,10 @@ void CPFASearchController::searchWithInformedWalk() {}
 
 void CPFASearchController::senseLocalResourceDensity() {}
 
-void CPFASearchController::returnToNest() {}
+void CPFASearchController::returnToNest() {
+    // if (return to nest with block)
+    // BLAHBLAH
+
+    // else if (give up search) then ....
+    targetLocation.theta = rng->uniformReal(0, 2 * M_PI);
+}

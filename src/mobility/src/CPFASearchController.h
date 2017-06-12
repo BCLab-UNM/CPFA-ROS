@@ -26,6 +26,13 @@ class CPFASearchController {
         SENSE_LOCAL_RESOURCE_DENSITY
     };
 
+    enum SearchLocationType
+    {
+        SITE_FIDELITY,
+        PHERMONE,
+        RANDOM
+    };
+
     CPFASearchController();
 
     /** functions for basic search for testing etc. **/
@@ -36,13 +43,13 @@ class CPFASearchController {
 
     /** functions for CPFA search **/    
     // CPFA state machine search; will eventually replace search defined above
-    void search();
+    geometry_msgs::Pose2D CPFAStateMachine(geometry_msgs::Pose2D currentLocation, geometry_msgs::Pose2D centerLocation);
 
   private:
 
     // CPFA state functions
     void start();
-    void setSearchLocation();
+    void setSearchLocation(geometry_msgs::Pose2D currentLocation);
     void travelToSearchSite();
     void searchWithUninformedWalk();
     void searchWithInformedWalk();
@@ -57,11 +64,14 @@ class CPFASearchController {
     double rateOfSiteFidelity;
     double rateOfLayingPheromone;
     double rateOfPheromoneDecay;
-    
+
+    double travelStepSize;
     CPFAState searchState;
+    SearchLocationType searchLocationType;
     random_numbers::RandomNumberGenerator* rng;
     int localResourceDensity;
-    geometry_msgs::Pose2D siteFidelityLocation;
+    int maxDistanceFromNest;
+    geometry_msgs::Pose2D targetLocation;
     std::vector<Pheromone> pheromones;
 };
 
