@@ -27,7 +27,7 @@ enum CPFAState
 enum SearchLocationType
 {
     SITE_FIDELITY,
-    PHERMONE,
+    PHEROMONE,
     RANDOM
 };
 
@@ -47,6 +47,9 @@ class CPFASearchController {
     CPFAState getState();
     void setState(CPFAState state);
 
+    SearchLocationType getSearchLocationType();
+    void setSearchLocationType(SearchLocationType type);
+
 private:
 
     // CPFA state functions
@@ -54,7 +57,7 @@ private:
     void setSearchLocation(geometry_msgs::Pose2D currentLocation);
     void travelToSearchSite(geometry_msgs::Pose2D currentLocation);
     void searchWithUninformedWalk(geometry_msgs::Pose2D currentLocation);
-    void searchWithInformedWalk();
+    void searchWithInformedWalk(geometry_msgs::Pose2D currentLocation);
     void senseLocalResourceDensity();
     void returnToNest();
 
@@ -67,6 +70,13 @@ private:
     double rateOfLayingPheromone;
     double rateOfPheromoneDecay;
 
+    // CPFA helper functions
+    double getPoissonCDF(double lambda);
+    double distanceToLocation(geometry_msgs::Pose2D L1, geometry_msgs::Pose2D L2);
+    double calculateInformedWalkCorrelation();
+
+    ros::Time informedSearchStartTime;
+    double minDistanceToTarget;
     CPFAState searchState;
     SearchLocationType searchLocationType;
     int maxTags;

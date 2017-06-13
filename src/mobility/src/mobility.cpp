@@ -49,7 +49,7 @@ void lowerWrist();  // Lower wrist to 50 degrees
 void mapAverage();  // constantly averages last 100 positions from map
 
 // Return pose of tag in odom
-geometry_msgs::PoseStamped getTagPose(apriltags_ros::AprilTagDetection tag);
+geometry_msgs::Pose2D getTagPose(apriltags_ros::AprilTagDetection tag);
 float distanceToCenter();
 
 // Numeric Variables for rover positioning
@@ -62,6 +62,7 @@ geometry_msgs::Pose2D centerLocation;
 geometry_msgs::Pose2D centerLocationMap;
 geometry_msgs::Pose2D centerLocationOdom;
 
+bool centerUpdated = false;
 int currentMode = 0;
 float mobilityLoopTimeStep = 0.1; // time between the mobility loop calls
 float status_publish_interval = 1;
@@ -190,8 +191,8 @@ int main(int argc, char **argv) {
     //goalLocation.x = 0.5 * cos(goalLocation.theta+M_PI);
     //goalLocation.y = 0.5 * sin(goalLocation.theta+M_PI);
 
-    centerLocation.x = 0;
-    centerLocation.y = 0;
+    centerLocation.x = cos(currentLocation.theta);
+    centerLocation.y = sin(currentLocation.theta);
     centerLocationOdom.x = 0;
     centerLocationOdom.y = 0;
 
@@ -264,6 +265,10 @@ int main(int argc, char **argv) {
 // This block passes the goal location to the proportional-integral-derivative
 // controllers in the abridge package.
 void mobilityStateMachine(const ros::TimerEvent&) {
+
+    if(distanceToCenter() > 2) {
+        centerUpdated = false;
+    }
 
     std_msgs::String stateMachineMsg;
     float rotateOnlyAngleTolerance = 0.4;
@@ -475,6 +480,11 @@ void mobilityStateMachine(const ros::TimerEvent&) {
                 }
 
                 if (result.pickedUp) {
+                    // Picked up block successfully. Next CPFA state will then
+                    // be to return to this location using site fidelity
+                    searchController.setState(SET_SEARCH_LOCATION);
+                    searchController.setSearchLocationType(SITE_FIDELITY);
+
                     pickUpController.reset();
 
                     // assume target has been picked up by gripper
@@ -563,6 +573,12 @@ void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& messag
             getTagPose(message->detections[i]);
 
             if (message->detections[i].id == 256) {
+
+                if(centerUpdated == false) {
+                    centerLocation = getTagPose(message->detections[i]);
+                    centerUpdated = true;
+                }
+
                 geometry_msgs::PoseStamped cenPose = message->detections[i].pose;
 
                 // checks if tag is on the right or left side of the image
@@ -798,8 +814,8 @@ void mapAverage() {
         }
 
         // Use the position and orientation provided by the ros transform.
-        centerLocation.x = odomPose.pose.position.x; //set centerLocation in odom frame
-        centerLocation.y = odomPose.pose.position.y;
+        //centerLocation.x = odomPose.pose.position.x; //set centerLocation in odom frame
+        //centerLocation.y = odomPose.pose.position.y;
 
 
     }
@@ -811,7 +827,7 @@ void publishHeartBeatTimerEventHandler(const ros::TimerEvent&) {
     heartbeatPublisher.publish(msg);
 }
 
-geometry_msgs::PoseStamped getTagPose(apriltags_ros::AprilTagDetection tag) {
+geometry_msgs::Pose2D getTagPose(apriltags_ros::AprilTagDetection tag) {
     // Transforms pose of tag in camera_link to odom
     geometry_msgs::PoseStamped tagPoseOdom;
     string x = "";
@@ -833,8 +849,11 @@ geometry_msgs::PoseStamped getTagPose(apriltags_ros::AprilTagDetection tag) {
 
 
     transformPublish.publish(tagPoseOdom);
+    geometry_msgs::Pose2D newCenterLocation;
+    newCenterLocation.x = tagPoseOdom.pose.position.x;
+    newCenterLocation.y = tagPoseOdom.pose.position.y;
 
-    return tagPoseOdom;
+    return newCenterLocation;
 }
 
 

@@ -32,23 +32,29 @@ geometry_msgs::Pose2D CPFASearchController::continueInterruptedSearch(geometry_m
  */
 geometry_msgs::Pose2D CPFASearchController::CPFAStateMachine(geometry_msgs::Pose2D currentLocation, geometry_msgs::Pose2D centerLocation) {
     switch(searchState) {
-    case START:
-        start();
-    case SET_SEARCH_LOCATION:
-        setSearchLocation(currentLocation);
-        break;
-    case TRAVEL_TO_SEARCH_SITE:
-        travelToSearchSite(currentLocation);
-        break;
-    case SEARCH_WITH_UNINFORMED_WALK:
-        searchWithUninformedWalk(currentLocation);
-        break;
-    case SEARCH_WITH_INFORMED_WALK:
-        searchWithInformedWalk();
-        break;
-    case SENSE_LOCAL_RESOURCE_DENSITY:
-        break;
-        //senseLocalResourceDensity();
+        case START:
+            ROS_INFO_STREAM("Inside START");
+            start();
+        case SET_SEARCH_LOCATION:
+            ROS_INFO_STREAM("Inside SET_SEARCH_LOCATION");
+            setSearchLocation(currentLocation);
+            break;
+        case TRAVEL_TO_SEARCH_SITE:
+            ROS_INFO_STREAM("Inside TRAVEL_TO_SEARCH_SITE");
+            travelToSearchSite(currentLocation);
+            break;
+        case SEARCH_WITH_UNINFORMED_WALK:
+            ROS_INFO_STREAM("Inside SEARCH_WITH_UNINFORMED_WALK");
+            searchWithUninformedWalk(currentLocation);
+            break;
+        case SEARCH_WITH_INFORMED_WALK:
+            ROS_INFO_STREAM("Inside SEARCH_WITH_INFORMED_WALK");
+            searchWithInformedWalk(currentLocation);
+            break;
+        case SENSE_LOCAL_RESOURCE_DENSITY:
+            ROS_INFO_STREAM("Inside SENSE_LOCAL_RESOURCE_DENSITY");
+            break;
+            //senseLocalResourceDensity();
     }
 
     return targetLocation; // will place into Result struct later
@@ -57,15 +63,16 @@ geometry_msgs::Pose2D CPFASearchController::CPFAStateMachine(geometry_msgs::Pose
 void CPFASearchController::start() {
     ROS_INFO_STREAM("Inside start");
     maxTags = 10;
-    probabilityOfSwitchingToSearching = 0.1;
+    probabilityOfSwitchingToSearching = 0.25;
     probabilityOfReturningToNest = 0.5;
     uninformedSearchVariation = 2*M_PI;
     rateOfInformedSearchDecay = exp(5);
-    rateOfSiteFidelity = 10;
+    rateOfSiteFidelity = 20;
     rateOfLayingPheromone = 10;
     rateOfPheromoneDecay = exp(10);
     travelStepSize = 0.5;
     searchStepSize = 0.5;
+    minDistanceToTarget = 0.25;
 
 
     /* Will get from congfig file
@@ -76,26 +83,49 @@ void CPFASearchController::start() {
 }
 
 void CPFASearchController::setSearchLocation(geometry_msgs::Pose2D currentLocation) {
+    searchState = TRAVEL_TO_SEARCH_SITE;
+
     if(searchLocationType == SITE_FIDELITY){
-        // TODO
-        return;
+
+        if(getPoissonCDF(rateOfSiteFidelity) > rng->uniformReal(0, 1)) {
+            // Leave targetLocation to previous block location
+            return;
+        } else {
+            searchLocationType = PHEROMONE;
+        }
     }
 
-    if(searchLocationType == PHERMONE){
-        //TODO
-        return;
+    if(searchLocationType == PHEROMONE && pheromones.size() > 0){
+
+        if(getPoissonCDF(rateOfLayingPheromone) > rng->uniformReal(0, 1)) {
+
+            return;
+        }
     }
 
-    // searchLocationType == RANDOM
+    searchLocationType = RANDOM;
 
     // set heading for random search
     targetLocation.theta = rng->uniformReal(0, 2 * M_PI);
-    searchState = TRAVEL_TO_SEARCH_SITE;
     travelToSearchSite(currentLocation);
 }
 
 void CPFASearchController::travelToSearchSite(geometry_msgs::Pose2D currentLocation) {
-    if(rng->uniformReal(0,1) < probabilityOfSwitchingToSearching)
+
+    if(searchLocationType == SITE_FIDELITY || searchLocationType == PHEROMONE) {
+
+        // Reached site fidelity location and switch to informed search
+        if(distanceToLocation(currentLocation, targetLocation) < minDistanceToTarget) {
+            informedSearchStartTime = ros::Time::now();
+            searchState = SEARCH_WITH_INFORMED_WALK;
+        }
+
+        // Heading to site fidelity, keep target location the same
+        return;
+    }
+
+    // searchLocationType is RANDOM
+    if(rng->uniformReal(0, 1) < probabilityOfSwitchingToSearching)
         searchState = SEARCH_WITH_UNINFORMED_WALK;
 
     targetLocation.x = currentLocation.x + travelStepSize*cos(targetLocation.theta);
@@ -103,13 +133,19 @@ void CPFASearchController::travelToSearchSite(geometry_msgs::Pose2D currentLocat
 }
 
 void CPFASearchController::searchWithUninformedWalk(geometry_msgs::Pose2D currentLocation) {
-     double turnAngle = rng->gaussian(0, uninformedSearchVariation);
-     targetLocation.theta = currentLocation.theta + turnAngle;
-     targetLocation.x = currentLocation.x + searchStepSize*cos(targetLocation.theta);
-     targetLocation.y = currentLocation.y + searchStepSize*sin(targetLocation.theta);
+    double turnAngle = rng->gaussian(0, uninformedSearchVariation);
+    targetLocation.theta = currentLocation.theta + turnAngle;
+    targetLocation.x = currentLocation.x + searchStepSize*cos(targetLocation.theta);
+    targetLocation.y = currentLocation.y + searchStepSize*sin(targetLocation.theta);
 }
 
-void CPFASearchController::searchWithInformedWalk() {
+void CPFASearchController::searchWithInformedWalk(geometry_msgs::Pose2D currentLocation) {
+    double correlation = calculateInformedWalkCorrelation();
+
+    double turnAngle = rng->gaussian(0, correlation);
+    targetLocation.theta = currentLocation.theta + turnAngle;
+    targetLocation.x = currentLocation.x + searchStepSize*cos(targetLocation.theta);
+    targetLocation.y = currentLocation.y + searchStepSize*sin(targetLocation.theta);
 }
 
 void CPFASearchController::senseLocalResourceDensity() {
@@ -131,4 +167,34 @@ CPFAState CPFASearchController::getState() {
 
 void CPFASearchController::setState(CPFAState state) {
     searchState = state;
+}
+
+SearchLocationType CPFASearchController::getSearchLocationType() {
+    return searchLocationType;
+}
+
+void CPFASearchController::setSearchLocationType(SearchLocationType type) {
+    searchLocationType = type;
+}
+
+double CPFASearchController::getPoissonCDF(double lambda) {
+    double sumAccumulator       = 1.0;
+    double factorialAccumulator = 1.0;
+
+    for (size_t i = 1; i <= localResourceDensity; i++) {
+        factorialAccumulator *= i;
+        sumAccumulator += pow(lambda, i) / factorialAccumulator;
+    }
+
+    return (exp(-lambda) * sumAccumulator);
+}
+
+double CPFASearchController::distanceToLocation(geometry_msgs::Pose2D L1, geometry_msgs::Pose2D L2) {
+    return hypot(L1.x - L2.x, L1.y - L2.y);
+}
+
+double CPFASearchController::calculateInformedWalkCorrelation() {
+    double searchTime = (ros::Time::now() - informedSearchStartTime).toSec();
+
+    return uninformedSearchVariation + (4 * M_PI - uninformedSearchVariation) * exp(-rateOfInformedSearchDecay * searchTime);
 }
