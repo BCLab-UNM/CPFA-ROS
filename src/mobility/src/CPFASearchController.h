@@ -12,20 +12,40 @@
  * The search controller is implemented with the CPFA.
  * (Central Place Foraging Algorithm)
  */
+
+
+enum CPFAState
+{
+    START,
+    SET_SEARCH_LOCATION,
+    TRAVEL_TO_SEARCH_SITE,
+    SEARCH_WITH_UNINFORMED_WALK,
+    SEARCH_WITH_INFORMED_WALK,
+    SENSE_LOCAL_RESOURCE_DENSITY
+};
+
+enum SearchLocationType
+{
+    SITE_FIDELITY,
+    PHERMONE,
+    RANDOM
+};
+
 class CPFASearchController {
 
-public:
-    CPFASearchController();
+    public:
+        CPFASearchController();
 
-    /** functions for CPFA search **/
-    // CPFA state machine search; will eventually replace search defined above
-    geometry_msgs::Pose2D CPFAStateMachine(geometry_msgs::Pose2D currentLocation, geometry_msgs::Pose2D centerLocation);
+        /** functions for CPFA search **/
+        // CPFA state machine search; will eventually replace search defined above
+        geometry_msgs::Pose2D CPFAStateMachine(geometry_msgs::Pose2D currentLocation, geometry_msgs::Pose2D centerLocation);
 
-    // continues search pattern after interruption
-    geometry_msgs::Pose2D continueInterruptedSearch(geometry_msgs::Pose2D currentLocation, geometry_msgs::Pose2D oldGoalLocation);
+        // continues search pattern after interruption
+        geometry_msgs::Pose2D continueInterruptedSearch(geometry_msgs::Pose2D currentLocation, geometry_msgs::Pose2D oldGoalLocation);
 
 
-    bool isTraveling();
+    CPFAState getState();
+    void setState(CPFAState state);
 
 private:
 
@@ -47,23 +67,8 @@ private:
     double rateOfLayingPheromone;
     double rateOfPheromoneDecay;
 
-    enum CPFAState
-    {
-        START,
-        SET_SEARCH_LOCATION,
-        TRAVEL_TO_SEARCH_SITE,
-        SEARCH_WITH_UNINFORMED_WALK,
-        SEARCH_WITH_INFORMED_WALK,
-        SENSE_LOCAL_RESOURCE_DENSITY
-    } searchState;
-
-    enum SearchLocationType
-    {
-        SITE_FIDELITY,
-        PHERMONE,
-        RANDOM
-    } searchLocationType;
-
+    CPFAState searchState;
+    SearchLocationType searchLocationType;
     int maxTags;
     double travelStepSize;
     double searchStepSize;

@@ -76,7 +76,6 @@ void CPFASearchController::start() {
 }
 
 void CPFASearchController::setSearchLocation(geometry_msgs::Pose2D currentLocation) {
-    ROS_INFO_STREAM("Inside set search location" << isTraveling());
     if(searchLocationType == SITE_FIDELITY){
         // TODO
         return;
@@ -96,7 +95,6 @@ void CPFASearchController::setSearchLocation(geometry_msgs::Pose2D currentLocati
 }
 
 void CPFASearchController::travelToSearchSite(geometry_msgs::Pose2D currentLocation) {
-    ROS_INFO_STREAM("Inside travel to search site" << isTraveling());
     if(rng->uniformReal(0,1) < probabilityOfSwitchingToSearching)
         searchState = SEARCH_WITH_UNINFORMED_WALK;
 
@@ -105,7 +103,6 @@ void CPFASearchController::travelToSearchSite(geometry_msgs::Pose2D currentLocat
 }
 
 void CPFASearchController::searchWithUninformedWalk(geometry_msgs::Pose2D currentLocation) {
-     ROS_INFO_STREAM("Inside search with uninformed walk" << isTraveling());
      double turnAngle = rng->gaussian(0, uninformedSearchVariation);
      targetLocation.theta = currentLocation.theta + turnAngle;
      targetLocation.x = currentLocation.x + searchStepSize*cos(targetLocation.theta);
@@ -113,15 +110,12 @@ void CPFASearchController::searchWithUninformedWalk(geometry_msgs::Pose2D curren
 }
 
 void CPFASearchController::searchWithInformedWalk() {
-    ROS_INFO_STREAM("Inside search with informed walk" << isTraveling());
 }
 
 void CPFASearchController::senseLocalResourceDensity() {
-    ROS_INFO_STREAM("Inside sense locla resource density" << isTraveling());
 }
 
 void CPFASearchController::returnToNest() {
-    ROS_INFO_STREAM("Inside return to nest" << isTraveling());
     // if (return to nest with block)
     // BLAHBLAH
 
@@ -131,13 +125,10 @@ void CPFASearchController::returnToNest() {
 
 // Called by Mobility to determine whether Rover
 // needs to travel uninterrupted (i.e. ignoring blocks)
-bool CPFASearchController::isTraveling() {
-    if (searchState == TRAVEL_TO_SEARCH_SITE){
-        ROS_INFO_STREAM("Inside isTraveling: true");
-        return true;
-    }
-    else{
-        ROS_INFO_STREAM("Inside isTraveling: false");
-        return false;
-    }
+CPFAState CPFASearchController::getState() {
+    return searchState;
+}
+
+void CPFASearchController::setState(CPFAState state) {
+    searchState = state;
 }

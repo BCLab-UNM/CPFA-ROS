@@ -542,9 +542,7 @@ void sendDriveCommand(double linearVel, double angularError)
 
 void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& message) {
     // Rover needs to ignore blocks
-    if(searchController.isTraveling()){
-        return;
-    }
+    if(searchController.getState() == TRAVEL_TO_SEARCH_SITE) return;
 
     // If in manual mode do not try to automatically pick up the target
     if (currentMode == 1 || currentMode == 0) return;
