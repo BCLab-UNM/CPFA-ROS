@@ -184,11 +184,11 @@ int main(int argc, char **argv) {
     rng = new random_numbers::RandomNumberGenerator();
 
     //set initial random heading
-    goalLocation.theta = rng->uniformReal(0, 2 * M_PI);
+    //goalLocation.theta = rng->uniformReal(0, 2 * M_PI);
 
     //select initial search position 50 cm from center (0,0)
-    goalLocation.x = 0.5 * cos(goalLocation.theta+M_PI);
-    goalLocation.y = 0.5 * sin(goalLocation.theta+M_PI);
+    //goalLocation.x = 0.5 * cos(goalLocation.theta+M_PI);
+    //goalLocation.y = 0.5 * sin(goalLocation.theta+M_PI);
 
     centerLocation.x = 0;
     centerLocation.y = 0;
@@ -541,7 +541,10 @@ void sendDriveCommand(double linearVel, double angularError)
  *************************/
 
 void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& message) {
-
+    // Rover needs to ignore blocks
+    if(searchController.isTraveling()){
+        return;
+    }
 
     // If in manual mode do not try to automatically pick up the target
     if (currentMode == 1 || currentMode == 0) return;
