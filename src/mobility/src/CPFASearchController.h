@@ -15,38 +15,24 @@
 class CPFASearchController {
 
     public:
-
-        enum CPFAState
-        {
-            START,
-            SET_SEARCH_LOCATION,
-            TRAVEL_TO_SEARCH_SITE,
-            SEARCH_WITH_UNINFORMED_WALK,
-            SEARCH_WITH_INFORMED_WALK,
-            SENSE_LOCAL_RESOURCE_DENSITY
-        };
-
         CPFASearchController();
 
         /** functions for CPFA search **/    
         // CPFA state machine search; will eventually replace search defined above
-        geometry_msgs::Pose2D search(geometry_msgs::Pose2D currentLocation);
+        geometry_msgs::Pose2D CPFAStateMachine(geometry_msgs::Pose2D currentLocation, geometry_msgs::Pose2D centerLocation);
+
         // continues search pattern after interruption
         geometry_msgs::Pose2D continueInterruptedSearch(geometry_msgs::Pose2D currentLocation, geometry_msgs::Pose2D oldGoalLocation);
 
-        void senseLocalResourceDensity();
-        void resetLocalResourceDensity();
     private:
-
-        // Max possible April tags a rover can see
-        const int MAX_TAGS = 10;
 
         // CPFA state functions
         void start();
-        void setSearchLocation();
+        void setSearchLocation(geometry_msgs::Pose2D currentLocation);
         void travelToSearchSite();
         void searchWithUninformedWalk();
         void searchWithInformedWalk();
+        void senseLocalResourceDensity();
         void returnToNest();
 
         // CPFA Parameters
@@ -58,11 +44,29 @@ class CPFASearchController {
         double rateOfLayingPheromone;
         double rateOfPheromoneDecay;
 
-        CPFAState searchState;
+        enum CPFAState
+        {
+            START,
+            SET_SEARCH_LOCATION,
+            TRAVEL_TO_SEARCH_SITE,
+            SEARCH_WITH_UNINFORMED_WALK,
+            SEARCH_WITH_INFORMED_WALK,
+            SENSE_LOCAL_RESOURCE_DENSITY
+        } searchState;
+
+        enum SearchLocationType
+        {
+            SITE_FIDELITY,
+            PHERMONE,
+            RANDOM
+        } searchLocationType;
+
+        int maxTags;
+        double travelStepSize;
         random_numbers::RandomNumberGenerator* rng;
         int localResourceDensity;
-        geometry_msgs::Pose2D siteFidelityLocation;
-        geometry_msgs::Pose2D searchLocation;
+        int maxDistanceFromNest;
+        geometry_msgs::Pose2D targetLocation;
         std::vector<Pheromone> pheromones;
 };
 

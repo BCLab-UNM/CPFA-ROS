@@ -386,7 +386,7 @@ void mobilityStateMachine(const ros::TimerEvent&) {
             //Otherwise, drop off target and select new random uniform heading
             //If no targets have been detected, assign a new goal
             else if (!targetDetected && timerTimeElapsed > returnToSearchDelay) {
-                goalLocation = searchController.search(currentLocation);
+                goalLocation = searchController.CPFAStateMachine(currentLocation, centerLocation);
             }
 
             //Purposefully fall through to next case without breaking
