@@ -555,6 +555,7 @@ void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& messag
         double count = 0;
         double countRight = 0;
         double countLeft = 0;
+        int resourceCount = 0;
 
         // this loop is to get the number of center tags
         for (int i = 0; i < message->detections.size(); i++) {

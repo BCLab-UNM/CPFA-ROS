@@ -14,55 +14,56 @@
  */
 class CPFASearchController {
 
-  public:
+    public:
 
-    enum CPFAState
-    {
-        START,
-        SET_SEARCH_LOCATION,
-        TRAVEL_TO_SEARCH_SITE,
-        SEARCH_WITH_UNINFORMED_WALK,
-        SEARCH_WITH_INFORMED_WALK,
-        SENSE_LOCAL_RESOURCE_DENSITY
-    };
+        enum CPFAState
+        {
+            START,
+            SET_SEARCH_LOCATION,
+            TRAVEL_TO_SEARCH_SITE,
+            SEARCH_WITH_UNINFORMED_WALK,
+            SEARCH_WITH_INFORMED_WALK,
+            SENSE_LOCAL_RESOURCE_DENSITY
+        };
 
-    CPFASearchController();
+        CPFASearchController();
 
-    /** functions for basic search for testing etc. **/
-    // performs search pattern
-    geometry_msgs::Pose2D search(geometry_msgs::Pose2D currentLocation);
-    // continues search pattern after interruption
-    geometry_msgs::Pose2D continueInterruptedSearch(geometry_msgs::Pose2D currentLocation, geometry_msgs::Pose2D oldGoalLocation);
+        /** functions for CPFA search **/    
+        // CPFA state machine search; will eventually replace search defined above
+        geometry_msgs::Pose2D search(geometry_msgs::Pose2D currentLocation);
+        // continues search pattern after interruption
+        geometry_msgs::Pose2D continueInterruptedSearch(geometry_msgs::Pose2D currentLocation, geometry_msgs::Pose2D oldGoalLocation);
 
-    /** functions for CPFA search **/    
-    // CPFA state machine search; will eventually replace search defined above
-    void search();
+        void senseLocalResourceDensity();
+        void resetLocalResourceDensity();
+    private:
 
-  private:
+        // Max possible April tags a rover can see
+        const int MAX_TAGS = 10;
 
-    // CPFA state functions
-    void start();
-    void setSearchLocation();
-    void travelToSearchSite();
-    void searchWithUninformedWalk();
-    void searchWithInformedWalk();
-    void senseLocalResourceDensity();
-    void returnToNest();
-    
-    // CPFA Parameters
-    double probabilityOfSwitchingToSearching;
-    double probabilityOfReturningToNest;
-    double uninformedSearchVariation;
-    double rateOfInformedSearchDecay;
-    double rateOfSiteFidelity;
-    double rateOfLayingPheromone;
-    double rateOfPheromoneDecay;
-    
-    CPFAState searchState;
-    random_numbers::RandomNumberGenerator* rng;
-    int localResourceDensity;
-    geometry_msgs::Pose2D siteFidelityLocation;
-    std::vector<Pheromone> pheromones;
+        // CPFA state functions
+        void start();
+        void setSearchLocation();
+        void travelToSearchSite();
+        void searchWithUninformedWalk();
+        void searchWithInformedWalk();
+        void returnToNest();
+
+        // CPFA Parameters
+        double probabilityOfSwitchingToSearching;
+        double probabilityOfReturningToNest;
+        double uninformedSearchVariation;
+        double rateOfInformedSearchDecay;
+        double rateOfSiteFidelity;
+        double rateOfLayingPheromone;
+        double rateOfPheromoneDecay;
+
+        CPFAState searchState;
+        random_numbers::RandomNumberGenerator* rng;
+        int localResourceDensity;
+        geometry_msgs::Pose2D siteFidelityLocation;
+        geometry_msgs::Pose2D searchLocation;
+        std::vector<Pheromone> pheromones;
 };
 
 #endif /* CPFA_SEARCH_CONTROLLER */
