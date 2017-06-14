@@ -48,7 +48,11 @@ class CPFASearchController {
     void setState(CPFAState state);
 
     SearchLocationType getSearchLocationType();
-    void setSearchLocationType(SearchLocationType type);
+    void setSearchLocationType(SearchLocationType type);    
+
+    void senseLocalResourceDensity(int numTags);
+    void setTargetLocation(geometry_msgs::Pose2D siteLocation, geometry_msgs::Pose2D centerLocation);
+
 
 private:
 
@@ -58,7 +62,6 @@ private:
     void travelToSearchSite(geometry_msgs::Pose2D currentLocation);
     void searchWithUninformedWalk(geometry_msgs::Pose2D currentLocation);
     void searchWithInformedWalk(geometry_msgs::Pose2D currentLocation);
-    void senseLocalResourceDensity();
     void returnToNest();
 
     // CPFA Parameters

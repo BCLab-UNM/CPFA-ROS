@@ -33,26 +33,20 @@ geometry_msgs::Pose2D CPFASearchController::continueInterruptedSearch(geometry_m
 geometry_msgs::Pose2D CPFASearchController::CPFAStateMachine(geometry_msgs::Pose2D currentLocation, geometry_msgs::Pose2D centerLocation) {
     switch(searchState) {
         case START:
-            ROS_INFO_STREAM("Inside START");
             start();
         case SET_SEARCH_LOCATION:
-            ROS_INFO_STREAM("Inside SET_SEARCH_LOCATION");
             setSearchLocation(currentLocation);
             break;
         case TRAVEL_TO_SEARCH_SITE:
-            ROS_INFO_STREAM("Inside TRAVEL_TO_SEARCH_SITE");
             travelToSearchSite(currentLocation);
             break;
         case SEARCH_WITH_UNINFORMED_WALK:
-            ROS_INFO_STREAM("Inside SEARCH_WITH_UNINFORMED_WALK");
             searchWithUninformedWalk(currentLocation);
             break;
         case SEARCH_WITH_INFORMED_WALK:
-            ROS_INFO_STREAM("Inside SEARCH_WITH_INFORMED_WALK");
             searchWithInformedWalk(currentLocation);
             break;
         case SENSE_LOCAL_RESOURCE_DENSITY:
-            ROS_INFO_STREAM("Inside SENSE_LOCAL_RESOURCE_DENSITY");
             break;
             //senseLocalResourceDensity();
     }
@@ -61,34 +55,40 @@ geometry_msgs::Pose2D CPFASearchController::CPFAStateMachine(geometry_msgs::Pose
 }
 
 void CPFASearchController::start() {
-    ROS_INFO_STREAM("Inside start");
+    ROS_INFO_STREAM("Inside START");
     maxTags = 10;
-    probabilityOfSwitchingToSearching = 0.25;
+    probabilityOfSwitchingToSearching = 0.20;
     probabilityOfReturningToNest = 0.5;
     uninformedSearchVariation = 2*M_PI;
     rateOfInformedSearchDecay = exp(5);
-    rateOfSiteFidelity = 20;
-    rateOfLayingPheromone = 10;
+    rateOfSiteFidelity = 10;
+    rateOfLayingPheromone = 5;
     rateOfPheromoneDecay = exp(10);
     travelStepSize = 0.5;
     searchStepSize = 0.5;
-    minDistanceToTarget = 0.25;
-
+    minDistanceToTarget = 0.50;
 
     /* Will get from congfig file
        Need max distance from center
        maxDistanceFromNest = 6;*/
 
     searchState = SET_SEARCH_LOCATION;
+    ROS_INFO_STREAM("Inside SET_SEARCH_LOCATION");
 }
 
 void CPFASearchController::setSearchLocation(geometry_msgs::Pose2D currentLocation) {
     searchState = TRAVEL_TO_SEARCH_SITE;
+    ROS_INFO_STREAM("Inside TRAVEL_TO_SEARCH_SITE");
+
+    localResourceDensity = 0;
 
     if(searchLocationType == SITE_FIDELITY){
+        double poisson = getPoissonCDF(rateOfSiteFidelity);
+        double randomNum = rng->uniformReal(0, 1);
 
-        if(getPoissonCDF(rateOfSiteFidelity) > rng->uniformReal(0, 1)) {
+        if(poisson > randomNum) {
             // Leave targetLocation to previous block location
+            ROS_INFO_STREAM("Inside Using site fidelity, poisson: " << poisson << " random number: " << randomNum);
             return;
         } else {
             searchLocationType = PHEROMONE;
@@ -112,12 +112,15 @@ void CPFASearchController::setSearchLocation(geometry_msgs::Pose2D currentLocati
 
 void CPFASearchController::travelToSearchSite(geometry_msgs::Pose2D currentLocation) {
 
-    if(searchLocationType == SITE_FIDELITY || searchLocationType == PHEROMONE) {
 
+    if(searchLocationType == SITE_FIDELITY || searchLocationType == PHEROMONE) {        
+        ROS_INFO_STREAM("Inside currentLoctaion.x: " << currentLocation.x << " currentLocation.y: " << currentLocation.y);
+        ROS_INFO_STREAM("Inside targetLocation.x: " << targetLocation.x << " targetLocation.y: " << targetLocation.y);
         // Reached site fidelity location and switch to informed search
         if(distanceToLocation(currentLocation, targetLocation) < minDistanceToTarget) {
             informedSearchStartTime = ros::Time::now();
             searchState = SEARCH_WITH_INFORMED_WALK;
+            ROS_INFO_STREAM("Inside SEARCH_WITH_INFORMED_WALK");
         }
 
         // Heading to site fidelity, keep target location the same
@@ -125,8 +128,10 @@ void CPFASearchController::travelToSearchSite(geometry_msgs::Pose2D currentLocat
     }
 
     // searchLocationType is RANDOM
-    if(rng->uniformReal(0, 1) < probabilityOfSwitchingToSearching)
+    if(rng->uniformReal(0, 1) < probabilityOfSwitchingToSearching){
         searchState = SEARCH_WITH_UNINFORMED_WALK;
+        ROS_INFO_STREAM("Inside SEARCH_WITH_UNINFORMED_WALK");
+    }
 
     targetLocation.x = currentLocation.x + travelStepSize*cos(targetLocation.theta);
     targetLocation.y = currentLocation.y + travelStepSize*sin(targetLocation.theta);
@@ -148,7 +153,11 @@ void CPFASearchController::searchWithInformedWalk(geometry_msgs::Pose2D currentL
     targetLocation.y = currentLocation.y + searchStepSize*sin(targetLocation.theta);
 }
 
-void CPFASearchController::senseLocalResourceDensity() {
+void CPFASearchController::senseLocalResourceDensity(int numTags) {
+    if(numTags > localResourceDensity){
+        localResourceDensity = numTags;
+        ROS_INFO_STREAM("Inside local resource density: " << localResourceDensity);
+    }
 }
 
 void CPFASearchController::returnToNest() {
@@ -166,6 +175,10 @@ CPFAState CPFASearchController::getState() {
 }
 
 void CPFASearchController::setState(CPFAState state) {
+    // If true, rover failed to pickup block and is restarting search
+    if(state == SEARCH_WITH_INFORMED_WALK || state == SEARCH_WITH_UNINFORMED_WALK){
+        localResourceDensity = 0;
+    }
     searchState = state;
 }
 
@@ -197,4 +210,10 @@ double CPFASearchController::calculateInformedWalkCorrelation() {
     double searchTime = (ros::Time::now() - informedSearchStartTime).toSec();
 
     return uninformedSearchVariation + (4 * M_PI - uninformedSearchVariation) * exp(-rateOfInformedSearchDecay * searchTime);
+}
+
+void CPFASearchController::setTargetLocation(geometry_msgs::Pose2D siteLocation, geometry_msgs::Pose2D centerLocation){
+    targetLocation = siteLocation;
+    targetLocation.theta = atan2(targetLocation.y - centerLocation.y, targetLocation.x - centerLocation.x);
+    ROS_INFO_STREAM("Inside setTargetLocation  targetLocation.x: " << targetLocation.x << " targetLocation.y: " << targetLocation.y);
 }

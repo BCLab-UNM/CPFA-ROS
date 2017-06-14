@@ -477,12 +477,22 @@ void mobilityStateMachine(const ros::TimerEvent&) {
                     stateMachineState = STATE_MACHINE_TRANSFORM;
                     sendDriveCommand(0,0);
                     pickUpController.reset();
+
+                    if(searchController.getSearchLocationType() == RANDOM){
+                        searchController.setState(SEARCH_WITH_UNINFORMED_WALK);
+                        ROS_INFO_STREAM("Inside SEARCH_WITH_UNINFORMED_WALK");
+                    }else{
+                         searchController.setState(SEARCH_WITH_INFORMED_WALK);
+                         ROS_INFO_STREAM("Inside SEARCH_WITH_INFORMED_WALK");
+                    }
+
                 }
 
                 if (result.pickedUp) {
                     // Picked up block successfully. Next CPFA state will then
                     // be to return to this location using site fidelity
                     searchController.setState(SET_SEARCH_LOCATION);
+                    ROS_INFO_STREAM("Inside SET_SEARCH_LOCATION");
                     searchController.setSearchLocationType(SITE_FIDELITY);
 
                     pickUpController.reset();
@@ -568,10 +578,11 @@ void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& messag
         double countLeft = 0;
         int resourceCount = 0;
 
+
+        CPFAState state = searchController.getState();
+
         // this loop is to get the number of center tags
         for (int i = 0; i < message->detections.size(); i++) {
-            getTagPose(message->detections[i]);
-
             if (message->detections[i].id == 256) {
 
                 if(centerUpdated == false) {
@@ -591,7 +602,19 @@ void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& messag
 
                 centerSeen = true;
                 count++;
+            } else{ // not a 256 tag, so must be a zero tag
+                if(state == SEARCH_WITH_INFORMED_WALK || state == SEARCH_WITH_UNINFORMED_WALK){
+                    searchController.setState(SENSE_LOCAL_RESOURCE_DENSITY);
+                    state = SENSE_LOCAL_RESOURCE_DENSITY;
+                    ROS_INFO_STREAM("Inside SENSE_LOCAL_RESOURCE_DENSITY  " << message->detections[i].id);
+                    searchController.setTargetLocation(getTagPose(message->detections[i]), centerLocation);
+                }
             }
+            resourceCount++;
+        }
+
+        if(state == SENSE_LOCAL_RESOURCE_DENSITY){
+            searchController.senseLocalResourceDensity(resourceCount);
         }
 
         if (centerSeen && targetCollected) {
