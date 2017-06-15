@@ -41,14 +41,15 @@ geometry_msgs::Pose2D CPFASearchController::CPFAStateMachine(geometry_msgs::Pose
             travelToSearchSite(currentLocation);
             break;
         case SEARCH_WITH_UNINFORMED_WALK:
-            searchWithUninformedWalk(currentLocation);
+            searchWithUninformedWalk(currentLocation, centerLocation);
             break;
         case SEARCH_WITH_INFORMED_WALK:
-            searchWithInformedWalk(currentLocation);
+            searchWithInformedWalk(currentLocation, centerLocation);
             break;
         case SENSE_LOCAL_RESOURCE_DENSITY:
             break;
-            //senseLocalResourceDensity();
+        case RETURN_TO_NEST:
+            returnToNest(currentLocation);
     }
 
     return targetLocation; // will place into Result struct later
@@ -58,19 +59,20 @@ void CPFASearchController::start() {
     ROS_INFO_STREAM("Inside START");
     maxTags = 10;
     probabilityOfSwitchingToSearching = 0.20;
-    probabilityOfReturningToNest = 0.5;
+    probabilityOfReturningToNest = 0.3;
     uninformedSearchVariation = 2*M_PI;
     rateOfInformedSearchDecay = exp(5);
-    rateOfSiteFidelity = 10;
-    rateOfLayingPheromone = 5;
+    rateOfSiteFidelity = 0.5;
+    rateOfLayingPheromone = 2;
     rateOfPheromoneDecay = exp(10);
     travelStepSize = 0.5;
     searchStepSize = 0.5;
-    minDistanceToTarget = 0.50;
+    minDistanceToTarget = 1;
 
     /* Will get from congfig file
-       Need max distance from center
-       maxDistanceFromNest = 6;*/
+     *
+     Need max distance from center
+     maxDistanceFromNest = 6;*/
 
     searchState = SET_SEARCH_LOCATION;
     ROS_INFO_STREAM("Inside SET_SEARCH_LOCATION");
@@ -87,8 +89,9 @@ void CPFASearchController::setSearchLocation(geometry_msgs::Pose2D currentLocati
         double randomNum = rng->uniformReal(0, 1);
 
         if(poisson > randomNum) {
+            ROS_INFO_STREAM("Inside Using SITE_FIDELITY");
             // Leave targetLocation to previous block location
-            ROS_INFO_STREAM("Inside Using site fidelity, poisson: " << poisson << " random number: " << randomNum);
+            // ROS_INFO_STREAM("Inside Using site fidelity, poisson: " << poisson << " random number: " << randomNum);
             return;
         } else {
             searchLocationType = PHEROMONE;
@@ -98,12 +101,14 @@ void CPFASearchController::setSearchLocation(geometry_msgs::Pose2D currentLocati
     if(searchLocationType == PHEROMONE && pheromones.size() > 0){
 
         if(getPoissonCDF(rateOfLayingPheromone) > rng->uniformReal(0, 1)) {
+            ROS_INFO_STREAM("Inside Using PHEROMONE");
 
             return;
         }
     }
 
     searchLocationType = RANDOM;
+    ROS_INFO_STREAM("Inside Using RANDOM");
 
     // set heading for random search
     targetLocation.theta = rng->uniformReal(0, 2 * M_PI);
@@ -117,11 +122,13 @@ void CPFASearchController::travelToSearchSite(geometry_msgs::Pose2D currentLocat
         ROS_INFO_STREAM("Inside currentLoctaion.x: " << currentLocation.x << " currentLocation.y: " << currentLocation.y);
         ROS_INFO_STREAM("Inside targetLocation.x: " << targetLocation.x << " targetLocation.y: " << targetLocation.y);
         // Reached site fidelity location and switch to informed search
+
         if(distanceToLocation(currentLocation, targetLocation) < minDistanceToTarget) {
             informedSearchStartTime = ros::Time::now();
             searchState = SEARCH_WITH_INFORMED_WALK;
             ROS_INFO_STREAM("Inside SEARCH_WITH_INFORMED_WALK");
         }
+
 
         // Heading to site fidelity, keep target location the same
         return;
@@ -137,14 +144,20 @@ void CPFASearchController::travelToSearchSite(geometry_msgs::Pose2D currentLocat
     targetLocation.y = currentLocation.y + travelStepSize*sin(targetLocation.theta);
 }
 
-void CPFASearchController::searchWithUninformedWalk(geometry_msgs::Pose2D currentLocation) {
+void CPFASearchController::searchWithUninformedWalk(geometry_msgs::Pose2D currentLocation, geometry_msgs::Pose2D centerLocation) {
+    if(giveUpSearching(currentLocation, centerLocation))
+        return;
+
     double turnAngle = rng->gaussian(0, uninformedSearchVariation);
     targetLocation.theta = currentLocation.theta + turnAngle;
     targetLocation.x = currentLocation.x + searchStepSize*cos(targetLocation.theta);
     targetLocation.y = currentLocation.y + searchStepSize*sin(targetLocation.theta);
 }
 
-void CPFASearchController::searchWithInformedWalk(geometry_msgs::Pose2D currentLocation) {
+void CPFASearchController::searchWithInformedWalk(geometry_msgs::Pose2D currentLocation, geometry_msgs::Pose2D centerLocation) {
+    if(giveUpSearching(currentLocation, centerLocation)) 
+        return;
+
     double correlation = calculateInformedWalkCorrelation();
 
     double turnAngle = rng->gaussian(0, correlation);
@@ -160,12 +173,13 @@ void CPFASearchController::senseLocalResourceDensity(int numTags) {
     }
 }
 
-void CPFASearchController::returnToNest() {
-    // if (return to nest with block)
-    // BLAHBLAH
-
-    // else if (give up search) then ....
-    targetLocation.theta = rng->uniformReal(0, 2 * M_PI);
+void CPFASearchController::returnToNest(geometry_msgs::Pose2D currentLocation) {
+    ROS_INFO_STREAM("Inside returnToNest distance: " << distanceToLocation(currentLocation, targetLocation));
+    ROS_INFO_STREAM("Inside returnToNest targetLocation.x: " << targetLocation.x << " targetLocation.y: " << targetLocation.y);
+    if(distanceToLocation(currentLocation, targetLocation) < minDistanceToTarget) {
+        searchState = SET_SEARCH_LOCATION;
+        ROS_INFO_STREAM("Inside SET_SEARCH_LOCATION");
+    }
 }
 
 // Called by Mobility to determine whether Rover
@@ -213,7 +227,27 @@ double CPFASearchController::calculateInformedWalkCorrelation() {
 }
 
 void CPFASearchController::setTargetLocation(geometry_msgs::Pose2D siteLocation, geometry_msgs::Pose2D centerLocation){
-    targetLocation = siteLocation;
     targetLocation.theta = atan2(targetLocation.y - centerLocation.y, targetLocation.x - centerLocation.x);
+    targetLocation.x = siteLocation.x;
+    targetLocation.y = siteLocation.y;
+
     ROS_INFO_STREAM("Inside setTargetLocation  targetLocation.x: " << targetLocation.x << " targetLocation.y: " << targetLocation.y);
+}
+
+bool CPFASearchController::giveUpSearching(geometry_msgs::Pose2D currentLocation, geometry_msgs::Pose2D centerLocation) {
+    if(probabilityOfReturningToNest < rng->uniformReal(0, 1))  {
+        searchLocationType = PHEROMONE;
+        searchState = RETURN_TO_NEST;
+        ROS_INFO_STREAM("Inside RETURN_TO_NEST");
+
+        // Sets the target location 1 meter radially out directly from the center of the nest
+        targetLocation.theta = atan2(centerLocation.y - currentLocation.y, centerLocation.x - currentLocation.x);
+        targetLocation.x = centerLocation.x - cos(targetLocation.theta);
+        targetLocation.y = centerLocation.y - sin(targetLocation.theta);
+        ROS_INFO_STREAM("Inside give up search distance: " << distanceToLocation(currentLocation, targetLocation));
+        ROS_INFO_STREAM("Inside give up targetLocation.x: " << targetLocation.x << " targetLocation.y: " << targetLocation.y);
+        return true;
+    }  else {
+        return false;
+    }
 }

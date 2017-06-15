@@ -21,7 +21,8 @@ enum CPFAState
     TRAVEL_TO_SEARCH_SITE,
     SEARCH_WITH_UNINFORMED_WALK,
     SEARCH_WITH_INFORMED_WALK,
-    SENSE_LOCAL_RESOURCE_DENSITY
+    SENSE_LOCAL_RESOURCE_DENSITY,
+    RETURN_TO_NEST
 };
 
 enum SearchLocationType
@@ -60,9 +61,9 @@ private:
     void start();
     void setSearchLocation(geometry_msgs::Pose2D currentLocation);
     void travelToSearchSite(geometry_msgs::Pose2D currentLocation);
-    void searchWithUninformedWalk(geometry_msgs::Pose2D currentLocation);
-    void searchWithInformedWalk(geometry_msgs::Pose2D currentLocation);
-    void returnToNest();
+    void searchWithUninformedWalk(geometry_msgs::Pose2D currentLocation, geometry_msgs::Pose2D centerLocation);
+    void searchWithInformedWalk(geometry_msgs::Pose2D currentLocation, geometry_msgs::Pose2D centerLocation);
+    void returnToNest(geometry_msgs::Pose2D centerLocation);
 
     // CPFA Parameters
     double probabilityOfSwitchingToSearching;
@@ -77,6 +78,7 @@ private:
     double getPoissonCDF(double lambda);
     double distanceToLocation(geometry_msgs::Pose2D L1, geometry_msgs::Pose2D L2);
     double calculateInformedWalkCorrelation();
+    bool giveUpSearching(geometry_msgs::Pose2D currentLocation, geometry_msgs::Pose2D centerLocation);
 
     ros::Time informedSearchStartTime;
     double minDistanceToTarget;
