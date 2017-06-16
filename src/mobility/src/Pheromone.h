@@ -16,7 +16,6 @@ class Pheromone {
         Pheromone(geometry_msgs::Pose2D newLocation, std::vector<geometry_msgs::Pose2D> newTrail, ros::Time newTime, double newDecayRate);
 
         void Update(ros::Time time);
-        void Deactivate();
         bool IsActive();
         double GetWeight();
         geometry_msgs::Pose2D GetLocation();

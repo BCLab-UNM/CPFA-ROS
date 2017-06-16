@@ -170,7 +170,7 @@ void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& tagInf
 void obstacleHandler(const std_msgs::UInt8::ConstPtr& message);
 void odometryHandler(const nav_msgs::Odometry::ConstPtr& message);
 void mapHandler(const nav_msgs::Odometry::ConstPtr& message);
-void pheromoneTrailHandler(const mobility::PheromoneTrail& messsage);
+void pheromoneTrailHandler(const mobility::PheromoneTrail& message);
 void mobilityStateMachine(const ros::TimerEvent&);
 void publishStatusTimerEventHandler(const ros::TimerEvent& event);
 void targetDetectedReset(const ros::TimerEvent& event);
@@ -210,6 +210,8 @@ int main(int argc, char **argv) {
         publishedName = hostname;
         cout << "No Name Selected. Default is: " << publishedName << endl;
     }
+
+    searchController = CPFASearchController(publishedName);
 
     // NoSignalHandler so we can catch SIGINT ourselves and shutdown the node
     ros::init(argc, argv, (publishedName + "_MOBILITY"), ros::init_options::NoSigintHandler);
@@ -480,10 +482,10 @@ void mobilityStateMachine(const ros::TimerEvent&) {
 
                     if(searchController.getSearchLocationType() == RANDOM){
                         searchController.setState(SEARCH_WITH_UNINFORMED_WALK);
-                        ROS_INFO_STREAM("Inside SEARCH_WITH_UNINFORMED_WALK");
+                        ROS_INFO_STREAM(publishedName << "CPFA: SEARCH_WITH_UNINFORMED_WALK");
                     }else{
                          searchController.setState(SEARCH_WITH_INFORMED_WALK);
-                         ROS_INFO_STREAM("Inside SEARCH_WITH_INFORMED_WALK");
+                         ROS_INFO_STREAM(publishedName << "CPFA: SEARCH_WITH_INFORMED_WALK");
                     }
 
                 }
@@ -491,9 +493,20 @@ void mobilityStateMachine(const ros::TimerEvent&) {
                 if (result.pickedUp) {
                     // Picked up block successfully. Next CPFA state will then
                     // be to return to this location using site fidelity
-                    searchController.setState(SET_SEARCH_LOCATION);
-                    ROS_INFO_STREAM("Inside SET_SEARCH_LOCATION");
                     searchController.setSearchLocationType(SITE_FIDELITY);
+                    searchController.setState(SET_SEARCH_LOCATION);
+                    ROS_INFO_STREAM(publishedName << "CPFA: SET_SEARCH_LOCATION");
+
+                    // Just picked up a block, determine if we should publish
+                    // a pheromone trail
+                    if(searchController.layPheromone()) {
+                        ROS_INFO_STREAM(publishedName << "CPFA: laying a pheromone");
+                        
+                        mobility::PheromoneTrail trail;
+                        trail.waypoints.push_back(searchController.getTargetLocation());
+
+                        pheromoneTrailPublish.publish(trail);
+                    }
 
                     pickUpController.reset();
 
@@ -607,7 +620,7 @@ void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& messag
                 if(state == SEARCH_WITH_INFORMED_WALK || state == SEARCH_WITH_UNINFORMED_WALK){
                     searchController.setState(SENSE_LOCAL_RESOURCE_DENSITY);
                     state = SENSE_LOCAL_RESOURCE_DENSITY;
-                    ROS_INFO_STREAM("Inside SENSE_LOCAL_RESOURCE_DENSITY  " << message->detections[i].id);
+                    ROS_INFO_STREAM(publishedName << "CPFA: SENSE_LOCAL_RESOURCE_DENSITY");
                     searchController.setTargetLocation(getTagPose(message->detections[i]), centerLocation);
                 }
             }
@@ -644,7 +657,7 @@ void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& messag
             }
 
             // continues an interrupted search
-            goalLocation = searchController.continueInterruptedSearch(currentLocation, goalLocation);
+            goalLocation = searchController.continueInterruptedSearch(currentLocation, goalLocation, centerLocation);
 
             targetDetected = false;
             pickUpController.reset();
@@ -699,7 +712,7 @@ void obstacleHandler(const std_msgs::UInt8::ConstPtr& message) {
         }
 
         // continues an interrupted search
-        goalLocation = searchController.continueInterruptedSearch(currentLocation, goalLocation);
+        goalLocation = searchController.continueInterruptedSearch(currentLocation, goalLocation, centerLocation);
 
         // switch to transform state to trigger collision avoidance
         stateMachineState = STATE_MACHINE_ROTATE;
@@ -747,7 +760,8 @@ void joyCmdHandler(const sensor_msgs::Joy::ConstPtr& message) {
     }
 }
 
-void pheromoneTrailHandler(const mobility::PheromoneTrail& messsage) {
+void pheromoneTrailHandler(const mobility::PheromoneTrail& message) {
+    searchController.insertPheromone(message.waypoints);
     return;
 }
 

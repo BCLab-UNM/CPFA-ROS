@@ -15,7 +15,7 @@ Pheromone::Pheromone(geometry_msgs::Pose2D newLocation, std::vector<geometry_msg
 {
     /* required initializations */
 	location    = newLocation;
-  trail       = newTrail;
+    trail       = newTrail;
 	lastUpdated = newTime;
 	decayRate   = newDecayRate;
 
@@ -32,13 +32,6 @@ void Pheromone::Update(ros::Time time) {
     /* pheromones experience exponential decay with time */
     weight *= exp(-decayRate * (time.toSec() - lastUpdated.toSec()));
     lastUpdated = time;
-}
-
-/*****
- * Turns off a pheromone and makes it inactive.
- *****/
-void Pheromone::Deactivate() {
-    weight = 0.0;
 }
 
 /*****
