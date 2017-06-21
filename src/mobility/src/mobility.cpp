@@ -235,14 +235,13 @@ int main(int argc, char **argv) {
     infoLogPublisher = mNH.advertise<std_msgs::String>("/infoLog", 1, true);
     driveControlPublish = mNH.advertise<geometry_msgs::Twist>((publishedName + "/driveControl"), 10);
     heartbeatPublisher = mNH.advertise<std_msgs::String>((publishedName + "/mobility/heartbeat"), 1, true);
+    pheromoneTrailPublish = mNH.advertise<mobility::PheromoneTrail>("/pheromones", 10, true);
+    transformPublish = mNH.advertise<geometry_msgs::PoseStamped>("/transformedPose", 10, true);
 
     publish_status_timer = mNH.createTimer(ros::Duration(status_publish_interval), publishStatusTimerEventHandler);
     stateMachineTimer = mNH.createTimer(ros::Duration(mobilityLoopTimeStep), mobilityStateMachine);
     targetDetectedTimer = mNH.createTimer(ros::Duration(0), targetDetectedReset, true);
-
     publish_heartbeat_timer = mNH.createTimer(ros::Duration(heartbeat_publish_interval), publishHeartBeatTimerEventHandler);
-    pheromoneTrailPublish = mNH.advertise<mobility::PheromoneTrail>("/pheromones", 10, true);
-    transformPublish = mNH.advertise<geometry_msgs::PoseStamped>("/transformedPose", 10, true);
 
     tfListener = new tf::TransformListener();
     std_msgs::String msg;
@@ -503,6 +502,12 @@ void mobilityStateMachine(const ros::TimerEvent&) {
                         ROS_INFO_STREAM(publishedName << "CPFA: laying a pheromone");
                         
                         mobility::PheromoneTrail trail;
+                        geometry_msgs::Pose2D pheromoneLocation = searchController.getTargetLocation();
+
+                        // Move pheromoneLocation to coordinate frame relative to the current center location using dead reckoning
+                        pheromoneLocation.x -= centerLocation.x;
+                        pheromoneLocation.y -= centerLocation.y;
+
                         trail.waypoints.push_back(searchController.getTargetLocation());
 
                         pheromoneTrailPublish.publish(trail);
@@ -761,6 +766,12 @@ void joyCmdHandler(const sensor_msgs::Joy::ConstPtr& message) {
 }
 
 void pheromoneTrailHandler(const mobility::PheromoneTrail& message) {
+    mobility::PheromoneTrail trail = message;
+
+    // Adjust pheromone location to account for center location
+    trail.waypoints[0].x += centerLocation.x;
+    trail.waypoints[0].y += centerLocation.y;
+
     searchController.insertPheromone(message.waypoints);
     return;
 }
