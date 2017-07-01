@@ -702,7 +702,7 @@ void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& messag
     // with safety timer at greater than 5 seconds.
     PickUpResult result;
 
-    if (message->detections.size() > 0 && !targetCollected && timerTimeElapsed > 5) {
+    if (message->detections.size() > 0 && !targetCollected && timerTimeElapsed > 5 && state != SET_SEARCH_LOCATION) {
         targetDetected = true;
 
         // pickup state so target handler can take over driving.

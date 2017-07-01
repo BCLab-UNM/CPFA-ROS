@@ -171,12 +171,12 @@ void CPFASearchController::start() {
     ROS_INFO_STREAM(roverName << "CPFA: START");
 
     // CPFA parameters
-    probabilityOfSwitchingToSearching = 0.10;
-    probabilityOfReturningToNest = 0.0;
-    uninformedSearchVariation = M_PI_2;
-    rateOfInformedSearchDecay = exp(5);
-    rateOfSiteFidelity = 0.5;
-    rateOfLayingPheromone = 8;
+    probabilityOfSwitchingToSearching = 0.10; // Increasing grows the probability
+    probabilityOfReturningToNest = 0.0; // Increasing grows the probability
+    uninformedSearchVariation = M_PI_2; // The change in heading using uninformed search
+    rateOfInformedSearchDecay = 1.0/7.0; // Inverse of the expected time to find a resource
+    rateOfSiteFidelity = 0.5; // Lower grows the probability
+    rateOfLayingPheromone = 8; // Lower grows the probability
     rateOfPheromoneDecay = exp(10);
 
     searchState = SET_SEARCH_LOCATION;
