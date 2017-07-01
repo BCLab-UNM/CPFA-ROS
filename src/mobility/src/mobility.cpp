@@ -17,6 +17,7 @@
 #include <geometry_msgs/Twist.h>
 #include <nav_msgs/Odometry.h>
 #include <apriltags_ros/AprilTagDetectionArray.h>
+#include "mobility/Rover.h"
 #include "mobility/PheromoneTrail.h"
 
 // Include Controllers
@@ -28,6 +29,10 @@
 // properly in response to "rosnode kill"
 #include <ros/ros.h>
 #include <signal.h>
+
+// Standard Libraries
+#include <utility>
+#include <map>
 
 
 using namespace std;
@@ -61,8 +66,13 @@ geometry_msgs::Pose2D goalLocation;
 geometry_msgs::Pose2D centerLocation;
 geometry_msgs::Pose2D centerLocationMap;
 geometry_msgs::Pose2D centerLocationOdom;
+geometry_msgs::Pose2D previousCenterLocation;
+
+// Stores information on all other rovers
+map<string, mobility::Rover> rovers;
 
 bool centerUpdated = false;
+int totalTimeSearching = 0;
 int currentMode = 0;
 float mobilityLoopTimeStep = 0.1; // time between the mobility loop calls
 float status_publish_interval = 1;
@@ -131,6 +141,7 @@ ros::Publisher infoLogPublisher;
 ros::Publisher driveControlPublish;
 ros::Publisher heartbeatPublisher;
 ros::Publisher pheromoneTrailPublish;
+ros::Publisher roverPublisher;
 ros::Publisher transformPublish;;
 
 // Subscribers
@@ -141,6 +152,7 @@ ros::Subscriber obstacleSubscriber;
 ros::Subscriber odometrySubscriber;
 ros::Subscriber mapSubscriber;
 ros::Subscriber pheromoneTrailSubscriber;
+ros::Subscriber roverSubscriber;;
 
 
 // Timers
@@ -148,13 +160,14 @@ ros::Timer stateMachineTimer;
 ros::Timer publish_status_timer;
 ros::Timer targetDetectedTimer;
 ros::Timer publish_heartbeat_timer;
+ros::Timer roverPublishTimer;
 
 // records time for delays in sequanced actions, 1 second resolution.
 time_t timerStartTime;
 
 // An initial delay to allow the rover to gather enough position data to 
 // average its location.
-unsigned int startDelayInSeconds = 1;
+unsigned int startDelayInSeconds = 10;
 float timerTimeElapsed = 0;
 
 //Transforms
@@ -170,10 +183,12 @@ void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& tagInf
 void obstacleHandler(const std_msgs::UInt8::ConstPtr& message);
 void odometryHandler(const nav_msgs::Odometry::ConstPtr& message);
 void mapHandler(const nav_msgs::Odometry::ConstPtr& message);
+void roverHandler(const mobility::Rover& message);
 void pheromoneTrailHandler(const mobility::PheromoneTrail& message);
 void mobilityStateMachine(const ros::TimerEvent&);
 void publishStatusTimerEventHandler(const ros::TimerEvent& event);
 void targetDetectedReset(const ros::TimerEvent& event);
+void publishRoverTimerEventHandler(const ros::TimerEvent&);
 void publishHeartBeatTimerEventHandler(const ros::TimerEvent& event);
 
 int main(int argc, char **argv) {
@@ -191,8 +206,6 @@ int main(int argc, char **argv) {
     //goalLocation.x = 0.5 * cos(goalLocation.theta+M_PI);
     //goalLocation.y = 0.5 * sin(goalLocation.theta+M_PI);
 
-    centerLocation.x = cos(currentLocation.theta);
-    centerLocation.y = sin(currentLocation.theta);
     centerLocationOdom.x = 0;
     centerLocationOdom.y = 0;
 
@@ -227,6 +240,7 @@ int main(int argc, char **argv) {
     odometrySubscriber = mNH.subscribe((publishedName + "/odom/filtered"), 10, odometryHandler);
     mapSubscriber = mNH.subscribe((publishedName + "/odom/ekf"), 10, mapHandler);
     pheromoneTrailSubscriber = mNH.subscribe("/pheromones", 10, pheromoneTrailHandler);
+    roverSubscriber = mNH.subscribe("/rovers", 10, roverHandler);
 
     status_publisher = mNH.advertise<std_msgs::String>((publishedName + "/status"), 1, true);
     stateMachinePublish = mNH.advertise<std_msgs::String>((publishedName + "/state_machine"), 1, true);
@@ -236,11 +250,13 @@ int main(int argc, char **argv) {
     driveControlPublish = mNH.advertise<geometry_msgs::Twist>((publishedName + "/driveControl"), 10);
     heartbeatPublisher = mNH.advertise<std_msgs::String>((publishedName + "/mobility/heartbeat"), 1, true);
     pheromoneTrailPublish = mNH.advertise<mobility::PheromoneTrail>("/pheromones", 10, true);
+    roverPublisher = mNH.advertise<mobility::Rover>("/rovers", 10, true);
     transformPublish = mNH.advertise<geometry_msgs::PoseStamped>("/transformedPose", 10, true);
 
     publish_status_timer = mNH.createTimer(ros::Duration(status_publish_interval), publishStatusTimerEventHandler);
     stateMachineTimer = mNH.createTimer(ros::Duration(mobilityLoopTimeStep), mobilityStateMachine);
     targetDetectedTimer = mNH.createTimer(ros::Duration(0), targetDetectedReset, true);
+    roverPublishTimer = mNH.createTimer(ros::Duration(1), publishRoverTimerEventHandler);
     publish_heartbeat_timer = mNH.createTimer(ros::Duration(heartbeat_publish_interval), publishHeartBeatTimerEventHandler);
 
     tfListener = new tf::TransformListener();
@@ -267,7 +283,7 @@ int main(int argc, char **argv) {
 // controllers in the abridge package.
 void mobilityStateMachine(const ros::TimerEvent&) {
 
-    if(distanceToCenter() > 2) {
+    if(distanceToCenter() > 0.75) {
         centerUpdated = false;
     }
 
@@ -289,7 +305,14 @@ void mobilityStateMachine(const ros::TimerEvent&) {
         // init code goes here. (code that runs only once at start of
         // auto mode but wont work in main goes here)
         if (!init) {
+            centerLocation.x = cos(currentLocation.theta);
+            centerLocation.y = sin(currentLocation.theta);
+
             if (timerTimeElapsed > startDelayInSeconds) {
+                // Set arena size depending on the number of rovers in arena
+                int numRovers = rovers.size();
+                searchController.setArenaSize(numRovers);
+
                 // Set the location of the center circle location in the map
                 // frame based upon our current average location on the map.
                 centerLocationMap.x = currentLocationAverage.x;
@@ -520,11 +543,11 @@ void mobilityStateMachine(const ros::TimerEvent&) {
                     result.pickedUp = false;
                     stateMachineState = STATE_MACHINE_ROTATE;
 
-                    goalLocation.theta = atan2(centerLocationOdom.y - currentLocation.y, centerLocationOdom.x - currentLocation.x);
+                    goalLocation.theta = atan2(centerLocation.y - currentLocation.y, centerLocation.x - currentLocation.x);
 
                     // set center as goal position
-                    goalLocation.x = centerLocationOdom.x;
-                    goalLocation.y = centerLocationOdom.y;
+                    goalLocation.x = centerLocation.x;
+                    goalLocation.y = centerLocation.y;
 
                     // lower wrist to avoid ultrasound sensors
                     std_msgs::Float32 angle;
@@ -602,10 +625,12 @@ void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& messag
 
         // this loop is to get the number of center tags
         for (int i = 0; i < message->detections.size(); i++) {
+
             if (message->detections[i].id == 256) {
 
-                if(centerUpdated == false) {
+                if(!centerUpdated) {
                     centerLocation = getTagPose(message->detections[i]);
+                    ROS_INFO_STREAM(publishedName << "CPFA: CenterLocation Updated x: " << centerLocation.x << " y: " << centerLocation.y);
                     centerUpdated = true;
                 }
 
@@ -621,15 +646,16 @@ void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& messag
 
                 centerSeen = true;
                 count++;
-            } else{ // not a 256 tag, so must be a zero tag
+            } else if (distanceToCenter()> 0.5) { 
+                // If a block is seen away from the center 
                 if(state == SEARCH_WITH_INFORMED_WALK || state == SEARCH_WITH_UNINFORMED_WALK){
                     searchController.setState(SENSE_LOCAL_RESOURCE_DENSITY);
                     state = SENSE_LOCAL_RESOURCE_DENSITY;
                     ROS_INFO_STREAM(publishedName << "CPFA: SENSE_LOCAL_RESOURCE_DENSITY");
                     searchController.setTargetLocation(getTagPose(message->detections[i]), centerLocation);
                 }
+                resourceCount++;
             }
-            resourceCount++;
         }
 
         if(state == SENSE_LOCAL_RESOURCE_DENSITY){
@@ -713,7 +739,7 @@ void obstacleHandler(const std_msgs::UInt8::ConstPtr& message) {
         // obstacle in front or on left side
         else if (message->data == 2) {
             // select new heading 0.2 radians to the right
-            goalLocation.theta = currentLocation.theta + 0.6;
+            goalLocation.theta = currentLocation.theta - 0.6;
         }
 
         // continues an interrupted search
@@ -759,6 +785,14 @@ void mapHandler(const nav_msgs::Odometry::ConstPtr& message) {
     currentLocationMap.theta = yaw;
 }
 
+void roverHandler(const mobility::Rover& msg) {
+    rovers[msg.name] = msg;
+
+    // Rover location should be in same frame as this rover
+    rovers[msg.name].currentLocation.x += centerLocation.x;
+    rovers[msg.name].currentLocation.y += centerLocation.y;
+}
+
 void joyCmdHandler(const sensor_msgs::Joy::ConstPtr& message) {
     if (currentMode == 0 || currentMode == 1) {
         sendDriveCommand(abs(message->axes[4]) >= 0.1 ? message->axes[4] : 0, abs(message->axes[3]) >= 0.1 ? message->axes[3] : 0);
@@ -780,6 +814,21 @@ void publishStatusTimerEventHandler(const ros::TimerEvent&) {
     std_msgs::String msg;
     msg.data = "online";
     status_publisher.publish(msg);
+}
+
+void publishRoverTimerEventHandler(const ros::TimerEvent&) {
+    // Contains information on this rover
+    mobility::Rover msg;
+
+    // Rover name
+    msg.name = publishedName;
+
+    // Relative pose to center 
+    msg.currentLocation.x = currentLocation.x - centerLocation.x;
+    msg.currentLocation.y = currentLocation. y - centerLocation.y;
+    msg.currentLocation.theta = currentLocation.theta;
+
+    roverPublisher.publish(msg);
 }
 
 

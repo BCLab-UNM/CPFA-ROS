@@ -4,6 +4,7 @@
 #include <geometry_msgs/Pose2D.h>
 #include <random_numbers/random_numbers.h>
 #include <vector>
+#include "mobility/Rover.h"
 #include "Pheromone.h"
 
 /**
@@ -84,6 +85,7 @@ public:
     geometry_msgs::Pose2D getTargetLocation();
     void setTargetLocation(geometry_msgs::Pose2D siteLocation, geometry_msgs::Pose2D centerLocation);
 
+    void setArenaSize(int numRovers);
 
 private:
 
@@ -158,6 +160,7 @@ private:
     CPFAState searchState;
     SearchLocationType searchLocationType;
 
+    int arenaSize;
     int localResourceDensity; // An estimate of the density of the resources in the local region.
     double minDistanceToTarget; // Threshold to determine whether rover has reached a target location
     double travelStepSize; // Step size used for the rover travel state

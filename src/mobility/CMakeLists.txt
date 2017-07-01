@@ -8,11 +8,13 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   random_numbers
   tf
+  message_generation
 )
 
 add_message_files(
     FILES
     PheromoneTrail.msg
+    Rover.msg
 )
 
 generate_messages(
