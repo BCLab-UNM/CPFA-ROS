@@ -531,7 +531,7 @@ void mobilityStateMachine(const ros::TimerEvent&) {
                         pheromoneLocation.x -= centerLocation.x;
                         pheromoneLocation.y -= centerLocation.y;
 
-                        trail.waypoints.push_back(searchController.getTargetLocation());
+                        trail.waypoints.push_back(pheromoneLocation);
 
                         pheromoneTrailPublish.publish(trail);
                     }
@@ -603,9 +603,6 @@ void sendDriveCommand(double linearVel, double angularError)
 
 void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& message) {
     CPFAState state = searchController.getState();
-
-    // Rover needs to ignore blocks
-    if(state == TRAVEL_TO_SEARCH_SITE || state == RETURN_TO_NEST) return;
 
     // If in manual mode do not try to automatically pick up the target
     if (currentMode == 1 || currentMode == 0) return;
@@ -698,11 +695,14 @@ void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& messag
     }
     // end found target and looking for center tags
 
+    // Rover needs to ignore blocks
+    if(state == TRAVEL_TO_SEARCH_SITE || state == RETURN_TO_NEST || state == SET_SEARCH_LOCATION) return;
+
     // found a target april tag and looking for april cubes;
     // with safety timer at greater than 5 seconds.
     PickUpResult result;
 
-    if (message->detections.size() > 0 && !targetCollected && timerTimeElapsed > 5 && state != SET_SEARCH_LOCATION) {
+    if (message->detections.size() > 0 && !targetCollected && timerTimeElapsed > 5) {
         targetDetected = true;
 
         // pickup state so target handler can take over driving.
@@ -806,7 +806,7 @@ void pheromoneTrailHandler(const mobility::PheromoneTrail& message) {
     trail.waypoints[0].x += centerLocation.x;
     trail.waypoints[0].y += centerLocation.y;
 
-    searchController.insertPheromone(message.waypoints);
+    searchController.insertPheromone(trail.waypoints);
     return;
 }
 
