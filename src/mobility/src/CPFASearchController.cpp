@@ -138,6 +138,19 @@ CPFAState CPFASearchController::getState() {
 }
 
 void CPFASearchController::setState(CPFAState state) {
+    if(state == SET_SEARCH_LOCATION)
+        ROS_INFO_STREAM(roverName << "CPFA: SET_SEARCH_LOCATION");
+    else if(state == TRAVEL_TO_SEARCH_SITE)
+        ROS_INFO_STREAM(roverName << "CPFA: TRAVEL_TO_SEARCH_SITE");
+    else if(state == SEARCH_WITH_UNINFORMED_WALK)
+        ROS_INFO_STREAM(roverName << "CPFA: SEARCH_WITH_UNINFORMED_WALK");
+    else if(state == SEARCH_WITH_INFORMED_WALK)
+        ROS_INFO_STREAM(roverName << "CPFA: SEARCH_WITH_INFORMED_WALK");
+    else if(state == SENSE_LOCAL_RESOURCE_DENSITY)
+        ROS_INFO_STREAM(roverName << "CPFA: SENSE_LOCAL_RESOURCE_DENSITY");
+    else
+        ROS_INFO_STREAM(roverName << "CPFA: RETURN_TO_NEST");
+
     // If true, rover failed to pickup block and is restarting search
     if(state == SEARCH_WITH_INFORMED_WALK || state == SEARCH_WITH_UNINFORMED_WALK){
         localResourceDensity = 0;
@@ -152,6 +165,13 @@ SearchLocationType CPFASearchController::getSearchLocationType() {
 }
 
 void CPFASearchController::setSearchLocationType(SearchLocationType type) {
+    if(type == SITE_FIDELITY)
+        ROS_INFO_STREAM(roverName << "CPFA: searchLocationType SITE_FIDELITY");
+    else if(type == PHEROMONE)
+        ROS_INFO_STREAM(roverName << "CPFA: searchLocationType PHEROMONE");
+    else
+        ROS_INFO_STREAM(roverName << "CPFA: searchLocationType RANDOM");
+
     searchLocationType = type;
 }
 
@@ -178,9 +198,9 @@ void CPFASearchController::start() {
     probabilityOfReturningToNest = 0.0; // Increasing grows the probability
     uninformedSearchVariation = 0.4; // The change in heading using uninformed search
     rateOfInformedSearchDecay = 1.0/6.0; // Inverse of the expected time to find a resource
-    rateOfSiteFidelity = 0.8; // Lower grows the probability
+    rateOfSiteFidelity = 0.3; // Lower grows the probability
     rateOfLayingPheromone = 7; // Lower grows the probability
-    rateOfPheromoneDecay = 1.0/30.0; // Lower means pheromone trail lasts longer
+    rateOfPheromoneDecay = 1.0/40.0; // Lower means pheromone trail lasts longer
 
     searchState = SET_SEARCH_LOCATION;
     ROS_INFO_STREAM(roverName << "CPFA: SET_SEARCH_LOCATION");
@@ -212,7 +232,6 @@ void CPFASearchController::setSearchLocation(geometry_msgs::Pose2D currentLocati
     if(searchLocationType == PHEROMONE && pheromones.size() > 0){
         ROS_INFO_STREAM(roverName << "CPFA: SearchLocationType PHEROMONE pheromones.size(): " << pheromones.size());
         setPheromone(centerLocation);
-        ROS_INFO_STREAM(roverName << "CPFA: pheromoneLocation x: " << targetLocation.x << " y: " << targetLocation.y);;
 
         // Adjust heading so rover headers to target
         targetLocation.theta = atan2(targetLocation.y - currentLocation.y, targetLocation.x - currentLocation.x);
@@ -222,30 +241,31 @@ void CPFASearchController::setSearchLocation(geometry_msgs::Pose2D currentLocati
     searchLocationType = RANDOM;
     ROS_INFO_STREAM(roverName << "CPFA: SearchLocationType RANDOM");
 
-    // Direction of center relative to rover. Add buffer for angle ranges.
-    float centerLocationDirection = atan2(centerLocation.y - currentLocation.y, centerLocation.x - currentLocation.x) + 4 * M_PI;
+    //// Direction of center relative to rover. Add buffer for angle ranges.
+    //float centerLocationDirection = atan2(centerLocation.y - currentLocation.y, centerLocation.x - currentLocation.x) + 4 * M_PI;
 
-    float distanceToCenter = distanceToLocation(currentLocation, centerLocation);
+    //float distanceToCenter = distanceToLocation(currentLocation, centerLocation);
 
-    // The angle range relative to the center for the rover to ignore on one side
-    float angleRange = atan2(1, distanceToCenter);
+    //// The angle range relative to the center for the rover to ignore on one side
+    //float angleRange = atan2(1, distanceToCenter);
     
-    float upperBound = centerLocationDirection - angleRange + 2 * M_PI;
-    float lowerBound = centerLocationDirection + angleRange;
+    //float upperBound = centerLocationDirection - angleRange + 2 * M_PI;
+    //float lowerBound = centerLocationDirection + angleRange;
 
-    // set heading for random search
-    targetLocation.theta = rng->uniformReal(lowerBound, upperBound);
+    //// set heading for random search
+    //targetLocation.theta = rng->uniformReal(lowerBound, upperBound);
 
-    while(upperBound > 2 * M_PI) {
-        upperBound -= 2 * M_PI;
-    }
+    //while(upperBound > 2 * M_PI) {
+        //upperBound -= 2 * M_PI;
+    //}
 
-    while(lowerBound > 2 * M_PI) {
-        lowerBound -= 2 * M_PI;
-    }
+    //while(lowerBound > 2 * M_PI) {
+        //lowerBound -= 2 * M_PI;
+    //}
 
-    ROS_INFO_STREAM(roverName << "CPFA: lowerBound: " << lowerBound << " upperBound: " << upperBound);
+    //ROS_INFO_STREAM(roverName << "CPFA: lowerBound: " << lowerBound << " upperBound: " << upperBound);
 
+    targetLocation.theta = rng->uniformReal(0, 2 * M_PI);
     travelToSearchSite(currentLocation);
 }
 

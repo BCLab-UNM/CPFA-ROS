@@ -504,10 +504,8 @@ void mobilityStateMachine(const ros::TimerEvent&) {
 
                     if(searchController.getSearchLocationType() == RANDOM){
                         searchController.setState(SEARCH_WITH_UNINFORMED_WALK);
-                        ROS_INFO_STREAM(publishedName << "CPFA: SEARCH_WITH_UNINFORMED_WALK");
                     }else{
                          searchController.setState(SEARCH_WITH_INFORMED_WALK);
-                         ROS_INFO_STREAM(publishedName << "CPFA: SEARCH_WITH_INFORMED_WALK");
                     }
 
                     goalLocation = searchController.CPFAStateMachine(currentLocation, centerLocation);
@@ -519,12 +517,10 @@ void mobilityStateMachine(const ros::TimerEvent&) {
                     // be to return to this location using site fidelity
                     searchController.setSearchLocationType(SITE_FIDELITY);
                     searchController.setState(SET_SEARCH_LOCATION);
-                    ROS_INFO_STREAM(publishedName << "CPFA: SET_SEARCH_LOCATION");
 
                     // Just picked up a block, determine if we should publish
                     // a pheromone trail
-                    if(searchController.layPheromone()) {
-                        ROS_INFO_STREAM(publishedName << "CPFA: laying a pheromone");
+                    if(searchController.layPheromone() && searchController.getState() != SET_SEARCH_LOCATION) {
                         
                         mobility::PheromoneTrail trail;
                         geometry_msgs::Pose2D pheromoneLocation = searchController.getTargetLocation();
@@ -645,14 +641,16 @@ void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& messag
 
                 centerSeen = true;
                 count++;
-            } else if (distanceToCenter()> 1) { 
+            } else if (!targetCollected && distanceToCenter() > sqrt(2)) { 
                 // If a block is seen away from the center 
-                if(state == SEARCH_WITH_INFORMED_WALK || state == SEARCH_WITH_UNINFORMED_WALK || state == TRAVEL_TO_SEARCH_SITE && distanceToCenter() > 1){
+                if(state == SEARCH_WITH_INFORMED_WALK || state == SEARCH_WITH_UNINFORMED_WALK){
+                    searchController.setSearchLocationType(SITE_FIDELITY);
                     searchController.setState(SENSE_LOCAL_RESOURCE_DENSITY);
                     state = SENSE_LOCAL_RESOURCE_DENSITY;
-                    ROS_INFO_STREAM(publishedName << "CPFA: SENSE_LOCAL_RESOURCE_DENSITY");
-                    searchController.setTargetLocation(getTagPose(message->detections[i]), centerLocation);
-                    searchController.setSearchLocationType(SITE_FIDELITY);
+
+                    geometry_msgs::Pose2D tagLocation = getTagPose(message->detections[i]);
+                    searchController.setTargetLocation(tagLocation, centerLocation);
+                    goalLocation = tagLocation;
                 }
                 resourceCount++;
             }
@@ -699,8 +697,7 @@ void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& messag
     // end found target and looking for center tags
 
     // Rover needs to ignore blocks
-    if(state == SET_SEARCH_LOCATION || distanceToCenter() < 1) return;
-    //if(state == TRAVEL_TO_SEARCH_SITE || state == RETURN_TO_NEST || state == SET_SEARCH_LOCATION) return;
+    if(targetCollected || distanceToCenter() < sqrt(2) || state == TRAVEL_TO_SEARCH_SITE || state == RETURN_TO_NEST || state == SET_SEARCH_LOCATION) return;
 
     // found a target april tag and looking for april cubes;
     // with safety timer at greater than 5 seconds.
