@@ -1,3 +1,3 @@
 string name
 geometry_msgs/Pose2D currentLocation
-bool driving_towards_center
+bool queuedForCenter

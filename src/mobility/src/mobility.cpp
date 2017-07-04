@@ -33,6 +33,7 @@
 // Standard Libraries
 #include <utility>
 #include <map>
+#include <queue>
 
 
 using namespace std;
@@ -70,6 +71,10 @@ geometry_msgs::Pose2D previousCenterLocation;
 
 // Stores information on all other rovers
 map<string, mobility::Rover> rovers;
+
+queue<string> centerQueue;
+bool frontOfLine = false;
+bool queuedForCenter = false;
 
 bool centerUpdated = false;
 int totalTimeSearching = 0;
@@ -192,7 +197,6 @@ void publishRoverTimerEventHandler(const ros::TimerEvent&);
 void publishHeartBeatTimerEventHandler(const ros::TimerEvent& event);
 
 int main(int argc, char **argv) {
-
     gethostname(host, sizeof (host));
     string hostname(host);
 
@@ -352,6 +356,24 @@ void mobilityStateMachine(const ros::TimerEvent&) {
 
             // If returning with a target
             if (targetCollected && !avoidingObstacle) {
+
+                if(distanceToCenter() <= 1) {
+
+                    if(!queuedForCenter) {
+                        ROS_INFO_STREAM(publishedName << "CPFA: Enterting centerQueue");
+                        queuedForCenter = true;
+                    }
+
+                    int size = centerQueue.size();
+                    if(queuedForCenter && (size == 0 || size > 0 && centerQueue.front() != publishedName)) {
+                        ROS_INFO_STREAM(publishedName << "CPFA: Waiting for center to open...");
+                        sendDriveCommand(0, 0);
+                        break;
+                    } else if(!frontOfLine) {
+                        frontOfLine = true;
+                        ROS_INFO_STREAM(publishedName << "CPFA: Front of the line! Dropping off block...");
+                    }
+                }
                 // calculate the euclidean distance between
                 // centerLocation and currentLocation
                 dropOffController.setCenterDist(hypot(centerLocation.x - currentLocation.x, centerLocation.y - currentLocation.y));
@@ -389,6 +411,10 @@ void mobilityStateMachine(const ros::TimerEvent&) {
                     centerLocationOdom = currentLocation;
 
                     dropOffController.reset();
+
+                    ROS_INFO_STREAM(publishedName << "CPFA: Dropped off block! Leaving the queue...");
+                    frontOfLine = false;
+                    queuedForCenter = false;
                 } else if (result.goalDriving && timerTimeElapsed >= 5 ) {
                     goalLocation = result.centerGoal;
                     stateMachineState = STATE_MACHINE_ROTATE;
@@ -787,11 +813,26 @@ void mapHandler(const nav_msgs::Odometry::ConstPtr& message) {
 }
 
 void roverHandler(const mobility::Rover& msg) {
+    mobility::Rover prevMsg = rovers[msg.name];
     rovers[msg.name] = msg;
 
     // Rover location should be in same frame as this rover
     rovers[msg.name].currentLocation.x += centerLocation.x;
     rovers[msg.name].currentLocation.y += centerLocation.y;
+
+    // Center queue status has changes for this rover
+    if(msg.queuedForCenter != prevMsg.queuedForCenter) {
+
+        if(msg.queuedForCenter) {
+            // Rover is now waiting
+            ROS_INFO_STREAM(publishedName << "CPFA: Entered " << msg.name << " into centerQueue");
+            centerQueue.push(msg.name);
+        } else {
+            // Rover has just finished dropped off its block
+            ROS_INFO_STREAM(publishedName << "CPFA: Received " << msg.name << " popping!");
+            centerQueue.pop();
+        }
+    }
 }
 
 void joyCmdHandler(const sensor_msgs::Joy::ConstPtr& message) {
@@ -828,6 +869,8 @@ void publishRoverTimerEventHandler(const ros::TimerEvent&) {
     msg.currentLocation.x = currentLocation.x - centerLocation.x;
     msg.currentLocation.y = currentLocation. y - centerLocation.y;
     msg.currentLocation.theta = currentLocation.theta;
+
+    msg.queuedForCenter = queuedForCenter;
 
     roverPublisher.publish(msg);
 }
