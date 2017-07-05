@@ -199,7 +199,7 @@ void CPFASearchController::start() {
     uninformedSearchVariation = 0.4; // The change in heading using uninformed search
     rateOfInformedSearchDecay = 1.0/6.0; // Inverse of the expected time to find a resource
     rateOfSiteFidelity = 0.3; // Lower grows the probability
-    rateOfLayingPheromone = 7; // Lower grows the probability
+    rateOfLayingPheromone = 5; // Lower grows the probability
     rateOfPheromoneDecay = 1.0/40.0; // Lower means pheromone trail lasts longer
 
     searchState = SET_SEARCH_LOCATION;
