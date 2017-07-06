@@ -200,7 +200,7 @@ void CPFASearchController::start() {
     rateOfInformedSearchDecay = 1.0/6.0; // Inverse of the expected time to find a resource
     rateOfSiteFidelity = 0.3; // Lower grows the probability
     rateOfLayingPheromone = 5; // Lower grows the probability
-    rateOfPheromoneDecay = 1.0/40.0; // Lower means pheromone trail lasts longer
+    rateOfPheromoneDecay = 1.0/40.0; // Inverse of expected pheromone time
 
     searchState = SET_SEARCH_LOCATION;
     ROS_INFO_STREAM(roverName << "CPFA: SET_SEARCH_LOCATION");
@@ -241,30 +241,6 @@ void CPFASearchController::setSearchLocation(geometry_msgs::Pose2D currentLocati
     searchLocationType = RANDOM;
     ROS_INFO_STREAM(roverName << "CPFA: SearchLocationType RANDOM");
 
-    //// Direction of center relative to rover. Add buffer for angle ranges.
-    //float centerLocationDirection = atan2(centerLocation.y - currentLocation.y, centerLocation.x - currentLocation.x) + 4 * M_PI;
-
-    //float distanceToCenter = distanceToLocation(currentLocation, centerLocation);
-
-    //// The angle range relative to the center for the rover to ignore on one side
-    //float angleRange = atan2(1, distanceToCenter);
-    
-    //float upperBound = centerLocationDirection - angleRange + 2 * M_PI;
-    //float lowerBound = centerLocationDirection + angleRange;
-
-    //// set heading for random search
-    //targetLocation.theta = rng->uniformReal(lowerBound, upperBound);
-
-    //while(upperBound > 2 * M_PI) {
-        //upperBound -= 2 * M_PI;
-    //}
-
-    //while(lowerBound > 2 * M_PI) {
-        //lowerBound -= 2 * M_PI;
-    //}
-
-    //ROS_INFO_STREAM(roverName << "CPFA: lowerBound: " << lowerBound << " upperBound: " << upperBound);
-
     targetLocation.theta = rng->uniformReal(0, 2 * M_PI);
     travelToSearchSite(currentLocation);
 }
@@ -299,12 +275,6 @@ void CPFASearchController::travelToSearchSite(geometry_msgs::Pose2D currentLocat
 }
 
 void CPFASearchController::searchWithUninformedWalk(geometry_msgs::Pose2D currentLocation, geometry_msgs::Pose2D centerLocation) {
-    if(pheromones.size() > 0) {
-        searchLocationType = PHEROMONE;
-        searchState = SET_SEARCH_LOCATION;
-        return;
-    }
-
     if(giveUpSearching(currentLocation, centerLocation))
         return;
 
@@ -318,18 +288,6 @@ void CPFASearchController::searchWithInformedWalk(geometry_msgs::Pose2D currentL
         return;
 
     double correlation = calculateInformedWalkCorrelation();
-
-
-    // Round to the nearest 100th
-    float roundCorrelation = roundf(correlation * 100)/100;
-    ROS_INFO_STREAM(roverName << "CPFA: correlation: " << roundCorrelation);
-    if(roundCorrelation == uninformedSearchVariation) {
-        // Informed search has decayed into uninformed search
-        ROS_INFO_STREAM(roverName << "CPFA: Informed search has decayed into uninformed search...");
-        searchState = SEARCH_WITH_UNINFORMED_WALK;
-        searchLocationType = RANDOM;
-    }
-
 
     targetLocation.theta = rng->gaussian(currentLocation.theta, correlation); 
     targetLocation.x = currentLocation.x + searchStepSize*cos(targetLocation.theta);
@@ -408,32 +366,32 @@ void CPFASearchController::setPheromone(geometry_msgs::Pose2D centerLocation)
     double maxStrength = 0.0;
     double randomWeight = 0.0;
 
-    /* Calculate a maximum strength based on active pheromone weights. */
+    //Calculate a maximum strength based on active pheromone weights.
     for(int i = 0; i < pheromones.size(); i++) {
         if(pheromones[i].IsActive()) {
             maxStrength += pheromones[i].GetWeight();
         }
     }
-    /* Calculate a random weight. */
+    // Calculate a random weight.
     randomWeight = rng->uniformReal(0.0, maxStrength);
 
-    /* Randomly select an active pheromone to follow. */
+    //Randomly select an active pheromone to follow. 
     for(int i = 0; i < pheromones.size(); i++) {
 
         if(randomWeight < pheromones[i].GetWeight()) {
-            /* We've chosen a pheromone! */
+            //We've chosen a pheromone! 
 
             //  SetTarget(pheromones[i].GetLocation());
             targetLocation = pheromones[i].GetLocation();
             ROS_INFO_STREAM(roverName << "CPFA: pheromoneLocation x: " << targetLocation.x << " y: " << targetLocation.y);
 
-            //  TrailToFollow = pheromones[i].GetTrail();
+            // TrailToFollow = pheromones[i].GetTrail();
 
-            /* If we pick a pheromone, break out of this loop. */
+            //If we pick a pheromone, break out of this loop. 
             break;
         }
 
-        /* We didn't pick a pheromone! Remove its weight from randomWeight. */
+        //We didn't pick a pheromone! Remove its weight from randomWeight. 
         randomWeight -= pheromones[i].GetWeight();
     }
 }
