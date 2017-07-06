@@ -318,9 +318,12 @@ void CPFASearchController::searchWithInformedWalk(geometry_msgs::Pose2D currentL
         return;
 
     double correlation = calculateInformedWalkCorrelation();
-    ROS_INFO_STREAM(roverName << "CPFA: correlation: " << correlation);
 
-    if(correlation == uninformedSearchVariation) {
+
+    // Round to the nearest 100th
+    float roundCorrelation = roundf(correlation * 100)/100;
+    ROS_INFO_STREAM(roverName << "CPFA: correlation: " << roundCorrelation);
+    if(roundCorrelation == uninformedSearchVariation) {
         // Informed search has decayed into uninformed search
         ROS_INFO_STREAM(roverName << "CPFA: Informed search has decayed into uninformed search...");
         searchState = SEARCH_WITH_UNINFORMED_WALK;

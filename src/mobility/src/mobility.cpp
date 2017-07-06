@@ -75,6 +75,7 @@ map<string, mobility::Rover> rovers;
 queue<string> centerQueue;
 bool frontOfLine = false;
 bool queuedForCenter = false;
+bool waitingForCenter = false;
 
 bool centerUpdated = false;
 int totalTimeSearching = 0;
@@ -366,7 +367,10 @@ void mobilityStateMachine(const ros::TimerEvent&) {
 
                     int size = centerQueue.size();
                     if(queuedForCenter && (size == 0 || size > 0 && centerQueue.front() != publishedName)) {
-                        ROS_INFO_STREAM(publishedName << "CPFA: Waiting for center to open...");
+                        if(!waitingForCenter) {
+                            waitingForCenter = true;
+                            ROS_INFO_STREAM(publishedName << "CPFA: Waiting for center to open...");
+                        }
                         sendDriveCommand(0, 0);
                         break;
                     } else if(!frontOfLine) {
@@ -414,6 +418,7 @@ void mobilityStateMachine(const ros::TimerEvent&) {
 
                     ROS_INFO_STREAM(publishedName << "CPFA: Dropped off block! Leaving the queue...");
                     frontOfLine = false;
+                    waitingForCenter = false;
                     queuedForCenter = false;
                 } else if (result.goalDriving && timerTimeElapsed >= 5 ) {
                     goalLocation = result.centerGoal;
@@ -546,7 +551,7 @@ void mobilityStateMachine(const ros::TimerEvent&) {
 
                     // Just picked up a block, determine if we should publish
                     // a pheromone trail
-                    if(searchController.layPheromone() && searchController.getState() != SET_SEARCH_LOCATION) {
+                    if(searchController.layPheromone()) {
                         
                         mobility::PheromoneTrail trail;
                         geometry_msgs::Pose2D pheromoneLocation = searchController.getTargetLocation();
@@ -558,6 +563,7 @@ void mobilityStateMachine(const ros::TimerEvent&) {
                         trail.waypoints.push_back(pheromoneLocation);
 
                         pheromoneTrailPublish.publish(trail);
+                        ROS_INFO_STREAM(publishedName << "CPFA: Laying pheromone...");
                     }
 
                     pickUpController.reset();
