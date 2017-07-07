@@ -1,8 +1,7 @@
 # Parameters for CPFA
 
 # Increase these values to increease probability
-#probabilityOfSwitchingToSearching: 0.13 
-probabilityOfSwitchingToSearching: 20000
+probabilityOfSwitchingToSearching: 0.13 
 probabilityOfReturningToNest: 0.0
 
 # Uses a gaussian random num generator 
