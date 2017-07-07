@@ -18,6 +18,7 @@ GazeboSimManager::GazeboSimManager()
     char *app_root_cstr;
     app_root_cstr = getenv(name);
     app_root = QString(app_root_cstr);
+    distribution_type = "clustered";
     custom_world_path = "";
 }
 
@@ -377,8 +378,6 @@ void GazeboSimManager::setCustomWorldPath(QString path)
 
 void GazeboSimManager::setDistributionType(QString distribution)
 {
-    std::string text = distribution.toUtf8().constData();
-    ROS_INFO_STREAM("aeneasCPFA: distribution: " << text);
     distribution_type = distribution;
 }
 
