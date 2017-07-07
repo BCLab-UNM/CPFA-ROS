@@ -1604,6 +1604,30 @@ void RoverGUIPlugin::buildSimulationButtonEventHandler()
     // If the user chose to override the number of rovers to add to the simulation read the selected value
     if (ui.override_num_rovers_checkbox->isChecked()) n_rovers = ui.custom_num_rovers_combobox->currentText().toInt();
 
+   if (ui.powerlaw_distribution_radio_button->isChecked())
+   {
+       sim_mgr.setDistributionType("powerlaw");
+       emit sendInfoLogMessage("Adding powerlaw distribution of targets...");
+       return_msg = addPowerLawTargets();
+       emit sendInfoLogMessage(return_msg);
+   }
+   else if (ui.uniform_distribution_radio_button->isChecked())
+   {
+       sim_mgr.setDistributionType("uniform");
+       emit sendInfoLogMessage("Adding uniform distribution of targets...");
+       return_msg = addUniformTargets();
+       emit sendInfoLogMessage(return_msg);
+   }
+   else if (ui.clustered_distribution_radio_button->isChecked())
+   {
+       sim_mgr.setDistributionType("clustered");
+       emit sendInfoLogMessage("Adding clustered distribution of targets...");
+       return_msg = addClusteredTargets();
+       emit sendInfoLogMessage(return_msg);
+   } else {
+       sim_mgr.setDistributionType("custom");
+   }
+
     QProgressDialog progress_dialog;
     progress_dialog.setWindowTitle("Creating rovers");
     progress_dialog.setCancelButton(NULL); // no cancel button
@@ -1697,24 +1721,6 @@ void RoverGUIPlugin::buildSimulationButtonEventHandler()
         qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
     }
 
-   if (ui.powerlaw_distribution_radio_button->isChecked())
-   {
-       emit sendInfoLogMessage("Adding powerlaw distribution of targets...");
-       return_msg = addPowerLawTargets();
-       emit sendInfoLogMessage(return_msg);
-   }
-   else if (ui.uniform_distribution_radio_button->isChecked())
-   {
-       emit sendInfoLogMessage("Adding uniform distribution of targets...");
-       return_msg = addUniformTargets();
-       emit sendInfoLogMessage(return_msg);
-   }
-   else if (ui.clustered_distribution_radio_button->isChecked())
-   {
-       emit sendInfoLogMessage("Adding clustered distribution of targets...");
-       return_msg = addClusteredTargets();
-       emit sendInfoLogMessage(return_msg);
-   }
 
    // add walls given nw corner (x,y) and height and width (in meters)
 

@@ -193,7 +193,7 @@ void CPFASearchController::setTargetLocation(geometry_msgs::Pose2D siteLocation,
 void CPFASearchController::start() {
     ROS_INFO_STREAM(roverName << "CPFA: START");
 
-    // CPFA parameters
+    // Default CPFA parameters
     probabilityOfSwitchingToSearching = 0.13; // Increasing grows the probability
     probabilityOfReturningToNest = 0.0; // Increasing grows the probability
     uninformedSearchVariation = 0.4; // The change in heading using uninformed search
@@ -201,6 +201,15 @@ void CPFASearchController::start() {
     rateOfSiteFidelity = 0.3; // Lower grows the probability
     rateOfLayingPheromone = 5; // Lower grows the probability
     rateOfPheromoneDecay = 1.0/40.0; // Inverse of expected pheromone time
+
+    // Parameters set from the CPFA parameters yaml file
+    ros::param::get("/" + roverName + "/probabilityOfSwitchingToSearching", probabilityOfSwitchingToSearching);
+    ros::param::get("/" + roverName + "/probabilityOfReturningToNest", probabilityOfReturningToNest);
+    ros::param::get("/" + roverName + "/uninformedSearchVariation", uninformedSearchVariation);
+    ros::param::get("/" + roverName + "/rateOfInformedSearchDecay", rateOfInformedSearchDecay);
+    ros::param::get("/" + roverName + "/rateOfSiteFidelity", rateOfSiteFidelity);
+    ros::param::get("/" + roverName + "/rateOfLayingPheromone", rateOfLayingPheromone);
+    ros::param::get("/" + roverName + "/rateOfPheromoneDecay", rateOfPheromoneDecay);
 
     searchState = SET_SEARCH_LOCATION;
     ROS_INFO_STREAM(roverName << "CPFA: SET_SEARCH_LOCATION");

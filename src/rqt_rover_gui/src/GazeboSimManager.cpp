@@ -165,7 +165,7 @@ QString GazeboSimManager::stopRoverNode( QString rover_name )
 
 QString GazeboSimManager::startRoverNode( QString rover_name )
 {
-    QString argument = "roslaunch "+app_root+"/launch/swarmie.launch name:="+rover_name;
+    QString argument = "roslaunch "+app_root+"/launch/swarmie.launch name:="+rover_name+" distribution:="+distribution_type;
 
     QProcess* rover_process = new QProcess();
 
@@ -373,6 +373,13 @@ bool GazeboSimManager::isGazeboClientRunning()
 void GazeboSimManager::setCustomWorldPath(QString path)
 {
     custom_world_path = path;
+}
+
+void GazeboSimManager::setDistributionType(QString distribution)
+{
+    std::string text = distribution.toUtf8().constData();
+    ROS_INFO_STREAM("aeneasCPFA: distribution: " << text);
+    distribution_type = distribution;
 }
 
 GazeboSimManager::~GazeboSimManager()

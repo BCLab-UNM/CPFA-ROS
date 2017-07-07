@@ -1,0 +1,3 @@
+<launch>
+  <rosparam command="load" file="$(find mobility)/../../CPFA_parameters/$(arg distribution).yaml" />
+</launch>
