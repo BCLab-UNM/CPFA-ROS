@@ -203,13 +203,13 @@ void CPFASearchController::start() {
     rateOfPheromoneDecay = 1.0/40.0; // Inverse of expected pheromone time
 
     // Parameters set from the CPFA parameters yaml file
-    ros::param::get("/" + roverName + "/probabilityOfSwitchingToSearching", probabilityOfSwitchingToSearching);
-    ros::param::get("/" + roverName + "/probabilityOfReturningToNest", probabilityOfReturningToNest);
-    ros::param::get("/" + roverName + "/uninformedSearchVariation", uninformedSearchVariation);
-    ros::param::get("/" + roverName + "/rateOfInformedSearchDecay", rateOfInformedSearchDecay);
-    ros::param::get("/" + roverName + "/rateOfSiteFidelity", rateOfSiteFidelity);
-    ros::param::get("/" + roverName + "/rateOfLayingPheromone", rateOfLayingPheromone);
-    ros::param::get("/" + roverName + "/rateOfPheromoneDecay", rateOfPheromoneDecay);
+    ros::param::get("/" + roverName + "/CPFA/probabilityOfSwitchingToSearching", probabilityOfSwitchingToSearching);
+    ros::param::get("/" + roverName + "/CPFA/probabilityOfReturningToNest", probabilityOfReturningToNest);
+    ros::param::get("/" + roverName + "/CPFA/uninformedSearchVariation", uninformedSearchVariation);
+    ros::param::get("/" + roverName + "/CPFA/rateOfInformedSearchDecay", rateOfInformedSearchDecay);
+    ros::param::get("/" + roverName + "/CPFA/rateOfSiteFidelity", rateOfSiteFidelity);
+    ros::param::get("/" + roverName + "/CPFA/rateOfLayingPheromone", rateOfLayingPheromone);
+    ros::param::get("/" + roverName + "/CPFA/rateOfPheromoneDecay", rateOfPheromoneDecay);
 
     searchState = SET_SEARCH_LOCATION;
     ROS_INFO_STREAM(roverName << "CPFA: SET_SEARCH_LOCATION");

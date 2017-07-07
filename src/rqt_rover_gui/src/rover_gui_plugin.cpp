@@ -154,6 +154,7 @@ namespace rqt_rover_gui
     connect(this, SIGNAL(sendInfoLogMessage(QString)), this, SLOT(receiveInfoLogMessage(QString)));
     connect(this, SIGNAL(sendDiagLogMessage(QString)), this, SLOT(receiveDiagLogMessage(QString)));
     connect(ui.custom_world_path_button, SIGNAL(pressed()), this, SLOT(customWorldButtonEventHandler()));
+    connect(ui.custom_CPFA_param_button, SIGNAL(pressed()), this, SLOT(customCPFAButtonEventHandler()));
     connect(ui.custom_distribution_radio_button, SIGNAL(toggled(bool)), this, SLOT(customWorldRadioButtonEventHandler(bool)));
     connect(ui.override_num_rovers_checkbox, SIGNAL(toggled(bool)), this, SLOT(overrideNumRoversCheckboxToggledEventHandler(bool)));
 
@@ -1511,22 +1512,44 @@ void RoverGUIPlugin::customWorldButtonEventHandler()
     ui.custom_world_path->setText(fi.baseName());
 }
 
+void RoverGUIPlugin::customCPFAButtonEventHandler()
+{
+    const char *name = "SWARMATHON_APP_ROOT";
+    char *app_root_cstr;
+    app_root_cstr = getenv(name);
+    QString app_root = QString(app_root_cstr) + "/CPFA_parameters/";
+
+    QString path = QFileDialog::getOpenFileName(widget, tr("Open File"),
+                                                    app_root,
+                                                    tr("CPFA Parameters File (*.yaml)"));
+
+    emit sendInfoLogMessage("User selected custom CPFA path: " + path);
+
+    // Extract the base filename for short display
+    QFileInfo fi=path;
+    emit sendInfoLogMessage("Base name: " + fi.baseName());
+    sim_mgr.setDistributionType(fi.baseName());
+}
+
 // Enable or disable custom distributions
 void RoverGUIPlugin::customWorldRadioButtonEventHandler(bool toggled)
 {
     ui.custom_world_path_button->setEnabled(toggled);
+    ui.custom_CPFA_param_button->setEnabled(toggled);
 
     // Set the button color to reflect whether or not it is disabled
     // Clear the sim path if custom distribution it deselected
     if( toggled )
     {
         ui.custom_world_path_button->setStyleSheet("color: white; border:2px solid white;");
+        ui.custom_CPFA_param_button->setStyleSheet("color: white; border:2px solid white;");
     }
     else
     {
         sim_mgr.setCustomWorldPath("");
         ui.custom_world_path->setText("");
         ui.custom_world_path_button->setStyleSheet("color: grey; border:2px solid grey;");
+        ui.custom_CPFA_param_button->setStyleSheet("color: grey; border:2px solid grey;");
     }
 }
 
@@ -1624,8 +1647,6 @@ void RoverGUIPlugin::buildSimulationButtonEventHandler()
        emit sendInfoLogMessage("Adding clustered distribution of targets...");
        return_msg = addClusteredTargets();
        emit sendInfoLogMessage(return_msg);
-   } else {
-       sim_mgr.setDistributionType("custom");
    }
 
     QProgressDialog progress_dialog;
