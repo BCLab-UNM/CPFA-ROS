@@ -13,13 +13,13 @@
 
 enum CPFAState
 {
-    START,
-    SET_SEARCH_LOCATION,
-    TRAVEL_TO_SEARCH_SITE,
-    SEARCH_WITH_UNINFORMED_WALK,
-    SEARCH_WITH_INFORMED_WALK,
-    SENSE_LOCAL_RESOURCE_DENSITY,
-    RETURN_TO_NEST
+  START,
+  SET_SEARCH_LOCATION,
+  TRAVEL_TO_SEARCH_SITE,
+  SEARCH_WITH_UNINFORMED_WALK,
+  SEARCH_WITH_INFORMED_WALK,
+  SENSE_LOCAL_RESOURCE_DENSITY,
+  RETURN_TO_NEST
 };
 
 /**
@@ -27,9 +27,9 @@ enum CPFAState
  */
 enum SearchLocationType
 {
-    SITE_FIDELITY,
-    PHEROMONE,
-    RANDOM
+  SITE_FIDELITY,
+  PHEROMONE,
+  RANDOM
 };
 
 
@@ -44,13 +44,15 @@ enum SearchLocationType
 
 class CPFASearchController {
 
-public:
+  public:
     CPFASearchController();
     CPFASearchController(std::string publishedName);
 
     /** functions for CPFA search **/
     // continues search pattern after interruption
-    geometry_msgs::Pose2D continueInterruptedSearch(geometry_msgs::Pose2D currentLocation, geometry_msgs::Pose2D oldGoalLocation, geometry_msgs::Pose2D centerLocation);
+    geometry_msgs::Pose2D continueInterruptedSearch(const geometry_msgs::Pose2D& currentLocation, 
+                                                    const geometry_msgs::Pose2D& oldGoalLocation, 
+                                                    const geometry_msgs::Pose2D& centerLocation);
 
     // CPFA state machine search returns target locations for next step in CPFA
     geometry_msgs::Pose2D CPFAStateMachine(geometry_msgs::Pose2D currentLocation, geometry_msgs::Pose2D centerLocation);
@@ -61,18 +63,18 @@ public:
      *
      * CPFA Search Controller keeps track of maximum tags seen
      * by rover at the site location.
-    */
+     */
     void senseLocalResourceDensity(int numTags);
 
     /* Calculates probability of laying pheromone depending on local
      * resource density and returns whether pheromone will be laid.
      * Called in mobility after successful pick-up of resource.
-    */
+     */
     bool layPheromone();
 
     /*
      * Mobility passes in pheromone to CPFASearchController after resource is picked up.
-    */
+     */
     void insertPheromone(std::vector<geometry_msgs::Pose2D> pheromoneTrail);
 
 
@@ -87,7 +89,7 @@ public:
 
     void setArenaSize(int numRovers);
 
-private:
+  private:
 
     // CPFA state functions
     void start();
@@ -115,7 +117,7 @@ private:
      * determined by c (localResourceDensity), exceeds a uniform random value.
      *
      * POIS(c, lambda) > U(0, 1)
-    */
+     */
     double getPoissonCDF(double lambda);
 
     // Returns the euclidian distance between two positions
@@ -150,11 +152,11 @@ private:
      */
     void updatePheromoneList();
 
-   /* While in the PHEROMONE state and after determining whether the rover should
-    * use a pheromone, this function is called to determine which pheromone in our list
-    * of pheromones should be selected as a target location and will provide a path
-    * of waypoints to be followed to reach that location.
-    */
+    /* While in the PHEROMONE state and after determining whether the rover should
+     * use a pheromone, this function is called to determine which pheromone in our list
+     * of pheromones should be selected as a target location and will provide a path
+     * of waypoints to be followed to reach that location.
+     */
     void setPheromone(geometry_msgs::Pose2D centerLocation);
 
     CPFAState searchState;
