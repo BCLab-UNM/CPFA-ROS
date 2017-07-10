@@ -9,7 +9,8 @@
  * the informed search component of the CPFA algorithm.
  *****/
 
-class Pheromone {
+class Pheromone 
+{
 
     public:
 

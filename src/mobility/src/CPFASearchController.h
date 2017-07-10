@@ -42,7 +42,8 @@ enum SearchLocationType
  * (Central Place Foraging Algorithm)
  */
 
-class CPFASearchController {
+class CPFASearchController 
+{
 
   public:
     CPFASearchController();
