@@ -187,6 +187,8 @@ namespace rqt_rover_gui
     ui.custom_world_path_button->setEnabled(true);
     ui.custom_world_path_button->setStyleSheet("color: white; border:1px solid white;");
 
+    ui.custom_CPFA_param_button->setEnabled(true);
+
     // Make the custom rover number combo box look greyed out to begin with
     ui.custom_num_rovers_combobox->setStyleSheet("color: grey; border:2px solid grey;");
 
