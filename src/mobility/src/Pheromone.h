@@ -13,21 +13,24 @@ class Pheromone {
 
     public:
 
-        Pheromone(geometry_msgs::Pose2D newLocation, std::vector<geometry_msgs::Pose2D> newTrail, ros::Time newTime, double newDecayRate);
+        Pheromone(const geometry_msgs::Pose2D new_location, 
+                  const std::vector<geometry_msgs::Pose2D> new_trail, 
+                  const ros::Time new_time, 
+                  const double new_decay_rate);
 
-        void Update(ros::Time time);
-        bool IsActive();
-        double GetWeight();
-        geometry_msgs::Pose2D GetLocation();
-        std::vector<geometry_msgs::Pose2D> GetTrail();
+        void update(const ros::Time& time);
+        bool isActive();
+        double getWeight();
+        geometry_msgs::Pose2D getLocation();
+        std::vector<geometry_msgs::Pose2D> getTrail();
 
     private:
         
         geometry_msgs::Pose2D location;
         std::vector<geometry_msgs::Pose2D> trail;
 
-        ros::Time lastUpdated;
-        double decayRate;
+        ros::Time last_updated;
+        double decay_rate;
         double weight;
         double threshold;
 };

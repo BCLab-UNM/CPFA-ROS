@@ -11,13 +11,16 @@
  *
  * The remaining variables always start with default values.
  *****/
-Pheromone::Pheromone(geometry_msgs::Pose2D newLocation, std::vector<geometry_msgs::Pose2D> newTrail, ros::Time newTime, double newDecayRate)
+Pheromone::Pheromone(const geometry_msgs::Pose2D new_location, 
+                     const std::vector<geometry_msgs::Pose2D> new_trail, 
+                     const ros::Time new_time, 
+                     const double new_decay_rate)
 {
     /* required initializations */
-	location    = newLocation;
-    trail       = newTrail;
-	lastUpdated = newTime;
-	decayRate   = newDecayRate;
+  location    = new_location;
+  trail       = new_trail;
+	last_updated = new_time;
+	decay_rate   = new_decay_rate;
 
     /* standardized initializations */
 	weight      = 1.0;
@@ -28,30 +31,34 @@ Pheromone::Pheromone(geometry_msgs::Pose2D newLocation, std::vector<geometry_msg
  * The pheromones slowly decay and eventually become inactive. This simulates
  * the effect of a chemical pheromone trail that dissipates over time.
  *****/
-void Pheromone::Update(ros::Time time) {
+void Pheromone::update(const ros::Time& time)
+{
     /* pheromones experience exponential decay with time */
-    weight *= exp(-decayRate * (time.toSec() - lastUpdated.toSec()));
-    lastUpdated = time;
+    weight *= exp(-decay_rate * (time.toSec() - last_updated.toSec()));
+    last_updated = time;
 }
 
 /*****
  * Return the pheromone's location.
  *****/
-geometry_msgs::Pose2D Pheromone::GetLocation() {
+geometry_msgs::Pose2D Pheromone::getLocation()
+{
     return location;
 }
 
 /*****
  * Return the trail between the pheromone and the nest.
  *****/
-std::vector<geometry_msgs::Pose2D> Pheromone::GetTrail() {
+std::vector<geometry_msgs::Pose2D> Pheromone::getTrail() 
+{
     return trail;
 }
 
 /*****
  * Return the weight, or strength, of this pheromone.
  *****/
-double Pheromone::GetWeight() {
+double Pheromone::getWeight()
+{
 	return weight;
 }
 
@@ -60,6 +67,7 @@ double Pheromone::GetWeight() {
  * TRUE:  weight >  threshold : the pheromone is active
  * FALSE: weight <= threshold : the pheromone is not active
  *****/
-bool Pheromone::IsActive() {
+bool Pheromone::isActive() 
+{
 	return (weight > threshold);
 }
