@@ -1,147 +1,29 @@
-# Swarmathon-ROS
+# CPFA-ROS
+
+Please make sure that you have read all of the [documentation](https://github.com/BCLab-UNM/CPFA-ROS) and have set up all of the software regarding the Swarmathon as well as having read the [paper](https://www.cs.unm.edu/~melaniem/Publications_files/Hecker_Beyond_Pheromones_Swarm_Intelligence_2015.pdf)  that contains the algorithm.
 
 This repository is a ROS (Robot Operating System) controller framework for the Swarmie robots used in the [NASA Swarmathon](http://www.nasaswarmathon.com), a national swarm robotics competition. This particular framework is a ROS implementation of the CPFA (central-place foraging algorithm) developed for [iAnt robot swarms](http://swarms.cs.unm.edu) at the [University of New Mexico](http://www.unm.edu/).
 
-This repository contains:
 
-1. Source code for ROS libraries (i.e. packages) that control different aspects of the Swarmie robot, including localization, mapping, mobility, and obstacle and target detection
-2. 3D .STL models for the physical Swarmie build 
-3. Bash shell scripts for initializing simulated Swarmies in the Gazebo simulator, as well as physical Swarmies
+### Running the CPFA code
 
-- For a step-by-step guide to using Swarmathon-ROS to control a physical Swarmie robot, please see the instructions in the physical robot [Quick Start Guide](https://github.com/BCLab-UNM/Swarmathon-Docs/blob/master/Quick%20Start%20Physical%20Guide.md).
+Assuming you have installed everything as the Swarmathon-ROS repository has instructed and you have read the paper, then we can begin. The CPFA relies a set of parameters that can be modified depending on the resource distribution that will be used for a run. 
 
-- Please submit bug reports for Swarmathon-ROS through GitHub's Issues system. For all other questions regarding the Swarmathon-ROS code base, please visit the forums on the [NASA Swarmathon website](http://www.nasaswarmathon.com).
+In the ` ~/rover_workspace/CPFA_parameters/` directory you will see a set of files with a `.yaml` extension. Each corresponding to the appropriate resource distribution and have been hand tuned to have paramters that will work for each of those distributions, albeit not optimally. 
 
-- We recommend Jason M. O'Kane's [A Gentle Introduction to ROS](https://cse.sc.edu/~jokane/agitr/) for an in-depth walkthrough.
+You will see all the parameters that the paper describes as the paramters evolved by the GA. 
 
-- Please consult the [git scm](https://git-scm.com/) and [git best practices](https://sethrobertson.github.io/GitBestPractices/) for guidelines on the most effective approaches to maintaining code. Teams will be expected to commit new code at least every two weeks, and ideally commit one or more times per week. Consult the [NASA Swarmathon Timeline](http://www.nasaswarmathon.com) for specifics on how often code should be committed, as well as the cutoff date for final code revision before the competition.
+To start the simulation you will run the `~/rover_workspace/run.sh` script like normal to start up the GUI.
 
-### Quick Start Installation Guide
 
-Swarmathon-ROS is designed and tested exclusively on the 64 bit version of Ubuntu 14.04 LTS (Trusty Tahr) and ROS Indigo Igloo. This framework may compile and run correctly under other versions of Ubuntu and ROS, but **NOTE** that these other systems are untested and are therefore not supported at this time.
 
-##### 1. Install ROS Indigo
 
-Follow the detailed instructions for installing ROS Indigo under Ubuntu 14.04 [here](http://wiki.ros.org/indigo/Installation/Ubuntu). We recommend the Desktop-Full installation, which includes the Gazebo 2 simulator.
 
-##### 2. Install additional ROS plugins
 
-We use the [catkin_tools](https://catkin-tools.readthedocs.io/) package to build the Swarmathon-ROS code base:
 
-```
-sudo apt-get install python-catkin-tools
-```
 
-Our simulated and physical Swarmies use existing ROS plugins, external to this repo, to facilitate non-linear state estimation through sensor fusion and frame transforms. These plugins are contained in the [robot_localization](http://wiki.ros.org/robot_localization) package, which should be installed using the apt-get package management tool:
 
-```
-sudo apt-get install ros-indigo-robot-localization
-```
 
-We additionally make use of an AprilTag detection plugin to decode tags within images, as well as provide pose estimates for tag positions relative to the lens of the camera. This plugin is contained in the [apriltags_ros](http://wiki.ros.org/apriltags_ros) package, which should be installed using apt-get:
-
-```
-sudo apt-get install ros-indigo-apriltags-ros
-```
-
-Finally, our physical Swarmies use a USB camera driver, contained in the [usb_cam](http://wiki.ros.org/usb_cam) package, to interface with the built-in Logitech C170 webcam:
-
-```
-sudo apt-get install ros-indigo-usb-cam
-```
-
-##### 3. Install additional Gazebo plugins
-
-Our simulated Swarmies use existing Gazebo plugins, external to this repo, to replicate sonar, IMU, and GPS sensors. These plugins are contained in the [hector_gazebo_plugins](http://wiki.ros.org/hector_gazebo_plugins) package, which should be installed using the apt-get package management tool:
-
-```
-sudo apt-get install ros-indigo-hector-gazebo-plugins
-```
-
-Our Swarmies can receive mobility commands from the right thumb stick on a Microsoft Xbox 360 controller. The ROS [joystick_drivers](http://wiki.ros.org/joystick_drivers) package, which contains a generic Linux joystick driver compatible with this controller, should also be installed using the apt-get tool:
-
-```
- sudo apt-get install ros-indigo-joystick-drivers
-```
-
-Joystick commands can also be simulated using the direction keys (Up=I, Down=K, Left=J, Right=L) on the keyboard. The Rover GUI window must have focus for keyboard control to work.
-
-##### 4. Install git (if git is already installed, skip to step 5):
-
-```
-sudo apt-get install git
-```
-
-##### 5. Install Swarmathon-ROS
-
-1. Clone this GitHub repository to your home directory (~), renaming the repo so ROS and catkin can properly identify it:
-
-  ```
-  cd ~
-  git clone https://github.com/BCLab-UNM/Swarmathon-ROS.git rover_workspace
-  ```
-
-2. Change your current working directory to the root directory of the downloaded repo:
-
-  ```
-  cd ~/rover_workspace
-  ```
-
-3. Set up [ublox](http://wiki.ros.org/ublox) GPS submodule:
-
-  ```
-  git submodule init
-  git submodule update
-  ```
-
-4. Compile Swarmathon-ROS as a ROS catkin workspace:
- 
-  Make sure bash is aware of the location of the ROS environment:
-  ```
-  if ! grep -q "source /opt/ros/indigo/setup.bash" ~/.bashrc
-  then 
-    echo "source /opt/ros/indigo/setup.bash" >> ~/.bashrc
-  fi
-  source ~/.bashrc
-  ```
-  
-  Tell catkin to build the Swarmathon code:
-  
-  ```
-  catkin build
-  ```
-  
-5. Update your bash session to automatically source the setup file for Swarmathon-ROS:
-
-  ```
-  echo "source ~/rover_workspace/devel/setup.bash" >> ~/.bashrc
-  source ~/.bashrc
-  ```
-
-6. Update your bash session to automatically export the enviromental variable that stores the location of Gazebo's model files:
-
-  ```
-  echo "export GAZEBO_MODEL_PATH=~/rover_workspace/simulation/models" >> ~/.bashrc
-  echo "export GAZEBO_PLUGIN_PATH=${GAZEBO_PLUGIN_PATH}:~/rover_workspace/devel/lib/" >> ~/.bashrc
-  source ~/.bashrc
-  ```
-
-##### 6. Run the Swarmathon-ROS simulation:
-
-1. Change the permissions on the simulation run script to make it exectuatable:
-  
-  ```
-  cd ~/rover_workspace
-  chmod +x ./run.sh
-  ```
-  
-2. Start the simulation
-
-  ```
-  ./run.sh
-  ```
-
-The GUI will now launch. The run script kills a number of gazebo and ROS processes. Killing these processes is suggested by gazebosim.com as the best way to clean up the gazebo environment at the moment.
 
 This is the first screen of the GUI:
 
