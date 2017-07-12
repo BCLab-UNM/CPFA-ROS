@@ -10,7 +10,6 @@
 /**
  * The CPFAState enum contains all possible CPFA States for rover to be in
  */
-
 enum CPFAState
 {
   start_state,
@@ -32,8 +31,6 @@ enum SearchLocationType
   random_search
 };
 
-
-
 /**
  * This class implements the search control algorithm for the rovers. The code
  * here should be modified and enhanced to improve search performance.
@@ -41,7 +38,6 @@ enum SearchLocationType
  * The search controller is implemented with the CPFA.
  * (Central Place Foraging Algorithm)
  */
-
 class CPFASearchController 
 {
 

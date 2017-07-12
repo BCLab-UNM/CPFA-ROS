@@ -433,11 +433,10 @@ void CPFASearchController::setPheromone(const geometry_msgs::Pose2D& center_loca
   }
 }
 
-void CPFASearchController::setArenaSize(const int& numRovers) 
+void CPFASearchController::setArenaSize(const int& num_rovers) 
 {
-  // Num rovers is every other rover, hence >= 3
-  ROS_INFO_STREAM(rover_name << "CPFA: numRovers: " << numRovers);
-  if(numRovers > 3) {
+  ROS_INFO_STREAM(rover_name << "CPFA: num_rovers: " << num_rovers);
+  if(num_rovers > 3) {
     arena_size = 22;
   }
 }
