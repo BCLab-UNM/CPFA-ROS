@@ -19,7 +19,7 @@ To start the simulation you will run the `~/rover_workspace/run.sh` script like 
 
 ![Alt text](https://github.com/BCLab-UNM/CPFA-ROS/blob/documentation/readmeImages/gui1.png "Opening Screen")
 
-If you decide to choose a custom world, then you will also be allows to pick any of the `.yaml` files available by clicking on the CPFA button as well as make any custom paramter files with custom paramters as long as they follow the same format as the default parameter files.
+If you decide to choose a custom world, then you will also be allowed to pick any of the `.yaml` files available by clicking on the CPFA button as well as make any custom paramter files with custom paramters as long as they follow the same format as the default parameter files.
 
 ![Alt text](https://github.com/BCLab-UNM/CPFA-ROS/blob/documentation/readmeImages/gui2.png "Custom Paramters Widget")
 
@@ -36,3 +36,19 @@ This will list out all of the rosparameters that have been set and filters out a
 parameters in real time, you can use `rosparam set <paramter name>` to dynamically modify the parameter and in the code you can reset that value. 
 
 ![Alt text](https://github.com/BCLab-UNM/CPFA-ROS/blob/documentation/readmeImages/rosparamlist.png "rosparam list")
+
+#### Debugging
+
+To view some print statements about the current status of the rovers you can run the following command:
+
+```
+rostopic echo /rosout | grep <rover name>CPFA
+```
+
+Example:
+
+```
+rostopic echo /rosout | grep achillesCPFA
+```
+
+![Alt text](https://github.com/BCLab-UNM/CPFA-ROS/blob/documentation/readmeImages/debugging.png "Debugging")
