@@ -9,9 +9,9 @@ This repository is a ROS (Robot Operating System) controller framework for the S
 
 Assuming you have installed everything as the Swarmathon-ROS repository has instructed and you have read the paper, then we can begin. The CPFA relies a set of parameters that can be modified depending on the resource distribution that will be used for a run. 
 
-In the ` ~/rover_workspace/CPFA_parameters/` directory you will see a set of files with a `.yaml` extension. Each file corresponds to the appropriate resource distribution and have been hand tuned to have paramters that will work for each of those distributions, albeit not optimally. 
+In the ` ~/rover_workspace/CPFA_parameters/` directory you will see a set of files with a `.yaml` extension. Each file corresponds to the appropriate resource distribution and have been hand tuned to have parameters that will work for each of those distributions, albeit not optimally. 
 
-You will see all the parameters that the paper describes as the paramters evolved by the GA. 
+You will see all the parameters that the paper describes as the parameters evolved by the GA. 
 
 ![Alt text](https://github.com/BCLab-UNM/CPFA-ROS/blob/documentation/readmeImages/parameters.png "CPFA Parameters")
 
@@ -19,11 +19,11 @@ To start the simulation you will run the `~/rover_workspace/run.sh` script like 
 
 ![Alt text](https://github.com/BCLab-UNM/CPFA-ROS/blob/documentation/readmeImages/gui1.png "Opening Screen")
 
-If you decide to choose a custom world, then you will also be allowed to pick any of the `.yaml` files available by clicking on the CPFA button as well as make any custom paramter files with custom paramters as long as they follow the same format as the default parameter files.
+If you decide to choose a custom world, then you will also be allowed to pick any of the `.yaml` files available by clicking on the CPFA button as well as make any custom paramter files with custom parameters as long as they follow the same format as the default parameter files.
 
-![Alt text](https://github.com/BCLab-UNM/CPFA-ROS/blob/documentation/readmeImages/gui2.png "Custom Paramters Widget")
+![Alt text](https://github.com/BCLab-UNM/CPFA-ROS/blob/documentation/readmeImages/gui2.png "Custom Parameters Widget")
 
-#### ROS Paramters
+#### ROS Parameters
 
 The `.yaml`files will get loaded into the rosparam namespace as soon as the simulation starts. If you would like to see a list of all the CPFA parameters, then run the following command:
 
