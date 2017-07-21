@@ -1,14 +1,16 @@
 #include "sbridge.h"
 
 sbridge::sbridge(std::string publishedName) {
-    ros::NodeHandle param("~");
+
     ros::NodeHandle sNH;
+
 
     driveControlSubscriber = sNH.subscribe((publishedName + "/driveControl"), 10, &sbridge::cmdHandler, this);
 
     heartbeatPublisher = sNH.advertise<std_msgs::String>((publishedName + "/sbridge/heartbeat"), 1, false);
     skidsteerPublish = sNH.advertise<geometry_msgs::Twist>((publishedName + "/skidsteer"), 10);
     infoLogPublisher = sNH.advertise<std_msgs::String>("/infoLog", 1, true);
+    modeSubscriber = sNH.subscribe((publishedName + "/mode"), 1, &sbridge::modeHandler, this);
 
     float heartbeat_publish_interval = 2;
     publish_heartbeat_timer = sNH.createTimer(ros::Duration(heartbeat_publish_interval), &sbridge::publishHeartBeatTimerEventHandler, this);
@@ -19,47 +21,54 @@ sbridge::sbridge(std::string publishedName) {
 }
 
 void sbridge::cmdHandler(const geometry_msgs::Twist::ConstPtr& message) {
-    double linearVel = (message->linear.x);
-    double angularVel = (message->angular.z);
-    int sat = 255;
-    int Kpv = 255;
-    int Kpa = 200;
+    double left = (message->linear.x);
+    double right = (message->angular.z);
 
-    //Propotinal
-    float PV = Kpv * linearVel;
-    if (PV > sat) //limit the max and minimum output of proportinal
-        PV = sat;
-    if (PV < -sat)
-        PV= -sat;
+    float turn = 0;
+    float forward = 0;
 
-    //Propotinal
-    float PA = Kpa * angularVel;
-    if (PA > sat) //limit the max and minimum output of proportinal
-        PA = sat;
-    if (PA < -sat)
-        PA= -sat;
+    if (currentMode == 1) {
+        forward = left*0.6;
+        turn = right*1.4;
+        if (forward >= 0.4){
 
-    float turn = PA/60;
-    float forward = PV/355;
+            forward -= (abs(turn)/5);
+        }
 
-    if (forward >= 150){
-
-        forward -= (abs(turn)/5);
     }
-
-    if (linearVel >= 0 && forward <= 0)
+    else
     {
-        forward = 0;
+
+        float linearVel = (left + right)/2;
+        float angularVel = (right-left)/2;
+
+        turn = angularVel/180;
+        forward = linearVel/400;
+        if (forward >= 150){
+
+            forward -= (abs(turn)/5);
+        }
+
+        if (linearVel >= 0 && forward <= 0)
+        {
+            forward = 0;
+        }
+        if (linearVel <= 0 && forward >= 0)
+        {
+            forward = 0;
+        }
     }
-    if (linearVel <= 0 && forward >= 0)
-    {
-        forward = 0;
+
+    if (fabs(forward) >= 0.8) {
+        forward = forward/fabs(forward) * 0.8;
     }
-    /*std_msgs::String msg;
-   stringstream ss;
-   ss << "";
-   msg.data = ss.str();
-   infoLogPublisher.publish(msg);*/
+
+    if (fabs(turn) >= 1.0) { //max value needs tuning
+        turn = turn/fabs(turn) * 1.0;
+    }
+
+
+
 
     velocity.linear.x = forward,
             velocity.angular.z = turn;
@@ -72,6 +81,10 @@ void sbridge::publishHeartBeatTimerEventHandler(const ros::TimerEvent& event) {
     heartbeatPublisher.publish(msg);
 
     ROS_INFO("%ds, %dnsec", event.last_real.sec, event.last_real.nsec);
+}
+
+void sbridge::modeHandler(const std_msgs::UInt8::ConstPtr& message) {
+    currentMode = message->data;
 }
 
 sbridge::~sbridge() {

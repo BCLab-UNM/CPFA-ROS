@@ -1,3 +1,0 @@
-string name
-geometry_msgs/Pose2D currentLocation
-bool queuedForCenter
