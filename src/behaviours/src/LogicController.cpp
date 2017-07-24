@@ -82,7 +82,7 @@ Result LogicController::DoWork() {
                 control_queue.top().controller->Reset();
             }
             if(result.b == nextProcess) {
-                if (processState == _LAST) {
+                if (processState == _LAST - 1) {
                     processState = _FIRST;
                 }
                 else {
@@ -99,6 +99,7 @@ Result LogicController::DoWork() {
 
             if (result.b == nextProcess || result.b == prevProcess) {
                 ProcessData();
+                result.b = wait;
             }
             break;
         } else if(result.type == precisionDriving) {
@@ -137,6 +138,7 @@ Result LogicController::DoWork() {
         cout << "precision command"<< endl;
 
         result = control_queue.top().controller->DoWork();
+
         driveController.setResultData(result);
         result = driveController.DoWork();
         break;
