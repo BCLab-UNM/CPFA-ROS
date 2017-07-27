@@ -12,8 +12,20 @@ find_package(catkin REQUIRED COMPONENTS
   tf
 )
 
+add_message_files(
+    FILES
+    PheromoneTrail.msg
+    Rover.msg
+)
+
+generate_messages(
+    DEPENDENCIES
+    std_msgs
+    geometry_msgs
+)
+
 catkin_package(
-  CATKIN_DEPENDS geometry_msgs roscpp sensor_msgs std_msgs random_numbers tf
+  CATKIN_DEPENDS geometry_msgs roscpp sensor_msgs std_msgs random_numbers tf message_runtime
 )
 
 include_directories(
@@ -25,14 +37,15 @@ add_executable(
   src/ObstacleController.cpp 
   src/PickUpController.cpp
   src/DropOffController.cpp
-  src/SearchController.cpp
+  src/CPFASearchController.cpp
   src/ROSAdapter.cpp
   src/PID.cpp
   src/DriveController.cpp
   src/LogicController.cpp
+  src/Pheromone.cpp
 )
 
-add_dependencies(behaviours ${catkin_EXPORTED_TARGETS})
+add_dependencies(behaviours ${catkin_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 target_link_libraries(
   behaviours

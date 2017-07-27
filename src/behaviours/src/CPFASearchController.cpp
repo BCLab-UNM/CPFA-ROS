@@ -1,6 +1,6 @@
-#include "SearchController.h"
+#include "CPFASearchController.h"
 
-SearchController::SearchController() {
+CPFASearchController::CPFASearchController() {
   rng = new random_numbers::RandomNumberGenerator();
   currentLocation.x = 0;
   currentLocation.y = 0;
@@ -12,14 +12,14 @@ SearchController::SearchController() {
   result.PIDMode = FAST_PID;
 }
 
-void SearchController::Reset() {
+void CPFASearchController::Reset() {
   result.reset = false;
 }
 
 /**
  * This code implements a basic random walk search.
  */
-Result SearchController::DoWork() {
+Result CPFASearchController::DoWork() {
 
   if (!result.wpts.waypoints.empty()) {
     if (hypot(result.wpts.waypoints[0].x-currentLocation.x, result.wpts.waypoints[0].y-currentLocation.y) < 0.10) {
@@ -66,28 +66,28 @@ Result SearchController::DoWork() {
 
 }
 
-void SearchController::SetCenterLocation(Point centerLocation) {
+void CPFASearchController::SetCenterLocation(Point centerLocation) {
   this->centerLocation = centerLocation;
 }
 
-void SearchController::SetCurrentLocation(Point currentLocation) {
+void CPFASearchController::SetCurrentLocation(Point currentLocation) {
   this->currentLocation = currentLocation;
 }
 
-void SearchController::ProcessData() {
+void CPFASearchController::ProcessData() {
 }
 
-bool SearchController::ShouldInterrupt(){
+bool CPFASearchController::ShouldInterrupt(){
   ProcessData();
 
   return false;
 }
 
-bool SearchController::HasWork() {
+bool CPFASearchController::HasWork() {
   return true;
 }
 
-void SearchController::SetSuccesfullPickup() {
+void CPFASearchController::SetSuccesfullPickup() {
   succesfullPickup = true;
 }
 

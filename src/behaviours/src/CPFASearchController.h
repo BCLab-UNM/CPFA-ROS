@@ -1,5 +1,5 @@
-#ifndef SEARCH_CONTROLLER
-#define SEARCH_CONTROLLER
+#ifndef CPFA_SEARCH_CONTROLLER
+#define CPFA_SEARCH_CONTROLLER
 
 #include <random_numbers/random_numbers.h>
 #include "Controller.h"
@@ -8,11 +8,11 @@
  * This class implements the search control algorithm for the rovers. The code
  * here should be modified and enhanced to improve search performance.
  */
-class SearchController : virtual Controller {
+class CPFASearchController : virtual Controller {
 
 public:
 
-  SearchController();
+  CPFASearchController();
 
   void Reset() override;
 

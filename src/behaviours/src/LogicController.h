@@ -4,7 +4,7 @@
 #include "Controller.h"
 #include "PickUpController.h"
 #include "DropOffController.h"
-#include "SearchController.h"
+#include "CPFASearchController.h"
 #include "ObstacleController.h"
 #include "DriveController.h"
 
@@ -70,7 +70,7 @@ private:
 
   PickUpController pickUpController;
   DropOffController dropOffController;
-  SearchController searchController;
+  CPFASearchController searchController;
   ObstacleController obstacleController;
   DriveController driveController;
 
