@@ -24,6 +24,7 @@
 #include <set>
 #include <string>
 #include <tuple>
+#include <ros/ros.h>
 
 using namespace std;
 
@@ -55,10 +56,10 @@ public:
     void cleanUpGazeboClient();
     void cleanUpGazeboServer();
     void setCustomWorldPath(QString path);
+    void setDistributionType(QString distribution);
 
 private:
     QString app_root; // Path to the application root directory
-    QString log_root;
     QProcess* gazebo_server_process;
     QProcess* gazebo_client_process;
     QProcess* command_process;
@@ -69,7 +70,7 @@ private:
     set< tuple<float, float, float> > model_locations;
 
     QString custom_world_path;
-    
+    QString distribution_type;
 };
 
 #endif // GazeboSimManager_H

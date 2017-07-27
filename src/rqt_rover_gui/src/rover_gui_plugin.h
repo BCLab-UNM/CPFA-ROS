@@ -185,6 +185,7 @@ namespace rqt_rover_gui {
     void allAutonomousButtonEventHandler();
     void allStopButtonEventHandler();
     void customWorldButtonEventHandler();
+    void customCPFAButtonEventHandler();
     void customWorldRadioButtonEventHandler(bool marked);
 
     void buildSimulationButtonEventHandler();

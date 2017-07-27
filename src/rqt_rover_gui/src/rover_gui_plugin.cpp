@@ -154,6 +154,7 @@ namespace rqt_rover_gui
     connect(this, SIGNAL(sendInfoLogMessage(QString)), this, SLOT(receiveInfoLogMessage(QString)));
     connect(this, SIGNAL(sendDiagLogMessage(QString)), this, SLOT(receiveDiagLogMessage(QString)));
     connect(ui.custom_world_path_button, SIGNAL(pressed()), this, SLOT(customWorldButtonEventHandler()));
+    connect(ui.custom_CPFA_param_button, SIGNAL(pressed()), this, SLOT(customCPFAButtonEventHandler()));
     connect(ui.custom_distribution_radio_button, SIGNAL(toggled(bool)), this, SLOT(customWorldRadioButtonEventHandler(bool)));
     connect(ui.override_num_rovers_checkbox, SIGNAL(toggled(bool)), this, SLOT(overrideNumRoversCheckboxToggledEventHandler(bool)));
 
@@ -185,6 +186,8 @@ namespace rqt_rover_gui
 
     ui.custom_world_path_button->setEnabled(true);
     ui.custom_world_path_button->setStyleSheet("color: white; border:1px solid white;");
+
+    ui.custom_CPFA_param_button->setEnabled(true);
 
     // Make the custom rover number combo box look greyed out to begin with
     ui.custom_num_rovers_combobox->setStyleSheet("color: grey; border:2px solid grey;");
@@ -1511,22 +1514,44 @@ void RoverGUIPlugin::customWorldButtonEventHandler()
     ui.custom_world_path->setText(fi.baseName());
 }
 
+void RoverGUIPlugin::customCPFAButtonEventHandler()
+{
+    const char *name = "SWARMATHON_APP_ROOT";
+    char *app_root_cstr;
+    app_root_cstr = getenv(name);
+    QString app_root = QString(app_root_cstr) + "/CPFA_parameters/";
+
+    QString path = QFileDialog::getOpenFileName(widget, tr("Open File"),
+                                                    app_root,
+                                                    tr("CPFA Parameters File (*.yaml)"));
+
+    emit sendInfoLogMessage("User selected custom CPFA path: " + path);
+
+    // Extract the base filename for short display
+    QFileInfo fi=path;
+    emit sendInfoLogMessage("Base name: " + fi.baseName());
+    sim_mgr.setDistributionType(fi.baseName());
+}
+
 // Enable or disable custom distributions
 void RoverGUIPlugin::customWorldRadioButtonEventHandler(bool toggled)
 {
     ui.custom_world_path_button->setEnabled(toggled);
+    ui.custom_CPFA_param_button->setEnabled(toggled);
 
     // Set the button color to reflect whether or not it is disabled
     // Clear the sim path if custom distribution it deselected
     if( toggled )
     {
         ui.custom_world_path_button->setStyleSheet("color: white; border:2px solid white;");
+        ui.custom_CPFA_param_button->setStyleSheet("color: white; border:2px solid white;");
     }
     else
     {
         sim_mgr.setCustomWorldPath("");
         ui.custom_world_path->setText("");
         ui.custom_world_path_button->setStyleSheet("color: grey; border:2px solid grey;");
+        ui.custom_CPFA_param_button->setStyleSheet("color: grey; border:2px solid grey;");
     }
 }
 
@@ -1603,6 +1628,28 @@ void RoverGUIPlugin::buildSimulationButtonEventHandler()
 
     // If the user chose to override the number of rovers to add to the simulation read the selected value
     if (ui.override_num_rovers_checkbox->isChecked()) n_rovers = ui.custom_num_rovers_combobox->currentText().toInt();
+
+   if (ui.powerlaw_distribution_radio_button->isChecked())
+   {
+       sim_mgr.setDistributionType("powerlaw");
+       emit sendInfoLogMessage("Adding powerlaw distribution of targets...");
+       return_msg = addPowerLawTargets();
+       emit sendInfoLogMessage(return_msg);
+   }
+   else if (ui.uniform_distribution_radio_button->isChecked())
+   {
+       sim_mgr.setDistributionType("uniform");
+       emit sendInfoLogMessage("Adding uniform distribution of targets...");
+       return_msg = addUniformTargets();
+       emit sendInfoLogMessage(return_msg);
+   }
+   else if (ui.clustered_distribution_radio_button->isChecked())
+   {
+       sim_mgr.setDistributionType("clustered");
+       emit sendInfoLogMessage("Adding clustered distribution of targets...");
+       return_msg = addClusteredTargets();
+       emit sendInfoLogMessage(return_msg);
+   }
 
     QProgressDialog progress_dialog;
     progress_dialog.setWindowTitle("Creating rovers");
@@ -1697,24 +1744,6 @@ void RoverGUIPlugin::buildSimulationButtonEventHandler()
         qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
     }
 
-   if (ui.powerlaw_distribution_radio_button->isChecked())
-   {
-       emit sendInfoLogMessage("Adding powerlaw distribution of targets...");
-       return_msg = addPowerLawTargets();
-       emit sendInfoLogMessage(return_msg);
-   }
-   else if (ui.uniform_distribution_radio_button->isChecked())
-   {
-       emit sendInfoLogMessage("Adding uniform distribution of targets...");
-       return_msg = addUniformTargets();
-       emit sendInfoLogMessage(return_msg);
-   }
-   else if (ui.clustered_distribution_radio_button->isChecked())
-   {
-       emit sendInfoLogMessage("Adding clustered distribution of targets...");
-       return_msg = addClusteredTargets();
-       emit sendInfoLogMessage(return_msg);
-   }
 
    // add walls given nw corner (x,y) and height and width (in meters)
 

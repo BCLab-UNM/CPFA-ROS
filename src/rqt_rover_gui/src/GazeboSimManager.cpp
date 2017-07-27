@@ -18,7 +18,7 @@ GazeboSimManager::GazeboSimManager()
     char *app_root_cstr;
     app_root_cstr = getenv(name);
     app_root = QString(app_root_cstr);
-    log_root = app_root+"/"+"logs/";
+    distribution_type = "clustered";
     custom_world_path = "";
 }
 
@@ -166,14 +166,14 @@ QString GazeboSimManager::stopRoverNode( QString rover_name )
 
 QString GazeboSimManager::startRoverNode( QString rover_name )
 {
-  QString argument = "roslaunch "+app_root+"/launch/swarmie.launch name:="+rover_name+">"+log_root+rover_name+".log";
+    QString argument = "roslaunch "+app_root+"/launch/swarmie.launch name:="+rover_name+" distribution:="+distribution_type;
 
     QProcess* rover_process = new QProcess();
 
     rover_processes[rover_name] = rover_process;
 
     rover_process->start("sh", QStringList() << "-c" << argument);
-    
+
     return "rover process spawned";
 }
 
@@ -374,6 +374,11 @@ bool GazeboSimManager::isGazeboClientRunning()
 void GazeboSimManager::setCustomWorldPath(QString path)
 {
     custom_world_path = path;
+}
+
+void GazeboSimManager::setDistributionType(QString distribution)
+{
+    distribution_type = distribution;
 }
 
 GazeboSimManager::~GazeboSimManager()
