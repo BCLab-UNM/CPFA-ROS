@@ -266,3 +266,23 @@ void PickUpController::SetCurrentTimeInMilliSecs( long int time )
 {
   current_time = time;
 }
+
+CPFAState PickUpController::GetCPFAState() 
+{
+  return cpfa_state;
+}
+
+void PickUpController::SetCPFAState(CPFAState state) {
+  cpfa_state = state;
+}
+
+
+CPFASearchType PickUpController::GetCPFASearchType() 
+{
+  return cpfa_search_type;
+}
+
+void PickUpController::SetCPFASearchType(CPFASearchType type)
+{
+  cpfa_search_type = type;
+}

@@ -346,3 +346,23 @@ void DropOffController::SetCurrentTimeInMilliSecs( long int time )
 {
   current_time = time;
 }
+
+CPFAState DropOffController::GetCPFAState() 
+{
+  return cpfa_state;
+}
+
+void DropOffController::SetCPFAState(CPFAState state) {
+  cpfa_state = state;
+}
+
+
+CPFASearchType DropOffController::GetCPFASearchType() 
+{
+  return cpfa_search_type;
+}
+
+void DropOffController::SetCPFASearchType(CPFASearchType type)
+{
+  cpfa_search_type = type;
+}

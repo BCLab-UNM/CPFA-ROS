@@ -409,3 +409,23 @@ PIDConfig DriveController::constYawConfig() {
   return config;
 
 }
+
+CPFAState DriveController::GetCPFAState() 
+{
+  return cpfa_state;
+}
+
+void DriveController::SetCPFAState(CPFAState state) {
+  cpfa_state = state;
+}
+
+
+CPFASearchType DriveController::GetCPFASearchType() 
+{
+  return cpfa_search_type;
+}
+
+void DriveController::SetCPFASearchType(CPFASearchType type)
+{
+  cpfa_search_type = type;
+}

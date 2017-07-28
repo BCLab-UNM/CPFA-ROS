@@ -3,6 +3,7 @@
 
 #include <geometry_msgs/Pose2D.h>
 #include <vector>
+#include "Point.h"
 
 /*****
  * Implementation of the iAnt Pheromone object used by the iAnt CPFA. iAnts build and maintain a list of these pheromone waypoint objects to use during
@@ -14,21 +15,21 @@ class Pheromone
 
     public:
 
-        Pheromone(const geometry_msgs::Pose2D new_location, 
-                  const std::vector<geometry_msgs::Pose2D> new_trail, 
+        Pheromone(const Point new_location, 
+                  const std::vector<Point> new_trail, 
                   const ros::Time new_time, 
                   const double new_decay_rate);
 
         void update(const ros::Time& time);
         bool isActive();
         double getWeight();
-        geometry_msgs::Pose2D getLocation();
-        std::vector<geometry_msgs::Pose2D> getTrail();
+        Point getLocation();
+        std::vector<Point> getTrail();
 
     private:
         
-        geometry_msgs::Pose2D location;
-        std::vector<geometry_msgs::Pose2D> trail;
+        Point location;
+        std::vector<Point> trail;
 
         ros::Time last_updated;
         double decay_rate;

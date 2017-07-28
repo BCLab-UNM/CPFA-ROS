@@ -20,10 +20,16 @@
 #include <geometry_msgs/Twist.h>
 #include <nav_msgs/Odometry.h>
 #include <apriltags_ros/AprilTagDetectionArray.h>
+#include "behaviours/Rover.h"
+#include "behaviours/PheromoneTrail.h"
 
 // Include Controllers
 #include "LogicController.h"
+
+// Standard libraries
 #include <vector>
+#include <map>
+#include <queue>
 
 #include "Point.h"
 #include "TagPoint.h"
@@ -50,6 +56,21 @@ void raiseWrist();  // Return wrist back to 0 degrees
 void lowerWrist();  // Lower wrist to 50 degrees
 void resultHandler();
 
+// Return pose of tag in odom
+geometry_msgs::Pose2D getTagPose(apriltags_ros::AprilTagDetection tag);
+float distanceToCenter();
+
+// Stores information on all other rovers
+map<string, behaviours::Rover> rovers;
+
+// Center queue flags
+queue<string> centerQueue;
+bool frontOfLine = false;
+bool queuedForCenter = false;
+bool waitingForCenter = false;
+
+// Center location has been updated
+bool centerUpdated = false;
 
 // Numeric Variables for rover positioning
 geometry_msgs::Pose2D currentLocation;
@@ -93,6 +114,8 @@ ros::Publisher wristAnglePublish;
 ros::Publisher infoLogPublisher;
 ros::Publisher driveControlPublish;
 ros::Publisher heartbeatPublisher;
+ros::Publisher pheromoneTrailPublish;
+ros::Publisher roverPublisher;
 
 // Subscribers
 ros::Subscriber joySubscriber;
@@ -100,12 +123,15 @@ ros::Subscriber modeSubscriber;
 ros::Subscriber targetSubscriber;
 ros::Subscriber odometrySubscriber;
 ros::Subscriber mapSubscriber;
+ros::Subscriber pheromoneTrailSubscriber;
+ros::Subscriber roverSubscriber;
 
 
 // Timers
 ros::Timer stateMachineTimer;
 ros::Timer publish_status_timer;
 ros::Timer publish_heartbeat_timer;
+ros::Timer roverPublishTimer;
 
 // records time for delays in sequanced actions, 1 second resolution.
 time_t timerStartTime;
@@ -127,9 +153,12 @@ void modeHandler(const std_msgs::UInt8::ConstPtr& message);
 void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& tagInfo);
 void odometryHandler(const nav_msgs::Odometry::ConstPtr& message);
 void mapHandler(const nav_msgs::Odometry::ConstPtr& message);
+void roverHandler(const behaviours::Rover& message);
+void pheromoneTrailHandler(const behaviours::PheromoneTrail& message);
 void behaviourStateMachine(const ros::TimerEvent&);
 void publishStatusTimerEventHandler(const ros::TimerEvent& event);
 void publishHeartBeatTimerEventHandler(const ros::TimerEvent& event);
+void publishRoverTimerEventHandler(const ros::TimerEvent&);
 void sonarHandler(const sensor_msgs::Range::ConstPtr& sonarLeft, const sensor_msgs::Range::ConstPtr& sonarCenter, const sensor_msgs::Range::ConstPtr& sonarRight);
 
 // Converts the time passed as reported by ROS (which takes Gazebo simulation rate into account) into milliseconds as an integer.
@@ -161,6 +190,9 @@ int main(int argc, char **argv) {
   targetSubscriber = mNH.subscribe((publishedName + "/targets"), 10, targetHandler);
   odometrySubscriber = mNH.subscribe((publishedName + "/odom/filtered"), 10, odometryHandler);
   mapSubscriber = mNH.subscribe((publishedName + "/odom/ekf"), 10, mapHandler);
+  pheromoneTrailSubscriber = mNH.subscribe("/pheromones", 10, pheromoneTrailHandler);
+  roverSubscriber = mNH.subscribe("/rovers", 10, roverHandler);
+
   message_filters::Subscriber<sensor_msgs::Range> sonarLeftSubscriber(mNH, (publishedName + "/sonarLeft"), 10);
   message_filters::Subscriber<sensor_msgs::Range> sonarCenterSubscriber(mNH, (publishedName + "/sonarCenter"), 10);
   message_filters::Subscriber<sensor_msgs::Range> sonarRightSubscriber(mNH, (publishedName + "/sonarRight"), 10);
@@ -172,10 +204,12 @@ int main(int argc, char **argv) {
   infoLogPublisher = mNH.advertise<std_msgs::String>("/infoLog", 1, true);
   driveControlPublish = mNH.advertise<geometry_msgs::Twist>((publishedName + "/driveControl"), 10);
   heartbeatPublisher = mNH.advertise<std_msgs::String>((publishedName + "/behaviour/heartbeat"), 1, true);
+  pheromoneTrailPublish = mNH.advertise<behaviours::PheromoneTrail>("/pheromones", 10, true);
+  roverPublisher = mNH.advertise<behaviours::Rover>("/rovers", 10, true);
 
   publish_status_timer = mNH.createTimer(ros::Duration(status_publish_interval), publishStatusTimerEventHandler);
   stateMachineTimer = mNH.createTimer(ros::Duration(behaviourLoopTimeStep), behaviourStateMachine);
-
+  roverPublishTimer = mNH.createTimer(ros::Duration(1), publishRoverTimerEventHandler);
   publish_heartbeat_timer = mNH.createTimer(ros::Duration(heartbeat_publish_interval), publishHeartBeatTimerEventHandler);
 
   typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Range, sensor_msgs::Range, sensor_msgs::Range> sonarSyncPolicy;
@@ -215,6 +249,12 @@ void behaviourStateMachine(const ros::TimerEvent&) {
   // auto mode but wont work in main goes here)
   if (!initilized) {
     if (timerTimeElapsed > startDelayInSeconds) {
+      centerLocation.x = cos(currentLocation.theta);
+      centerLocation.y = sin(currentLocation.theta);
+      
+      // Set arena size depending on the number of rovers in arena
+      logicController.SetArenaSize(rovers.size());
+
       // initialization has run
       initilized = true;
     } else {
@@ -226,6 +266,10 @@ void behaviourStateMachine(const ros::TimerEvent&) {
 
   // Robot is in automode
   if (currentMode == 2 || currentMode == 3) {
+
+    if(distanceToCenter() > 0.75) {
+      centerUpdated = false;
+    }
 
     //TODO: this just sets center to 0 over and over and needs to change
     Point centerOdom;
@@ -401,17 +445,75 @@ void mapHandler(const nav_msgs::Odometry::ConstPtr& message) {
   logicController.SetMapVelocityData(linearVelocity, angularVelocity);
 }
 
+void roverHandler(const behaviours::Rover& msg) {
+    behaviours::Rover prevMsg = rovers[msg.name];
+    rovers[msg.name] = msg;
+
+    // Rover location should be in same frame as this rover
+    rovers[msg.name].currentLocation.x += centerLocation.x;
+    rovers[msg.name].currentLocation.y += centerLocation.y;
+
+    // Center queue status has changes for this rover
+    if(msg.queuedForCenter != prevMsg.queuedForCenter) {
+
+        if(msg.queuedForCenter) {
+            // Rover is now waiting
+            ROS_INFO_STREAM(publishedName << "CPFA: Entered " << msg.name << " into centerQueue");
+            centerQueue.push(msg.name);
+        } else {
+            // Rover has just finished dropped off its block
+            ROS_INFO_STREAM(publishedName << "CPFA: Received " << msg.name << " popping!");
+            centerQueue.pop();
+        }
+    }
+}
+
+
 void joyCmdHandler(const sensor_msgs::Joy::ConstPtr& message) {
   if (currentMode == 0 || currentMode == 1) {
     sendDriveCommand(abs(message->axes[4]) >= 0.1 ? message->axes[4] : 0, abs(message->axes[3]) >= 0.1 ? message->axes[3] : 0);
   }
 }
 
+void pheromoneTrailHandler(const behaviours::PheromoneTrail& message) {
+    behaviours::PheromoneTrail trail = message;
+
+    // Adjust pheromone location to account for center location
+    trail.waypoints[0].x += centerLocation.x;
+    trail.waypoints[0].y += centerLocation.y;
+
+    vector<Point> pheromone_trail;
+
+    for(int i = 0; i < trail.waypoints.size(); i++) {
+      Point waypoint(trail.waypoints[i].x, trail.waypoints[i].y, trail.waypoints[i].theta);
+      pheromone_trail.push_back(waypoint);
+    }
+
+    logicController.insertPheromone(pheromone_trail);
+    return;
+}
 
 void publishStatusTimerEventHandler(const ros::TimerEvent&) {
   std_msgs::String msg;
   msg.data = "online";
   status_publisher.publish(msg);
+}
+
+void publishRoverTimerEventHandler(const ros::TimerEvent&) {
+    // Contains information on this rover
+    behaviours::Rover msg;
+
+    // Rover name
+    msg.name = publishedName;
+
+    // Relative pose to center 
+    msg.currentLocation.x = currentLocation.x - centerLocation.x;
+    msg.currentLocation.y = currentLocation. y - centerLocation.y;
+    msg.currentLocation.theta = currentLocation.theta;
+
+    msg.queuedForCenter = queuedForCenter;
+
+    roverPublisher.publish(msg);
 }
 
 void sigintEventHandler(int sig) {
@@ -425,6 +527,34 @@ void publishHeartBeatTimerEventHandler(const ros::TimerEvent&) {
   heartbeatPublisher.publish(msg);
 }
 
+geometry_msgs::Pose2D getTagPose(apriltags_ros::AprilTagDetection tag) {
+    // Transforms pose of tag in camera_link to odom
+    geometry_msgs::PoseStamped tagPoseOdom;
+    string x = "";
+
+    try { //attempt to get the transform of the camera frame to odom frame.
+        tfListener->waitForTransform(publishedName + "/camera_link", publishedName + "/odom", ros::Time::now(), ros::Duration(1.0));
+        tfListener->transformPose(publishedName + "/odom", tag.pose, tagPoseOdom);
+    }
+
+    catch(tf::TransformException& ex) {
+        ROS_INFO("Received an exception trying to transform a point from \"camer_link\" to \"odom\": %s", ex.what());
+        x = "Exception thrown " + (string)ex.what();
+        std_msgs::String msg;
+        stringstream ss;
+        ss << "Exception in getTagPose() " + (string)ex.what();
+        msg.data = ss.str();
+        infoLogPublisher.publish(msg);
+    }
+
+    geometry_msgs::Pose2D newCenterLocation;
+    newCenterLocation.x = tagPoseOdom.pose.position.x;
+    newCenterLocation.y = tagPoseOdom.pose.position.y;
+
+    return newCenterLocation;
+}
+
+
 long int getROSTimeInMilliSecs()
 {
   // Get the current time according to ROS (will be zero for simulated clock until the first time message is recieved).
@@ -434,3 +564,9 @@ long int getROSTimeInMilliSecs()
   return t.sec*1e3 + t.nsec/1e6;
   
 }
+
+float distanceToCenter() {
+    // Returns the distance of the rover to the nest
+    return hypot(centerLocation.x - currentLocation.x, centerLocation.y - currentLocation.y);
+}
+

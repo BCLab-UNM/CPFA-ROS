@@ -11,8 +11,8 @@
  *
  * The remaining variables always start with default values.
  *****/
-Pheromone::Pheromone(const geometry_msgs::Pose2D new_location, 
-                     const std::vector<geometry_msgs::Pose2D> new_trail, 
+Pheromone::Pheromone(const Point new_location, 
+                     const std::vector<Point> new_trail, 
                      const ros::Time new_time, 
                      const double new_decay_rate)
 {
@@ -41,7 +41,7 @@ void Pheromone::update(const ros::Time& time)
 /*****
  * Return the pheromone's location.
  *****/
-geometry_msgs::Pose2D Pheromone::getLocation()
+Point Pheromone::getLocation()
 {
     return location;
 }
@@ -49,7 +49,7 @@ geometry_msgs::Pose2D Pheromone::getLocation()
 /*****
  * Return the trail between the pheromone and the nest.
  *****/
-std::vector<geometry_msgs::Pose2D> Pheromone::getTrail() 
+std::vector<Point> Pheromone::getTrail() 
 {
     return trail;
 }

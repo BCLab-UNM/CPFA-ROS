@@ -7,6 +7,7 @@
 #include "CPFASearchController.h"
 #include "ObstacleController.h"
 #include "DriveController.h"
+#include "Result.h"
 
 #include <vector>
 #include <queue>
@@ -44,8 +45,15 @@ public:
   void SetMapVelocityData(float linearVelocity, float angularVelocity);
   void SetCenterLocationOdom(Point centerLocationOdom);
   void SetCenterLocationMap(Point centerLocationMap);
-
   void SetCurrentTimeInMilliSecs( long int time );
+  void SetArenaSize(int numRovers);
+  void insertPheromone(const std::vector<Point>& pheromone_trail);
+
+  void SetCPFAState(CPFAState state) override;
+  CPFAState GetCPFAState() override;
+
+  void SetCPFASearchType(CPFASearchType search_type) override;
+  CPFASearchType GetCPFASearchType() override;
 
 protected:
   void ProcessData();
@@ -64,6 +72,9 @@ private:
     PROCCESS_STATE_TARGET_PICKEDUP,
     _LAST
   };
+
+  CPFAState cpfa_state;
+  CPFASearchType cpfa_search_type;
 
   LogicState logicState;
   ProcessState processState;

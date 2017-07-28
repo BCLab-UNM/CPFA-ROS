@@ -24,6 +24,12 @@ public:
   void SetTargetHeldClear() {targetHeld = false; previousTargetState = false;}
   bool GetShouldClearWaypoints() {bool tmp = clearWaypoints; clearWaypoints = false; return tmp;}
 
+  void SetCPFAState(CPFAState state) override;
+  CPFAState GetCPFAState() override;
+
+  void SetCPFASearchType(CPFASearchType search_type) override;
+  CPFASearchType GetCPFASearchType() override;
+
 protected:
 
   void ProcessData();
@@ -63,6 +69,9 @@ private:
 
   bool targetHeld = false;
   bool previousTargetState = false;
+
+  CPFAState cpfa_state;
+  CPFASearchType cpfa_search_type;
 
 };
 

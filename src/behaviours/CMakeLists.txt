@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   random_numbers
   tf
+  message_generation
 )
 
 add_message_files(
@@ -45,7 +46,7 @@ add_executable(
   src/Pheromone.cpp
 )
 
-add_dependencies(behaviours ${catkin_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(behaviours ${catkin_EXPORTED_TARGETS} ${behaviours_EXPORTED_TARGETS})
 
 target_link_libraries(
   behaviours

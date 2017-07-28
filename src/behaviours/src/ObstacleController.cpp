@@ -152,3 +152,23 @@ void ObstacleController::SetTargetHeld() {
     previousTargetState = true;
   }
 }
+
+CPFAState ObstacleController::GetCPFAState() 
+{
+  return cpfa_state;
+}
+
+void ObstacleController::SetCPFAState(CPFAState state) {
+  cpfa_state = state;
+}
+
+
+CPFASearchType ObstacleController::GetCPFASearchType() 
+{
+  return cpfa_search_type;
+}
+
+void ObstacleController::SetCPFASearchType(CPFASearchType type)
+{
+  cpfa_search_type = type;
+}

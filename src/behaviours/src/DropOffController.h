@@ -32,6 +32,12 @@ public:
 
   void SetCurrentTimeInMilliSecs( long int time );
 
+  void SetCPFAState(CPFAState state) override;
+  CPFAState GetCPFAState() override;
+
+  void SetCPFASearchType(CPFASearchType search_type) override;
+  CPFASearchType GetCPFASearchType() override;
+
 private:
 
   void ProcessData();
@@ -120,5 +126,7 @@ private:
   bool precisionInterrupt = false;
   bool finalInterrupt = false;
 
+  CPFAState cpfa_state;
+  CPFASearchType cpfa_search_type;
 };
 #endif // end header define

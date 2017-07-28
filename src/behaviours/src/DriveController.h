@@ -4,6 +4,7 @@
 #include "PID.h"
 #include "Controller.h"
 #include <angles/angles.h>
+#include "Result.h"
 
 class DriveController : virtual Controller
 {
@@ -19,6 +20,12 @@ public:
   void SetResultData(Result result) {this->result = result;}
   void SetVelocityData(float linearVelocity,float angularVelocity);
   void SetCurrentLocation(Point currentLocation) {this->currentLocation = currentLocation;}
+
+  void SetCPFAState(CPFAState state) override;
+  CPFAState GetCPFAState() override;
+
+  void SetCPFASearchType(CPFASearchType search_type) override;
+  CPFASearchType GetCPFASearchType() override;
 
 private:
 
@@ -85,6 +92,10 @@ private:
   StateMachineStates stateMachineState = STATE_MACHINE_WAITING;
 
   void ProcessData();
+
+  CPFAState cpfa_state;
+  CPFASearchType cpfa_search_type;
+
 
 };
 

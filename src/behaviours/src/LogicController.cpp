@@ -73,6 +73,9 @@ Result LogicController::DoWork() {
     //take the top member of the priority queue and run their do work function.
     result = control_queue.top().controller->DoWork();
 
+    // Check if CPFA state has changed
+    //SetCPFAState(result.cpfa_state, result.cpfa_search_type);
+
     //anaylyze the result that was returned and do state changes accordingly
     //behavior types are used to indicate behavior changes of some form
     if(result.type == behavior) {
@@ -288,4 +291,67 @@ void LogicController::SetCurrentTimeInMilliSecs( long int time )
   dropOffController.SetCurrentTimeInMilliSecs( time );
   pickUpController.SetCurrentTimeInMilliSecs( time );
   obstacleController.SetCurrentTimeInMilliSecs( time );
+}
+
+void LogicController::SetArenaSize(int numRovers) {
+  searchController.setArenaSize(numRovers);
+}
+
+void LogicController::insertPheromone(const std::vector<Point> &pheromone_trail) {
+  searchController.insertPheromone(pheromone_trail);
+}
+
+void LogicController::SetCPFAState(CPFAState state) {
+  if(state != cpfa_state) {
+    
+    if(state == set_target_location)
+      std::cout << "set_target_location" << std::endl;
+    else if(state == travel_to_search_site)
+      std::cout << "travel_to_search_site" << std::endl;
+    else if(state == search_with_uninformed_walk)
+      std::cout << "search_with_uninformed_walk" << std::endl;
+    else if(state == search_with_informed_walk)
+      std::cout << "search_with_informed_walk" << std::endl;
+    else if(state == sense_local_resource_density)
+      std::cout << "sense_local_resource_density" << std::endl;
+    else
+      std::cout << "return_to_nest" << std::endl;
+
+    cpfa_state = state;
+    for(PrioritizedController cntrlr : prioritizedControllers) {
+      if(state != cntrlr.controller->GetCPFAState()) {
+        cntrlr.controller->SetCPFAState(state);
+      }
+    }
+  }
+}
+
+CPFAState LogicController::GetCPFAState() {
+  return cpfa_state;
+}
+
+void LogicController::SetCPFASearchType(CPFASearchType search_type) {
+
+  if(search_type != cpfa_search_type) {
+
+    if(search_type == site_fidelity)
+      std::cout << "cpfa_search_type site_fidelity" << std::endl;
+    else if(search_type == pheromone)
+      std::cout << "cpfa_search_type pheromone" << std::endl;
+    else
+      std::cout << "cpfa_search_type random_search" << std::endl;
+
+    cpfa_search_type = search_type;
+    for(PrioritizedController cntrlr : prioritizedControllers) {
+      if(search_type != cntrlr.controller->GetCPFASearchType()) {
+        cntrlr.controller->SetCPFASearchType(search_type);
+      }
+    }
+
+  }
+
+}
+
+CPFASearchType LogicController::GetCPFASearchType() {
+  return cpfa_search_type;
 }

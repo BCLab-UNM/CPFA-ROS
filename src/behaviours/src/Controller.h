@@ -38,6 +38,12 @@ public:
   //Returns whether or not a controller should be polled for a Result
   virtual bool HasWork() = 0;
 
+  virtual void SetCPFAState(CPFAState state) = 0;
+  virtual CPFAState GetCPFAState() = 0;
+
+  virtual void SetCPFASearchType(CPFASearchType search_type) = 0;
+  virtual CPFASearchType GetCPFASearchType() = 0;
+
 protected:
 
   //Looks at external data and determines if an interrupt must be thrown

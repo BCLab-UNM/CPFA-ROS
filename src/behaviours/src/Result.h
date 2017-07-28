@@ -1,3 +1,6 @@
+#ifndef RESULT_H
+#define RESULT_H
+
 // Defines the Result type which used to standardize the information that
 // can be returned by a controller object.
 
@@ -25,12 +28,44 @@
  *
  */
 
+#include <iostream>
 #include <vector>
 
 #include "Point.h"
-#include <iostream>
 
 using namespace std;
+
+/**
+ * The CPFAState enum contains all possible CPFA States for rover to be in
+ */
+enum CPFAState
+{
+  start_state,
+  set_target_location,
+  travel_to_search_site,
+  search_with_uninformed_walk,
+  search_with_informed_walk,
+  sense_local_resource_density,
+  return_to_nest
+};
+
+/**
+ *  The CPFASearchType enum contains all possible travel states for the rover to be in
+ */
+enum CPFASearchType
+{
+  site_fidelity,
+  pheromone,
+  random_search
+};
+
+/**
+ * This class implements the search control algorithm for the rovers. The code
+ * here should be modified and enhanced to improve search performance.
+ *
+ * The search controller is implemented with the CPFA.
+ * (Central Place Foraging Algorithm)
+ */
 
 enum PIDType {
   FAST_PID, //quickest turn reasponse time
@@ -67,6 +102,9 @@ struct Waypoints {
 };
 
 struct Result {
+  CPFAState cpfa_state;
+  CPFASearchType cpfa_search_type;
+
   ResultType type;
 
   BehaviorTrigger b;
@@ -79,3 +117,5 @@ struct Result {
 
   bool reset;
 };
+
+#endif 
