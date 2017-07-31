@@ -220,6 +220,12 @@ Result PickUpController::DoWork() {
 
     if (Td > 4.0 && timeOut) //if no targets are found after too long a period go back to search pattern
     {
+      if (cpfa_search_type  == random_search) {
+        result.cpfa_state = search_with_uninformed_walk;
+      } else {
+        result.cpfa_state = search_with_informed_walk;
+      }
+
       Reset();
       interupted = true;
       result.pd.cmdVel = 0.0;

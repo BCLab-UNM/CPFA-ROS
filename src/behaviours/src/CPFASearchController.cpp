@@ -63,40 +63,40 @@ Result CPFASearchController::DoWork() {
     // CPFA Logic
     updatePheromoneList();
 
-    //switch(cpfa_state) {
-      //// Initializes CPFA parameters
-      //case start_state:
-        //start();
+    switch(cpfa_state) {
+      // Initializes CPFA parameters
+      case start_state:
+        start();
 
-        //// Sets target location to a site fidelity location, pheromone, or random location.
-        //// Preset when rover has picked up a resource and is returning to collection zone
-      //case set_target_location:
-        //setSearchLocation();
-        //break;
+        // Sets target location to a site fidelity location, pheromone, or random location.
+        // Preset when rover has picked up a resource and is returning to collection zone
+      case set_target_location:
+        setSearchLocation();
+        break;
 
-        //// Travels to target location while ignoring resources
-      //case travel_to_search_site:
-        //travelToSearchSite();
-        //break;
+        // Travels to target location while ignoring resources
+      case travel_to_search_site:
+        travelToSearchSite();
+        break;
 
-        //// Searches at a random target location
-      //case search_with_uninformed_walk:
-        //searchWithUninformedWalk();
-        //break;
+        // Searches at a random target location
+      case search_with_uninformed_walk:
+        searchWithUninformedWalk();
+        break;
 
-        //// Searches at a site fidelity location or pheromone location
-      //case search_with_informed_walk:
-        //searchWithInformedWalk();
-        //break;
+        // Searches at a site fidelity location or pheromone location
+      case search_with_informed_walk:
+        searchWithInformedWalk();
+        break;
 
-        //// Counts local resource density while picking up a resource
-      //case sense_local_resource_density:
-        //break;
+        // Counts local resource density while picking up a resource
+      case sense_local_resource_density:
+        break;
 
-        //// Only set when Rover has given up search
-      //case return_to_nest:
-        //returnToNest();
-    //}
+        // Only set when Rover has given up search
+      case return_to_nest:
+        returnToNest();
+    }
 
     //select new position 50 cm from current location
     result.wpts.waypoints.clear();
