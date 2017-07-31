@@ -1,6 +1,7 @@
 #include "DriveController.h"
 
-DriveController::DriveController() {
+DriveController::DriveController(std::string name) {
+  this->name = name;
 
   fastVelPID.SetConfiguration(fastVelConfig());
   fastYawPID.SetConfiguration(fastYawConfig());
@@ -24,12 +25,14 @@ void DriveController::Reset() {
 }
 
 Result DriveController::DoWork() {
-
   if(result.type == behavior) {
+    cout << "result.type == behavior" << endl;
     if(result.b == noChange) {
+      cout << "result.b == noChange" << endl;
       //if drive controller gets a no change command it is allowed to continue its previouse action
       //normally this will be to follow waypoints but it is not specified as such.
     } else if(result.b == wait) {
+      cout << "result.b == wait" << endl;
       //do nothing till told otherwise
       left = 0.0;
       right = 0.0;
@@ -37,10 +40,12 @@ Result DriveController::DoWork() {
 
     }
   } else if(result.type == precisionDriving) {
+    cout << "result.type == precisionDriving" << endl;
     //interpret input result as a precision driving command
     stateMachineState = STATE_MACHINE_PRECISION_DRIVING;
 
   } else if(result.type == waypoint) {
+    cout << "result.type == waypoint" << endl;
     //interpret input result as new waypoints to add into the queue
     ProcessData();
 
@@ -65,6 +70,7 @@ Result DriveController::DoWork() {
     bool tooClose = true;
     while (!waypoints.empty() && tooClose) {
       if (hypot(waypoints.back().x-currentLocation.x, waypoints.back().y-currentLocation.y) < waypointTolerance) {
+        cout << "Reached waypoint x: " << waypoints.back().x << " y:" << waypoints.back().y << endl;
         waypoints.pop_back();
       }
       else {
@@ -417,6 +423,7 @@ CPFAState DriveController::GetCPFAState()
 
 void DriveController::SetCPFAState(CPFAState state) {
   cpfa_state = state;
+  result.cpfa_state = state;
 }
 
 
@@ -428,4 +435,5 @@ CPFASearchType DriveController::GetCPFASearchType()
 void DriveController::SetCPFASearchType(CPFASearchType type)
 {
   cpfa_search_type = type;
+  result.cpfa_search_type = type;
 }

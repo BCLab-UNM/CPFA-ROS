@@ -2,14 +2,17 @@
 
 // PUBLIC Functions
 
-CPFASearchController::CPFASearchController() {
+CPFASearchController::CPFASearchController(std::string name) {
+  this->name = name;
+
   arena_size = 15;
   travel_step_size = 0.5;
   search_step_size = 0.5;
   min_distance_to_target = 1;
 
-  cpfa_state = start_state;
-  cpfa_search_type = random_search;
+  SetCPFAState(start_state);
+  SetCPFASearchType(random_search);
+
   rng = new random_numbers::RandomNumberGenerator();
   result.PIDMode = FAST_PID;
 }
@@ -22,7 +25,6 @@ void CPFASearchController::Reset() {
  * This code implements a basic random walk search.
  */
 Result CPFASearchController::DoWork() {
-
   if (!result.wpts.waypoints.empty()) {
     if (hypot(result.wpts.waypoints[0].x-current_location.x, result.wpts.waypoints[0].y-current_location.y) < 0.10) {
       attempt_count = 0;
@@ -45,13 +47,13 @@ Result CPFASearchController::DoWork() {
 
       if(cpfa_search_type == site_fidelity || cpfa_search_type == pheromone) {
 
-        cpfa_state = search_with_informed_walk;
+        SetCPFAState(search_with_informed_walk);
         local_resource_density = 0;
         informed_search_start_time = ros::Time::now();
         std::cout << "search_with_informed_walk" << std::endl;
       } else {
 
-        cpfa_state = search_with_uninformed_walk;
+        SetCPFAState(search_with_uninformed_walk);
         std::cout << "search_with_uninformed_walk" << std::endl;
       }
 
@@ -101,6 +103,7 @@ Result CPFASearchController::DoWork() {
     //select new position 50 cm from current location
     result.wpts.waypoints.clear();
     result.wpts.waypoints.insert(result.wpts.waypoints.begin(), target_location);
+    cout << "target_location x: " << target_location.x << " y: " << target_location.y << " theta: " << target_location.theta << endl;
 
     return result;
   }
@@ -162,6 +165,7 @@ void CPFASearchController::SetCPFAState(CPFAState state) {
   }
 
   cpfa_state = state;
+  result.cpfa_state = state;
 }
 
 
@@ -173,6 +177,7 @@ CPFASearchType CPFASearchController::GetCPFASearchType()
 void CPFASearchController::SetCPFASearchType(CPFASearchType type)
 {
   cpfa_search_type = type;
+  result.cpfa_search_type = type;
 }
 
 Point CPFASearchController::getTargetLocation()
@@ -239,13 +244,13 @@ void CPFASearchController::start()
   ros::param::get("/" + rover_name + "/CPFA/rate_of_laying_pheromone", rate_of_laying_pheromone);
   ros::param::get("/" + rover_name + "/CPFA/rate_of_pheromone_decay", rate_of_pheromone_decay);
 
-  cpfa_state = set_target_location;
+  SetCPFAState(set_target_location);
   std::cout << "set_target_location" << std::endl;
 }
 
 void CPFASearchController::setSearchLocation()
 {
-  cpfa_state = travel_to_search_site;
+  SetCPFAState(travel_to_search_site);
   std::cout << "travel_to_search_site" << std::endl;
 
   local_resource_density = 0;
@@ -263,7 +268,7 @@ void CPFASearchController::setSearchLocation()
       target_location.theta = atan2(target_location.y - current_location.y, target_location.x - current_location.x);
       return;
     } else {
-      cpfa_search_type = pheromone;
+      SetCPFASearchType(pheromone);
     }
   }
 
@@ -276,7 +281,7 @@ void CPFASearchController::setSearchLocation()
     return;
   }
 
-  cpfa_search_type = random_search;
+  SetCPFASearchType(random_search);
   std::cout << "CPFASearchType random_search" << std::endl;
 
   target_location.theta = rng->uniformReal(0, 2 * M_PI);
@@ -292,7 +297,7 @@ void CPFASearchController::travelToSearchSite()
     if(distanceToLocation(current_location, target_location) < min_distance_to_target) {
       informed_search_start_time = ros::Time::now();
       local_resource_density = 0;
-      cpfa_state = search_with_informed_walk;
+      SetCPFAState(search_with_informed_walk);
       std::cout << "search_with_informed_walk" << std::endl;
     }
 
@@ -305,7 +310,7 @@ void CPFASearchController::travelToSearchSite()
 
   // cpfa_search_type is random_search
   if(rng->uniformReal(0, 1) < probability_of_switching_to_searching){
-    cpfa_state = search_with_uninformed_walk;
+    SetCPFAState(search_with_uninformed_walk);
     std::cout << "search_with_uninformed_walk" << std::endl;
   }
 
@@ -338,7 +343,7 @@ void CPFASearchController::searchWithInformedWalk()
 void CPFASearchController::returnToNest()
 {
   if(distanceToLocation(current_location, target_location) < min_distance_to_target) {
-    cpfa_state = set_target_location;
+    SetCPFAState(set_target_location);
     std::cout << "set_target_location" << std::endl;
   }
 }
@@ -375,8 +380,8 @@ bool CPFASearchController::giveUpSearching(const Point& current_location,
   double random_num = rng->uniformReal(0, 1);
 
   if(probability_of_returning_to_nest > random_num)  {
-    cpfa_search_type = pheromone;
-    cpfa_state = return_to_nest;
+    SetCPFAState(return_to_nest);
+    SetCPFASearchType(pheromone);
     std::cout << "return_to_nest" << std::endl;
 
     // Sets the target location 1 meter radially out directly from the center of the nest

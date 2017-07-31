@@ -73,17 +73,17 @@ private:
     _LAST
   };
 
-  CPFAState cpfa_state;
-  CPFASearchType cpfa_search_type;
+  CPFAState cpfa_state = start_state;
+  CPFASearchType cpfa_search_type = random_search;
 
   LogicState logicState;
   ProcessState processState;
 
-  PickUpController pickUpController;
-  DropOffController dropOffController;
-  CPFASearchController searchController;
-  ObstacleController obstacleController;
-  DriveController driveController;
+  PickUpController pickUpController = PickUpController("PickUpController");
+  DropOffController dropOffController = DropOffController("dropOffController");
+  CPFASearchController searchController = CPFASearchController("CPFASearchController");
+  ObstacleController obstacleController = ObstacleController("ObstacleController");
+  DriveController driveController = DriveController("DriveController");
 
   std::vector<PrioritizedController> prioritizedControllers;
   priority_queue<PrioritizedController> control_queue;

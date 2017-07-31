@@ -3,11 +3,12 @@
 
 #include "Controller.h"
 #include "TagPoint.h"
+#include <string>
 
 class ObstacleController : virtual Controller
 {
 public:
-  ObstacleController();
+  ObstacleController(std::string name);
 
   Result result;
 
@@ -70,8 +71,8 @@ private:
   bool targetHeld = false;
   bool previousTargetState = false;
 
-  CPFAState cpfa_state;
-  CPFASearchType cpfa_search_type;
+  CPFAState cpfa_state = start_state;
+  CPFASearchType cpfa_search_type = random_search;
 
 };
 

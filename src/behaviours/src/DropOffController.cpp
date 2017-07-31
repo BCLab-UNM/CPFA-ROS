@@ -1,6 +1,7 @@
 #include "DropOffController.h"
 
-DropOffController::DropOffController() {
+DropOffController::DropOffController(std::string name) {
+  this->name = name;
 
   reachedCollectionPoint = false;
 
@@ -354,6 +355,7 @@ CPFAState DropOffController::GetCPFAState()
 
 void DropOffController::SetCPFAState(CPFAState state) {
   cpfa_state = state;
+  result.cpfa_state = state;
 }
 
 
@@ -365,4 +367,5 @@ CPFASearchType DropOffController::GetCPFASearchType()
 void DropOffController::SetCPFASearchType(CPFASearchType type)
 {
   cpfa_search_type = type;
+  result.cpfa_search_type = type;
 }

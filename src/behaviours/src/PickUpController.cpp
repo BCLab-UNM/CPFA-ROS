@@ -2,7 +2,8 @@
 #include <limits> // For numeric limits
 #include <cmath> // For hypot
 
-PickUpController::PickUpController() {
+PickUpController::PickUpController(std::string name) {
+  this->name = name;
   lockTarget = false;
   timeOut = false;
   nTargetsSeen = 0;
@@ -280,6 +281,7 @@ CPFAState PickUpController::GetCPFAState()
 
 void PickUpController::SetCPFAState(CPFAState state) {
   cpfa_state = state;
+  result.cpfa_state = state;
 }
 
 
@@ -291,4 +293,5 @@ CPFASearchType PickUpController::GetCPFASearchType()
 void PickUpController::SetCPFASearchType(CPFASearchType type)
 {
   cpfa_search_type = type;
+  result.cpfa_search_type = type;
 }

@@ -2,6 +2,7 @@
 #define CONTROLLER_H
 
 #include "Result.h"
+#include <string>
 
 /*
  * This class is meant to serve as a template for all Controllers,
@@ -44,11 +45,14 @@ public:
   virtual void SetCPFASearchType(CPFASearchType search_type) = 0;
   virtual CPFASearchType GetCPFASearchType() = 0;
 
+  std::string name;
+
 protected:
 
   //Looks at external data and determines if an interrupt must be thrown
   //or if the controller should be polled
   virtual void ProcessData() = 0;
+
 };
 
 #endif // CONTROLLER_H

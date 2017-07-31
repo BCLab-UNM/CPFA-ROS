@@ -1,7 +1,8 @@
 #include "ObstacleController.h"
 
-ObstacleController::ObstacleController()
+ObstacleController::ObstacleController(std::string name)
 {
+  this->name = name;
   obstacleAvoided = true;
   obstacleDetected = false;
   obstacleInterrupt = false;
@@ -15,7 +16,7 @@ void ObstacleController::Reset() {
 }
 
 Result ObstacleController::DoWork() {
-
+  cout << "CPFAState in obstacle controller: " << cpfa_state << endl;
   clearWaypoints = true;
 
   if(centerSeen){
@@ -131,6 +132,7 @@ bool ObstacleController::ShouldInterrupt() {
 }
 
 bool ObstacleController::HasWork() {
+
   return !obstacleAvoided;
 }
 
@@ -160,6 +162,7 @@ CPFAState ObstacleController::GetCPFAState()
 
 void ObstacleController::SetCPFAState(CPFAState state) {
   cpfa_state = state;
+  result.cpfa_state = state;
 }
 
 
@@ -171,4 +174,5 @@ CPFASearchType ObstacleController::GetCPFASearchType()
 void ObstacleController::SetCPFASearchType(CPFASearchType type)
 {
   cpfa_search_type = type;
+  result.cpfa_search_type = type;
 }

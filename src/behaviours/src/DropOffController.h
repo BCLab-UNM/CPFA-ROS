@@ -6,11 +6,12 @@
 
 #include "Controller.h"
 #include "TagPoint.h"
+#include <string>
 
 class DropOffController : virtual Controller
 {
 public:
-  DropOffController();
+  DropOffController(std::string name);
   ~DropOffController();
 
   void Reset() override;
@@ -126,7 +127,7 @@ private:
   bool precisionInterrupt = false;
   bool finalInterrupt = false;
 
-  CPFAState cpfa_state;
-  CPFASearchType cpfa_search_type;
+  CPFAState cpfa_state = start_state;
+  CPFASearchType cpfa_search_type = random_search;
 };
 #endif // end header define

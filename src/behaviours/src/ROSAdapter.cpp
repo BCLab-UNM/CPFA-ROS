@@ -251,8 +251,10 @@ void behaviourStateMachine(const ros::TimerEvent&) {
     if (timerTimeElapsed > startDelayInSeconds) {
       centerLocation.x = cos(currentLocation.theta);
       centerLocation.y = sin(currentLocation.theta);
+      cout << "centerLocation x: " << centerLocation.x << " y: " << centerLocation.y << endl;
       
       // Set arena size depending on the number of rovers in arena
+      cout << "Setting arena size: " << rovers.size() << endl;
       logicController.SetArenaSize(rovers.size());
 
       // initialization has run
@@ -267,6 +269,8 @@ void behaviourStateMachine(const ros::TimerEvent&) {
   // Robot is in automode
   if (currentMode == 2 || currentMode == 3) {
 
+    cout << "timerTimeElapsed: " << timerTimeElapsed << endl;
+
     if(distanceToCenter() > 0.75) {
       centerUpdated = false;
     }
@@ -277,13 +281,6 @@ void behaviourStateMachine(const ros::TimerEvent&) {
     centerOdom.y = centerLocation.y;
     centerOdom.theta = centerLocation.theta;
     logicController.SetCenterLocationOdom(centerOdom);
-
-    Point centerMap;
-    centerMap.x = centerLocationMap.x;
-    centerMap.y = centerLocationMap.y;
-    centerMap.theta = centerLocationMap.theta;
-    logicController.SetCenterLocationMap(centerMap);
-
 
     //update the time used by all the controllers
     logicController.SetCurrentTimeInMilliSecs( getROSTimeInMilliSecs() );
@@ -307,7 +304,9 @@ void behaviourStateMachine(const ros::TimerEvent&) {
 
       angle.data = prevFinger;
       fingerAnglePublish.publish(angle);
+      cout << "sendDriveCommand(0, 0) fingerAngle: " << angle.data;
       angle.data = prevWrist;
+      cout << " wristAngle " << angle.data << endl;
       wristAnglePublish.publish(angle);
     }
 
@@ -315,17 +314,20 @@ void behaviourStateMachine(const ros::TimerEvent&) {
     else {
 
       sendDriveCommand(result.pd.left,result.pd.right);
+      cout << "sendDriveCommand(" << result.pd.left << ", " << result.pd.right << ")" << endl;
 
       std_msgs::Float32 angle;
       if (result.fingerAngle != -1) {
         angle.data = result.fingerAngle;
         fingerAnglePublish.publish(angle);
         prevFinger = result.fingerAngle;
+        cout << "fingerAngle: " << angle.data << endl;
       }
       if (result.wristAngle != -1) {
         angle.data = result.wristAngle;
         wristAnglePublish.publish(angle);
         prevWrist = result.wristAngle;
+        cout << "wristAngle: " << angle.data << endl;
       }
     }
 
@@ -336,7 +338,7 @@ void behaviourStateMachine(const ros::TimerEvent&) {
     //adds a blank space between sets of debugging data to easly tell one tick from the next
     cout << endl;
 
-    cout << "System is Running" << endl; //you can remove or comment this out it just gives indication something is happening to the log file
+    cout << "================================================================" << endl; //you can remove or comment this out it just gives indication something is happening to the log file
   }
 
   // mode is NOT auto

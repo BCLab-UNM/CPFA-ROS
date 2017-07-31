@@ -54,9 +54,9 @@ enum CPFAState
  */
 enum CPFASearchType
 {
+  random_search,
   site_fidelity,
-  pheromone,
-  random_search
+  pheromone
 };
 
 /**

@@ -16,11 +16,13 @@
 #include "Point.h"
 #include "Result.h"
 
+#include <string>
+
 class CPFASearchController : virtual Controller {
 
 public:
 
-  CPFASearchController();
+  CPFASearchController(std::string name);
 
   void Reset() override;
 
@@ -142,8 +144,8 @@ private:
    */
   void setPheromone(const Point& center_location);
 
-  CPFAState cpfa_state;
-  CPFASearchType cpfa_search_type;
+  CPFAState cpfa_state = start_state;
+  CPFASearchType cpfa_search_type = random_search;
 
   int arena_size;
   int attempt_count = 0; 

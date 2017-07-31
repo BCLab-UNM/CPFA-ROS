@@ -5,11 +5,12 @@
 #include "Controller.h"
 #include <angles/angles.h>
 #include "Result.h"
+#include <string>
 
 class DriveController : virtual Controller
 {
 public:
-  DriveController();
+  DriveController(std::string name);
   ~DriveController();
 
   void Reset() override;
@@ -93,8 +94,8 @@ private:
 
   void ProcessData();
 
-  CPFAState cpfa_state;
-  CPFASearchType cpfa_search_type;
+  CPFAState cpfa_state = start_state;
+  CPFASearchType cpfa_search_type = random_search;
 
 
 };
