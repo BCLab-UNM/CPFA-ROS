@@ -31,6 +31,7 @@ DropOffController::~DropOffController() {
 }
 
 Result DropOffController::DoWork() {
+  SetCPFAState(return_to_nest);
 
   int count = countLeft + countRight;
 
@@ -46,6 +47,9 @@ Result DropOffController::DoWork() {
   {
     if (timerTimeElapsed >= 4)
     {
+      SetCPFAState(set_target_location);
+      result.lay_pheromone = true;
+
       result.type = behavior;
       result.b = nextProcess;
       result.reset = true;
@@ -237,6 +241,7 @@ void DropOffController::Reset() {
   result.fingerAngle = -1;
   result.wristAngle = 0.8;
   result.reset = false;
+  result.lay_pheromone = false;
   result.wpts.waypoints.clear();
   spinner = 0;
   spinSizeIncrease = 0;

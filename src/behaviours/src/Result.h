@@ -116,6 +116,7 @@ struct Result {
   PIDType PIDMode;
 
   bool reset;
+  bool lay_pheromone = false;
 };
 
 #endif 

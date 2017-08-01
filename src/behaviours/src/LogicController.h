@@ -55,6 +55,14 @@ public:
   void SetCPFASearchType(CPFASearchType search_type) override;
   CPFASearchType GetCPFASearchType() override;
 
+  void senseLocalResourceDensity(int num_tags);
+
+  void printCPFAState();
+  void printCPFASearchType();
+
+  bool layPheromone();
+  Point getTargetLocation();
+
 protected:
   void ProcessData();
 
@@ -91,6 +99,7 @@ private:
   void controllerInterconnect();
 
   long int current_time = 0;
+  bool lay_pheromone = false;
 };
 
 #endif // LOGICCONTROLLER_H

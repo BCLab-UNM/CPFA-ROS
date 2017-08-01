@@ -16,7 +16,6 @@ void ObstacleController::Reset() {
 }
 
 Result ObstacleController::DoWork() {
-  cout << "CPFAState in obstacle controller: " << cpfa_state << endl;
   clearWaypoints = true;
 
   if(centerSeen){

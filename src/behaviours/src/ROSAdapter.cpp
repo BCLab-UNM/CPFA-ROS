@@ -249,9 +249,9 @@ void behaviourStateMachine(const ros::TimerEvent&) {
   // auto mode but wont work in main goes here)
   if (!initilized) {
     if (timerTimeElapsed > startDelayInSeconds) {
-      centerLocation.x = cos(currentLocation.theta);
-      centerLocation.y = sin(currentLocation.theta);
-      cout << "centerLocation x: " << centerLocation.x << " y: " << centerLocation.y << endl;
+      //centerLocation.x = cos(currentLocation.theta);
+      //centerLocation.y = sin(currentLocation.theta);
+      //cout << "centerLocation x: " << centerLocation.x << " y: " << centerLocation.y << endl;
       
       // Set arena size depending on the number of rovers in arena
       cout << "Setting arena size: " << rovers.size() << endl;
@@ -273,6 +273,18 @@ void behaviourStateMachine(const ros::TimerEvent&) {
 
     if(distanceToCenter() > 0.75) {
       centerUpdated = false;
+    }
+
+    if (logicController.layPheromone()) {
+      behaviours::PheromoneTrail trail;
+      Point pheromone_location_point = logicController.getTargetLocation();
+
+      geometry_msgs::Pose2D pheromone_location;
+      pheromone_location.x = pheromone_location_point.x - centerLocation.x;
+      pheromone_location.y = pheromone_location_point.y - centerLocation.y;
+
+      trail.waypoints.push_back(pheromone_location);
+      pheromoneTrailPublish.publish(trail);
     }
 
     //TODO: this just sets center to 0 over and over and needs to change
@@ -369,22 +381,71 @@ void sendDriveCommand(double left, double right)
  *************************/
 
 void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& message) {
+  CPFAState cpfa_state = logicController.GetCPFAState();
+  bool ignored_tag = false;
+
+  // Number of resource tags
+  int num_tags = 0;
 
   if (message->detections.size() > 0) {
     vector<TagPoint> tags;
 
     for (int i = 0; i < message->detections.size(); i++) {
 
+
       TagPoint loc;
       loc.id = message->detections[i].id;
+      
+      if (loc.id == 0) {
+        num_tags++;
+      }
+
       geometry_msgs::PoseStamped tagPose = message->detections[i].pose;
       loc.x = tagPose.pose.position.x;
       loc.y = tagPose.pose.position.y;
       loc.z = tagPose.pose.position.z;
       //loc.theta =
-      tags.push_back(loc);
+      
+      // While in a travel state ignore resource tags
+      switch(cpfa_state) {
+
+        case return_to_nest:
+        case travel_to_search_site:
+        case set_target_location:
+        case start_state: {
+          if(loc.id == 0 && !ignored_tag) {
+            ignored_tag = true;
+            cout << "ROSAdapter: targetHandler -> ignored a 0 tag!" << endl << endl;
+          }
+
+          break;
+        }
+
+        default: {
+          tags.push_back(loc);
+        }
+
+      }
+
+      //if ((cpfa_state == return_to_nest || cpfa_state == travel_to_search_site || cpfa_state == set_target_location || cpfa_state == start_state) && loc.id == 0 ) {
+
+        //if(!ignored_tag) {
+          //ignored_tag = true;
+          //cout << "ROSAdapter: targetHandler -> ignored a 0 tag!" << endl << endl;
+        //}
+
+        //continue;
+      //} else {
+        //tags.push_back(loc);
+      //}
     }
+
     logicController.SetAprilTags(tags);
+
+    if(cpfa_state == sense_local_resource_density) {
+      logicController.senseLocalResourceDensity(num_tags);
+    }
+
   }
 
 }
@@ -478,6 +539,8 @@ void joyCmdHandler(const sensor_msgs::Joy::ConstPtr& message) {
 }
 
 void pheromoneTrailHandler(const behaviours::PheromoneTrail& message) {
+    // Framework implemented for pheromone waypoints, but we are only using
+    // the first index of the trail momentarily for the pheromone location
     behaviours::PheromoneTrail trail = message;
 
     // Adjust pheromone location to account for center location

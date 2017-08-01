@@ -139,6 +139,8 @@ bool PickUpController::ShouldInterrupt(){
 }
 
 Result PickUpController::DoWork() {
+  SetCPFAState(sense_local_resource_density);
+  SetCPFASearchType(site_fidelity);
 
   if (!targetHeld) {
     //threshold distance to be from the target block before attempting pickup

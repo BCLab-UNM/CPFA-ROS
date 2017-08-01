@@ -26,7 +26,7 @@ void LogicController::Reset() {
 //This function is called every 1/10th second by the ROSAdapter
 //The logical flow if the behaviours is controlled here by using a interrupt, haswork, priority queue system.
 Result LogicController::DoWork() {
-  cout << "LogicController doing work.." << endl;
+  cout << "LogicController doing work..." << endl;
   Result result;
 
   //first a loop runs through all the controllers who have a priority of 0 or above witht he largest number being
@@ -81,8 +81,10 @@ Result LogicController::DoWork() {
     cout << endl << control_queue.top().controller->name << ": doing work!" << endl;
     result = control_queue.top().controller->DoWork();
 
+    // This tells ROS Adapter whether to lay a pheromone
+    lay_pheromone = result.lay_pheromone;
+
     // Check if CPFA state has changed
-    cout << "Setting CPFA state with result..." << endl;
     SetCPFAState(result.cpfa_state);
     SetCPFASearchType(result.cpfa_search_type);
 
@@ -161,7 +163,6 @@ Result LogicController::DoWork() {
     result = driveController.DoWork();
 
     // Check if CPFA state has changed
-    cout << "Setting CPFA state with result..." << endl;
     SetCPFAState(result.cpfa_state);
     SetCPFASearchType(result.cpfa_search_type);
     cout << endl;
@@ -182,14 +183,25 @@ Result LogicController::DoWork() {
     cout << endl << "logicState: LOGIC_STATE_PRECISION_COMMAND" << endl;
     //unlike waypoints precision commands change every update tick so we ask the
     //controller for new commands on every update tick.
+    cout << control_queue.top().controller->name << ": doing work!" << endl;
     result = control_queue.top().controller->DoWork();
 
+    // Check if CPFA state has changed
+    SetCPFAState(result.cpfa_state);
+    SetCPFASearchType(result.cpfa_search_type);
+
     //pass the driving commands to the drive controller so it can interpret them
+    cout << endl << control_queue.top().controller->name << ": doing work!" << endl;
     driveController.SetResultData(result);
 
     //the interoreted commands are turned into proper motor commands to be passed the ROS Adapter
     //as left and right wheel PWM values in the result struct.
     result = driveController.DoWork();
+
+    // Check if CPFA state has changed
+    SetCPFAState(result.cpfa_state);
+    SetCPFASearchType(result.cpfa_search_type);
+
     break;
 
   }//end of precision case****************************************************************************************
@@ -322,27 +334,11 @@ void LogicController::SetArenaSize(int numRovers) {
   searchController.setArenaSize(numRovers);
 }
 
-void LogicController::insertPheromone(const std::vector<Point> &pheromone_trail) {
+void LogicController::insertPheromone(const vector<Point> &pheromone_trail) {
   searchController.insertPheromone(pheromone_trail);
 }
 
 void LogicController::SetCPFAState(CPFAState state) {
-  cout << "CPFAState: ";
-  if(state == set_target_location)
-    std::cout << "set_target_location" << std::endl;
-  else if(state == travel_to_search_site)
-    std::cout << "travel_to_search_site" << std::endl;
-  else if(state == search_with_uninformed_walk)
-    std::cout << "search_with_uninformed_walk" << std::endl;
-  else if(state == search_with_informed_walk)
-    std::cout << "search_with_informed_walk" << std::endl;
-  else if(state == sense_local_resource_density)
-    std::cout << "sense_local_resource_density" << std::endl;
-  else if (state == return_to_nest)
-    std::cout << "return_to_nest" << std::endl;
-  else
-    std::cout << "WTF" << endl;
-
   if(state != cpfa_state) {
     cpfa_state = state;
     for(PrioritizedController cntrlr : prioritizedControllers) {
@@ -351,6 +347,8 @@ void LogicController::SetCPFAState(CPFAState state) {
       }
     }
   }
+
+  printCPFAState();
 }
 
 CPFAState LogicController::GetCPFAState() {
@@ -358,14 +356,6 @@ CPFAState LogicController::GetCPFAState() {
 }
 
 void LogicController::SetCPFASearchType(CPFASearchType search_type) {
-  cout << "CPFASearchType: ";
-  if(search_type == site_fidelity)
-    std::cout << "search_type site_fidelity" << std::endl;
-  else if(search_type == pheromone)
-    std::cout << "pheromone" << std::endl;
-  else
-    std::cout << "random_search" << std::endl;
-
   if(search_type != cpfa_search_type) {
     cpfa_search_type = search_type;
     for(PrioritizedController cntrlr : prioritizedControllers) {
@@ -376,8 +366,62 @@ void LogicController::SetCPFASearchType(CPFASearchType search_type) {
 
   }
 
+  printCPFASearchType();
 }
 
 CPFASearchType LogicController::GetCPFASearchType() {
   return cpfa_search_type;
+}
+
+void LogicController::senseLocalResourceDensity(int num_tags) {
+  if(cpfa_state == sense_local_resource_density) {
+    searchController.senseLocalResourceDensity(num_tags);
+
+    cout << "CPFAState: sense_local_resource_density" << endl;
+    printCPFASearchType();
+  }
+}
+
+void LogicController::printCPFAState() {
+  cout << "CPFAState: ";
+  if(cpfa_state == set_target_location)
+    cout << "set_target_location" << endl;
+  else if(cpfa_state == travel_to_search_site)
+    cout << "travel_to_search_site" << endl;
+  else if(cpfa_state == search_with_uninformed_walk)
+    cout << "search_with_uninformed_walk" << endl;
+  else if(cpfa_state == search_with_informed_walk)
+    cout << "search_with_informed_walk" << endl;
+  else if(cpfa_state == sense_local_resource_density)
+    cout << "sense_local_resource_density" << endl;
+  else if (cpfa_state == return_to_nest)
+    cout << "return_to_nest" << endl;
+  else
+    cout << "WTF" << endl;
+}
+
+void LogicController::printCPFASearchType() {
+    cout << "CPFASearchType: ";
+    if(cpfa_search_type == site_fidelity)
+      cout << "site_fidelity" << endl;
+    else if(cpfa_search_type == pheromone)
+      cout << "pheromone" << endl;
+    else if(cpfa_search_type == random_search)
+      cout << "random_search" << endl;
+    else 
+      cout << "WTF" << endl;
+}
+
+bool LogicController::layPheromone() {
+
+  if(lay_pheromone) {
+    lay_pheromone = false;
+    return searchController.layPheromone();
+  }
+
+  return false;
+}
+
+Point LogicController::getTargetLocation() {
+  return searchController.getTargetLocation();
 }

@@ -2,7 +2,7 @@
 
 // PUBLIC Functions
 
-CPFASearchController::CPFASearchController(std::string name) {
+CPFASearchController::CPFASearchController(string name) {
   this->name = name;
 
   arena_size = 15;
@@ -25,6 +25,11 @@ void CPFASearchController::Reset() {
  * This code implements a basic random walk search.
  */
 Result CPFASearchController::DoWork() {
+  if(cpfa_state == set_target_location) {
+    // Reset attempt count after returning to the nest
+    attempt_count = 0;
+  }
+
   if (!result.wpts.waypoints.empty()) {
     if (hypot(result.wpts.waypoints[0].x-current_location.x, result.wpts.waypoints[0].y-current_location.y) < 0.10) {
       attempt_count = 0;
@@ -41,20 +46,20 @@ Result CPFASearchController::DoWork() {
   }
   else if (attempt_count >= 5 || attempt_count == 0) {
 
-    // Rover is traveling and is blocked by obstacle
+    //Rover is traveling and is blocked by obstacle
     if(attempt_count >= 5 && cpfa_state == travel_to_search_site) {
-      std::cout << "Interrupted travel" << std::endl;
+      cout << "Interrupted travel" << endl;
 
       if(cpfa_search_type == site_fidelity || cpfa_search_type == pheromone) {
 
         SetCPFAState(search_with_informed_walk);
         local_resource_density = 0;
         informed_search_start_time = ros::Time::now();
-        std::cout << "search_with_informed_walk" << std::endl;
+        cout << "search_with_informed_walk" << endl;
       } else {
 
         SetCPFAState(search_with_uninformed_walk);
-        std::cout << "search_with_uninformed_walk" << std::endl;
+        cout << "search_with_uninformed_walk" << endl;
       }
 
     }
@@ -124,8 +129,11 @@ void CPFASearchController::senseLocalResourceDensity(int num_tags)
 {
   if(num_tags > local_resource_density){
     local_resource_density = num_tags;
-    std::cout << "local resource density: " << local_resource_density << std::endl;
   }
+
+  cout << "ROSAdapter: targetHandler" << endl;
+  cout << "local_resource_density: " << local_resource_density << endl;
+  cout << endl;
 }
 
 bool CPFASearchController::layPheromone() 
@@ -133,14 +141,17 @@ bool CPFASearchController::layPheromone()
   double poisson = getPoissonCDF(rate_of_laying_pheromone);
   double random_num = rng->uniformReal(0, 1);
 
-  std::cout << "layPheromone, poisson: " << poisson << " > random number: " << random_num << std::endl;
-  if(poisson > random_num)
+  if(poisson > random_num) {
+    cout << "Laying a pheromone..." << endl;
+    cout << endl;
     return true;
-  else
+  } else {
     return false;
+  }
+
 }
 
-void CPFASearchController::insertPheromone(const std::vector<Point> &pheromone_trail)
+void CPFASearchController::insertPheromone(const vector<Point> &pheromone_trail)
 {
   // At this point in time we are not making a pheromone trail
   // the first index of the trail is the same position as the pheromone location
@@ -148,8 +159,8 @@ void CPFASearchController::insertPheromone(const std::vector<Point> &pheromone_t
   Pheromone pheromone(new_location, pheromone_trail, ros::Time::now(), rate_of_pheromone_decay);
 
   pheromones.push_back(pheromone);
-  std::cout << "inserting pheromone pheromones.size(): " << pheromones.size() << std::endl;
-  std::cout << "pheromoneLocation x: " << pheromone_trail[0].x << " y: " << pheromone_trail[0].y << std::endl;
+  cout << "inserting pheromone pheromones.size(): " << pheromones.size() << endl;
+  cout << "pheromoneLocation x: " << pheromone_trail[0].x << " y: " << pheromone_trail[0].y << endl;
 }
 
 CPFAState CPFASearchController::GetCPFAState() 
@@ -191,7 +202,7 @@ void CPFASearchController::setTargetLocation(const Point& site_location)
   target_location.x = site_location.x;
   target_location.y = site_location.y;
 
-  std::cout << "setTargetLocation  target_location.x: " << target_location.x << " target_location.y: " << target_location.y << std::endl;
+  cout << "setTargetLocation  target_location.x: " << target_location.x << " target_location.y: " << target_location.y << endl;
 }
 
 
@@ -201,7 +212,7 @@ void CPFASearchController::SetSuccesfullPickup() {
 
 void CPFASearchController::setArenaSize(int num_rovers) 
 {
-  std::cout << "num_rovers: " << num_rovers << std::endl;
+  cout << "num_rovers: " << num_rovers << endl;
   if(num_rovers > 3) {
     arena_size = 22;
   }
@@ -224,34 +235,32 @@ void CPFASearchController::ProcessData() {
 
 void CPFASearchController::start() 
 {
-  std::cout << "start_state" << std::endl;
+  cout << "start_state" << endl;
 
   // Default CPFA parameters
-  probability_of_switching_to_searching = 0.13; // Increasing grows the probability
-  probability_of_returning_to_nest = 0.0; // Increasing grows the probability
+  probability_of_switching_to_searching = 0.12; // Increasing grows the probability
+  probability_of_returning_to_nest = 0.06; // Increasing grows the probability
   uninformed_search_variation = 0.4; // The change in heading using uninformed search
   rate_of_informed_search_decay = 1.0/6.0; // Inverse of the expected time to find a resource
-  rate_of_site_fidelity = 0.3; // Lower grows the probability
-  rate_of_laying_pheromone = 5; // Lower grows the probability
+  rate_of_site_fidelity = 5; // Lower grows the probability
+  rate_of_laying_pheromone = 1; // Lower grows the probability
   rate_of_pheromone_decay = 1.0/40.0; // Inverse of expected pheromone time
 
   // Parameters set from the CPFA parameters yaml file
-  ros::param::get("/" + rover_name + "/CPFA/probability_of_switching_to_searching", probability_of_switching_to_searching);
-  ros::param::get("/" + rover_name + "/CPFA/probability_of_returning_to_nest", probability_of_returning_to_nest);
-  ros::param::get("/" + rover_name + "/CPFA/uninformed_search_variation", uninformed_search_variation);
-  ros::param::get("/" + rover_name + "/CPFA/rate_of_informed_search_decay", rate_of_informed_search_decay);
-  ros::param::get("/" + rover_name + "/CPFA/rate_of_site_fidelity", rate_of_site_fidelity);
-  ros::param::get("/" + rover_name + "/CPFA/rate_of_laying_pheromone", rate_of_laying_pheromone);
-  ros::param::get("/" + rover_name + "/CPFA/rate_of_pheromone_decay", rate_of_pheromone_decay);
+  //ros::param::get("/" + rover_name + "/CPFA/probability_of_switching_to_searching", probability_of_switching_to_searching);
+  //ros::param::get("/" + rover_name + "/CPFA/probability_of_returning_to_nest", probability_of_returning_to_nest);
+  //ros::param::get("/" + rover_name + "/CPFA/uninformed_search_variation", uninformed_search_variation);
+  //ros::param::get("/" + rover_name + "/CPFA/rate_of_informed_search_decay", rate_of_informed_search_decay);
+  //ros::param::get("/" + rover_name + "/CPFA/rate_of_site_fidelity", rate_of_site_fidelity);
+  //ros::param::get("/" + rover_name + "/CPFA/rate_of_laying_pheromone", rate_of_laying_pheromone);
+  //ros::param::get("/" + rover_name + "/CPFA/rate_of_pheromone_decay", rate_of_pheromone_decay);
 
   SetCPFAState(set_target_location);
-  std::cout << "set_target_location" << std::endl;
 }
 
 void CPFASearchController::setSearchLocation()
 {
   SetCPFAState(travel_to_search_site);
-  std::cout << "travel_to_search_site" << std::endl;
 
   local_resource_density = 0;
 
@@ -259,10 +268,9 @@ void CPFASearchController::setSearchLocation()
     double poisson = getPoissonCDF(rate_of_site_fidelity);
     double random_num = rng->uniformReal(0, 1);
 
-    std::cout << "siteFidelity, poisson: " << poisson << " > random number: " << random_num << std::endl;
-    if(poisson > random_num) {
-      std::cout << "CPFASearchType site_fidelity" << std::endl;
+    cout << "siteFidelity, poisson: " << poisson << " > random number: " << random_num << endl;
 
+    if(poisson > random_num) {
       // Leave target_location to previous block location
       // Adjust heading so rover headers to target
       target_location.theta = atan2(target_location.y - current_location.y, target_location.x - current_location.x);
@@ -270,19 +278,25 @@ void CPFASearchController::setSearchLocation()
     } else {
       SetCPFASearchType(pheromone);
     }
+
   }
 
   if(cpfa_search_type == pheromone && pheromones.size() > 0){
-    std::cout << "CPFASearchType pheromone pheromones.size(): " << pheromones.size() << std::endl;
+    cout << "CPFASearchType pheromone pheromones.size(): " << pheromones.size() << endl;
     setPheromone(center_location);
 
     // Adjust heading so rover headers to target
     target_location.theta = atan2(target_location.y - current_location.y, target_location.x - current_location.x);
     return;
+  } else {
+    cout << endl;
+    cout << "Failed to use a pheromone!" << endl;
+    cout << "CPFASearchType: " << cpfa_search_type << endl;
+    cout << "Pheromones size: " << pheromones.size() << endl;
+    cout << endl;
   }
 
   SetCPFASearchType(random_search);
-  std::cout << "CPFASearchType random_search" << std::endl;
 
   target_location.theta = rng->uniformReal(0, 2 * M_PI);
   travelToSearchSite();
@@ -298,7 +312,6 @@ void CPFASearchController::travelToSearchSite()
       informed_search_start_time = ros::Time::now();
       local_resource_density = 0;
       SetCPFAState(search_with_informed_walk);
-      std::cout << "search_with_informed_walk" << std::endl;
     }
 
 
@@ -311,7 +324,6 @@ void CPFASearchController::travelToSearchSite()
   // cpfa_search_type is random_search
   if(rng->uniformReal(0, 1) < probability_of_switching_to_searching){
     SetCPFAState(search_with_uninformed_walk);
-    std::cout << "search_with_uninformed_walk" << std::endl;
   }
 
   target_location.x = current_location.x + travel_step_size*cos(target_location.theta);
@@ -344,7 +356,6 @@ void CPFASearchController::returnToNest()
 {
   if(distanceToLocation(current_location, target_location) < min_distance_to_target) {
     SetCPFAState(set_target_location);
-    std::cout << "set_target_location" << std::endl;
   }
 }
 
@@ -369,7 +380,7 @@ double CPFASearchController::distanceToLocation(const Point& L1, const Point& L2
 double CPFASearchController::calculateInformedWalkCorrelation()
 {
   double search_time = (ros::Time::now() - informed_search_start_time).toSec();
-  std::cout << "informedSearchTime: " << search_time << std::endl;
+  cout << "informedSearchTime: " << search_time << endl;
 
   return uninformed_search_variation + (4 * M_PI - uninformed_search_variation) * exp(-rate_of_informed_search_decay * search_time);
 }
@@ -382,7 +393,6 @@ bool CPFASearchController::giveUpSearching(const Point& current_location,
   if(probability_of_returning_to_nest > random_num)  {
     SetCPFAState(return_to_nest);
     SetCPFASearchType(pheromone);
-    std::cout << "return_to_nest" << std::endl;
 
     // Sets the target location 1 meter radially out directly from the center of the nest
     target_location.theta = atan2(center_location.y - current_location.y, center_location.x - current_location.x);
@@ -398,7 +408,7 @@ bool CPFASearchController::giveUpSearching(const Point& current_location,
 void CPFASearchController::updatePheromoneList()
 {
   ros::Time time = ros::Time::now();
-  std::vector<Pheromone> newPheromoneList;
+  vector<Pheromone> newPheromoneList;
 
   for(int i = 0; i < pheromones.size(); i++) {
     Point pLoc = pheromones[i].getLocation();
@@ -415,7 +425,7 @@ void CPFASearchController::updatePheromoneList()
 
 void CPFASearchController::setPheromone(const Point& center_location)
 {
-  std::cout << "Setting pheromone location..." << std::endl;
+  cout << "Setting pheromone location..." << endl;
   double maxStrength = 0.0;
   double randomWeight = 0.0;
 
@@ -436,7 +446,7 @@ void CPFASearchController::setPheromone(const Point& center_location)
 
       //  SetTarget(pheromones[i].GetLocation());
       target_location = pheromones[i].getLocation();
-      std::cout << "pheromoneLocation x: " << target_location.x << " y: " << target_location.y << std::endl;
+      cout << "pheromoneLocation x: " << target_location.x << " y: " << target_location.y << endl;
 
       // TrailToFollow = pheromones[i].GetTrail();
 
