@@ -432,6 +432,10 @@ void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& messag
 
         default:
           {
+            if(loc.id == 0 && distanceToCenter() < 1.2) 
+            {
+              break;
+            }
             tags.push_back(loc);
           }
 
