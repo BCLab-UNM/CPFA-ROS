@@ -45,7 +45,7 @@ Result DropOffController::DoWork() {
   //to resart our search.
   if(reachedCollectionPoint)
   {
-    if (timerTimeElapsed >= 4)
+    if (timerTimeElapsed >= 3)
     {
       SetCPFAState(set_target_location);
       result.lay_pheromone = true;

@@ -138,7 +138,7 @@ time_t timerStartTime;
 
 // An initial delay to allow the rover to gather enough position data to 
 // average its location.
-unsigned int startDelayInSeconds = 1;
+unsigned int startDelayInSeconds = 8;
 float timerTimeElapsed = 0;
 
 //Transforms
@@ -249,12 +249,10 @@ void behaviourStateMachine(const ros::TimerEvent&) {
   // auto mode but wont work in main goes here)
   if (!initilized) {
     if (timerTimeElapsed > startDelayInSeconds) {
-      //centerLocation.x = cos(currentLocation.theta);
-      //centerLocation.y = sin(currentLocation.theta);
-      //cout << "centerLocation x: " << centerLocation.x << " y: " << centerLocation.y << endl;
+      centerLocation.x = 1.2 * cos(currentLocation.theta);
+      centerLocation.y = 1.2 * sin(currentLocation.theta);
       
       // Set arena size depending on the number of rovers in arena
-      cout << "Setting arena size: " << rovers.size() << endl;
       logicController.SetArenaSize(rovers.size());
 
       // initialization has run
@@ -269,6 +267,7 @@ void behaviourStateMachine(const ros::TimerEvent&) {
   // Robot is in automode
   if (currentMode == 2 || currentMode == 3) {
 
+    cout << "Rover: " << publishedName << endl;
     cout << "timerTimeElapsed: " << timerTimeElapsed << endl;
 
     if(distanceToCenter() > 0.75) {
@@ -285,6 +284,11 @@ void behaviourStateMachine(const ros::TimerEvent&) {
 
       trail.waypoints.push_back(pheromone_location);
       pheromoneTrailPublish.publish(trail);
+
+      
+      cout << "================================================================" << endl;
+      // Return to allow pheromone trail handler to receive the pheromone location
+      return;
     }
 
     //TODO: this just sets center to 0 over and over and needs to change
@@ -412,18 +416,24 @@ void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& messag
         case return_to_nest:
         case travel_to_search_site:
         case set_target_location:
-        case start_state: {
-          if(loc.id == 0 && !ignored_tag) {
-            ignored_tag = true;
-            cout << "ROSAdapter: targetHandler -> ignored a 0 tag!" << endl << endl;
+        case start_state:
+          {
+            if(loc.id == 0 && !ignored_tag)
+            {
+              ignored_tag = true;
+              cout << "ROSAdapter: targetHandler -> ignored a 0 tag!" << endl << endl;
+            }
+
+            if (loc.id == 0)
+            {
+              break;
+            }
           }
 
-          break;
-        }
-
-        default: {
-          tags.push_back(loc);
-        }
+        default:
+          {
+            tags.push_back(loc);
+          }
 
       }
 

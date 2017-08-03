@@ -67,6 +67,7 @@ public:
   void setArenaSize(int num_rovers);
   void SetCurrentLocation(Point currentLocation);
   void SetCenterLocation(Point centerLocation);
+  void setObstacleAvoidance(bool turn_direction);
 
 protected:
 
@@ -149,8 +150,11 @@ private:
 
   int arena_size;
   int attempt_count = 0; 
+  int attempt_count_threshold = 2;
   int local_resource_density; // An estimate of the density of the resources in the local region.
   bool succesfull_pickup = false;
+  bool avoided_obstacle = false;
+  bool turn_direction = false;
   double min_distance_to_target; // Threshold to determine whether rover has reached a target location
   double travel_step_size; // Step size used for the rover travel state
   double search_step_size; // Step size used while in either an informed or uninformed search state

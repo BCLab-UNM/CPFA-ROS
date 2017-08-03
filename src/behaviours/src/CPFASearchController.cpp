@@ -36,18 +36,46 @@ Result CPFASearchController::DoWork() {
     }
   }
 
-  if (attempt_count > 0 && attempt_count < 5) {
+  cout << "Attempt Count: " << attempt_count << endl;
+  if (attempt_count > 0 && attempt_count < attempt_count_threshold) {
     attempt_count++;
     if (succesfull_pickup) {
       succesfull_pickup = false;
       attempt_count = 1;
     }
+
+    if(avoided_obstacle) 
+    {
+      Point dodge_point;
+      if(turn_direction)
+      {
+        // Just turned counterlockwise, set point to the left of the robot
+        dodge_point.x = current_location.x + 0.5 * cos(current_location.theta + M_PI/4);
+        dodge_point.y = current_location.y + 0.5 * sin(current_location.theta + M_PI/4);
+      } else
+      {
+        // Just turned clockwise, set point to the right of the robot
+        dodge_point.x = current_location.x + 0.5 * cos(current_location.theta - M_PI/4);
+        dodge_point.y = current_location.y + 0.5 * sin(current_location.theta - M_PI/4);
+      }
+
+      cout << "current_location x: " << current_location.x << " y: " << current_location.y << " theta: " << current_location.theta << endl;
+      cout << "dodge_point x: " << dodge_point.x << " y: " << dodge_point.y << endl;
+      cout << "target_Location x: " << target_location.x << " y: " << target_location.y << endl;
+      cout << "turn_direction: " << turn_direction << endl;
+      result.wpts.waypoints.clear();
+      if(cpfa_search_type != random_search) 
+      {
+        result.wpts.waypoints.push_back(target_location);
+      }
+      result.wpts.waypoints.push_back(dodge_point);
+    }
     return result;
   }
-  else if (attempt_count >= 5 || attempt_count == 0) {
+  else if (attempt_count >= attempt_count_threshold || attempt_count == 0) {
 
     //Rover is traveling and is blocked by obstacle
-    if(attempt_count >= 5 && cpfa_state == travel_to_search_site) {
+    if(attempt_count >= attempt_count_threshold && cpfa_state == travel_to_search_site) {
       cout << "Interrupted travel" << endl;
 
       if(cpfa_search_type == site_fidelity || cpfa_search_type == pheromone) {
@@ -161,6 +189,7 @@ void CPFASearchController::insertPheromone(const vector<Point> &pheromone_trail)
   pheromones.push_back(pheromone);
   cout << "inserting pheromone pheromones.size(): " << pheromones.size() << endl;
   cout << "pheromoneLocation x: " << pheromone_trail[0].x << " y: " << pheromone_trail[0].y << endl;
+  cout << "================================================================" << endl;
 }
 
 CPFAState CPFASearchController::GetCPFAState() 
@@ -238,12 +267,12 @@ void CPFASearchController::start()
   cout << "start_state" << endl;
 
   // Default CPFA parameters
-  probability_of_switching_to_searching = 0.12; // Increasing grows the probability
-  probability_of_returning_to_nest = 0.06; // Increasing grows the probability
+  probability_of_switching_to_searching = 0.15; // Increasing grows the probability
+  probability_of_returning_to_nest = 0.01; // Increasing grows the probability
   uninformed_search_variation = 0.4; // The change in heading using uninformed search
   rate_of_informed_search_decay = 1.0/6.0; // Inverse of the expected time to find a resource
-  rate_of_site_fidelity = 5; // Lower grows the probability
-  rate_of_laying_pheromone = 1; // Lower grows the probability
+  rate_of_site_fidelity = 1; // Lower grows the probability
+  rate_of_laying_pheromone = 5; // Lower grows the probability
   rate_of_pheromone_decay = 1.0/40.0; // Inverse of expected pheromone time
 
   // Parameters set from the CPFA parameters yaml file
@@ -338,6 +367,7 @@ void CPFASearchController::searchWithUninformedWalk()
   target_location.theta = rng->gaussian(current_location.theta, uninformed_search_variation);
   target_location.x = current_location.x + search_step_size*cos(target_location.theta);
   target_location.y = current_location.y + search_step_size*sin(target_location.theta);
+
 }
 
 void CPFASearchController::searchWithInformedWalk()
@@ -396,8 +426,8 @@ bool CPFASearchController::giveUpSearching(const Point& current_location,
 
     // Sets the target location 1 meter radially out directly from the center of the nest
     target_location.theta = atan2(center_location.y - current_location.y, center_location.x - current_location.x);
-    target_location.x = center_location.x - cos(target_location.theta);
-    target_location.y = center_location.y - sin(target_location.theta);
+    target_location.x = center_location.x;
+    target_location.y = center_location.y;
 
     return true;
   }  else {
@@ -459,3 +489,8 @@ void CPFASearchController::setPheromone(const Point& center_location)
   }
 }
 
+void CPFASearchController::setObstacleAvoidance(bool turn_direction)
+{
+  avoided_obstacle = true;
+  this->turn_direction = turn_direction;
+}

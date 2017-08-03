@@ -24,15 +24,21 @@ Result ObstacleController::DoWork() {
 
     result.pd.cmdVel = 0.0;
 
-    if(countLeft < countRight) {
-      result.pd.cmdAngular = -K_angular;
-    } else {
-      result.pd.cmdAngular = K_angular;
-    }
+    //cout << "countLeft: " << countLeft << " countRight: " << countRight << endl;
+    //if(countLeft < countRight) {
+      //result.pd.cmdAngular = K_angular;
+      //turn_direction = true; // counterclockwise
+    //} else {
+      //result.pd.cmdAngular = -K_angular;
+      //turn_direction = false; // clockwise
+    //}
 
+    result.pd.cmdAngular = 0;
     result.pd.setPointVel = 0.0;
-    result.pd.cmdVel = 0.0;
+    result.pd.cmdVel = -0.3;
     result.pd.setPointYaw = 0;
+    countLeft = 0;
+    countRight = 0;
 
   }
   else {
@@ -41,13 +47,31 @@ Result ObstacleController::DoWork() {
     if (right < 0.8 || center < 0.8 || left < 0.8) {
       result.type = precisionDriving;
 
-      result.pd.cmdAngular = -K_angular;
+      //if (right < left)
+      //{
+        //result.pd.cmdAngular = K_angular;
+        //turn_direction = true; // clockwise
+      //} else 
+      //{
+        result.pd.cmdAngular = -K_angular;
+        turn_direction = false;
+      //}
 
       result.pd.setPointVel = 0.0;
       result.pd.cmdVel = 0.0;
       result.pd.setPointYaw = 0;
     }
   }
+
+  cout << "turn_direction: ";
+  if(turn_direction)
+  {
+    cout << "counter-clockwise";
+  } else 
+  {
+    cout << "clockwise";
+  }
+  cout << endl;
 
   return result;
 }
@@ -174,4 +198,9 @@ void ObstacleController::SetCPFASearchType(CPFASearchType type)
 {
   cpfa_search_type = type;
   result.cpfa_search_type = type;
+}
+
+bool ObstacleController::getTurnDirection() 
+{
+  return turn_direction;
 }

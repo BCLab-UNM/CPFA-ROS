@@ -25,6 +25,8 @@ public:
   void SetTargetHeldClear() {targetHeld = false; previousTargetState = false;}
   bool GetShouldClearWaypoints() {bool tmp = clearWaypoints; clearWaypoints = false; return tmp;}
 
+  bool getTurnDirection();
+
   void SetCPFAState(CPFAState state) override;
   CPFAState GetCPFAState() override;
 
@@ -70,6 +72,8 @@ private:
 
   bool targetHeld = false;
   bool previousTargetState = false;
+
+  bool turn_direction = false; // True-> counterclockwise, False->clockwise
 
   CPFAState cpfa_state = start_state;
   CPFASearchType cpfa_search_type = random_search;

@@ -80,6 +80,7 @@ Result LogicController::DoWork() {
     //take the top member of the priority queue and run their do work function.
     cout << endl << control_queue.top().controller->name << ": doing work!" << endl;
     result = control_queue.top().controller->DoWork();
+    cout << "obstacleController turn_direction: " << obstacleController.getTurnDirection() << endl;
 
     // This tells ROS Adapter whether to lay a pheromone
     lay_pheromone = result.lay_pheromone;
@@ -280,6 +281,13 @@ void LogicController::controllerInterconnect() {
   if(obstacleController.GetShouldClearWaypoints()) {
     driveController.Reset();
   }
+
+  // Allow search controller to insert waypoint to avoid obstacle
+  if(obstacleController.HasWork())
+  {
+    searchController.setObstacleAvoidance(obstacleController.getTurnDirection());
+  }
+
 }
 
 
@@ -303,6 +311,20 @@ void LogicController::SetMapVelocityData(float linearVelocity, float angularVelo
 }
 
 void LogicController::SetAprilTags(vector<TagPoint> tags) {
+  // If giving up and returning to nest
+  if(!pickUpController.GetTargetHeld() && cpfa_state == return_to_nest)
+  {
+    int size = tags.size();
+    for(int i = 0; i < size; i++) 
+    {
+      if(tags[i].id == 256)
+      {
+        SetCPFAState(set_target_location);
+        break;
+      }
+    }
+  }
+
   pickUpController.SetTagData(tags);
   obstacleController.SetTagData(tags);
   dropOffController.SetTargetData(tags);

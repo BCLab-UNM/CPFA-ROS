@@ -199,6 +199,14 @@ void DriveController::ProcessData()
       waypoints.insert(waypoints.end(),result.wpts.waypoints.begin(), result.wpts.waypoints.end());
       stateMachineState = STATE_MACHINE_WAYPOINTS;
     }
+
+    cout << "Waypoints in drive controller" << endl;
+    for(int i = 0; i < result.wpts.waypoints.size(); i++)
+    {
+      Point point = result.wpts.waypoints[i];
+      cout << "x: " << point.x << " y: " << point.y << " theta: " << point.theta << endl;
+    }
+
   }
   else if (result.type == precisionDriving) {
     if (result.PIDMode == FAST_PID){
