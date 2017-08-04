@@ -47,15 +47,15 @@ Result ObstacleController::DoWork() {
     if (right < 0.8 || center < 0.8 || left < 0.8) {
       result.type = precisionDriving;
 
-      //if (right < left)
-      //{
-        //result.pd.cmdAngular = K_angular;
-        //turn_direction = true; // clockwise
-      //} else 
-      //{
+      if (right < left)
+      {
+        result.pd.cmdAngular = K_angular;
+        turn_direction = true; // clockwise
+      } else 
+      {
         result.pd.cmdAngular = -K_angular;
         turn_direction = false;
-      //}
+      }
 
       result.pd.setPointVel = 0.0;
       result.pd.cmdVel = 0.0;

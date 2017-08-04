@@ -285,7 +285,9 @@ void LogicController::controllerInterconnect() {
   // Allow search controller to insert waypoint to avoid obstacle
   if(obstacleController.HasWork())
   {
-    searchController.setObstacleAvoidance(obstacleController.getTurnDirection());
+      bool turn_direction = obstacleController.getTurnDirection();
+      searchController.setObstacleAvoidance(turn_direction);
+      dropOffController.setObstacleAvoidance(turn_direction);
   }
 
 }

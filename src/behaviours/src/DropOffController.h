@@ -39,6 +39,8 @@ public:
   void SetCPFASearchType(CPFASearchType search_type) override;
   CPFASearchType GetCPFASearchType() override;
 
+  void setObstacleAvoidance(bool turn_direction);
+
 private:
 
   void ProcessData();
@@ -126,6 +128,8 @@ private:
   bool interrupt = false;
   bool precisionInterrupt = false;
   bool finalInterrupt = false;
+  bool avoided_obstacle = false;
+  bool turn_direction = false;
 
   CPFAState cpfa_state = start_state;
   CPFASearchType cpfa_search_type = random_search;

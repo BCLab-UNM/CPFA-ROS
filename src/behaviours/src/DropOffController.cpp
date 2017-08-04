@@ -79,6 +79,28 @@ Result DropOffController::DoWork() {
     result.type = waypoint;
     result.wpts.waypoints.clear();
     result.wpts.waypoints.push_back(this->centerLocation);
+
+    if(avoided_obstacle) 
+    {
+      Point dodge_point;
+      if(turn_direction)
+      {
+        // Just turned counterlockwise, set point to the left of the robot
+        dodge_point.x = currentLocation.x + 0.5 * cos(currentLocation.theta + M_PI/2);
+        dodge_point.y = currentLocation.y + 0.5 * sin(currentLocation.theta + M_PI/2);
+      } else
+      {
+        // Just turned clockwise, set point to the right of the robot
+        dodge_point.x = currentLocation.x + 0.5 * cos(currentLocation.theta - M_PI/2);
+        dodge_point.y = currentLocation.y + 0.5 * sin(currentLocation.theta - M_PI/2);
+      }
+
+      cout << "currentLocation x: " << currentLocation.x << " y: " << currentLocation.y << " theta: " << currentLocation.theta << endl;
+      cout << "dodge_point x: " << dodge_point.x << " y: " << dodge_point.y << endl;
+      cout << "turn_direction: " << turn_direction << endl;
+      result.wpts.waypoints.push_back(dodge_point);
+    }
+
     startWaypoint = false;
     isPrecisionDriving = false;
 
@@ -209,14 +231,36 @@ Result DropOffController::DoWork() {
 
       result.type = waypoint;
       result.wpts.waypoints.push_back(this->centerLocation);
+
+      if(avoided_obstacle) 
+      {
+          Point dodge_point;
+          if(turn_direction)
+          {
+              // Just turned counterlockwise, set point to the left of the robot
+              dodge_point.x = currentLocation.x + 0.5 * cos(currentLocation.theta + M_PI/2);
+              dodge_point.y = currentLocation.y + 0.5 * sin(currentLocation.theta + M_PI/2);
+          } else
+          {
+              // Just turned clockwise, set point to the right of the robot
+              dodge_point.x = currentLocation.x + 0.5 * cos(currentLocation.theta - M_PI/2);
+              dodge_point.y = currentLocation.y + 0.5 * sin(currentLocation.theta - M_PI/2);
+          }
+
+          cout << "currentLocation x: " << currentLocation.x << " y: " << currentLocation.y << " theta: " << currentLocation.theta << endl;
+          cout << "dodge_point x: " << dodge_point.x << " y: " << dodge_point.y << endl;
+          cout << "turn_direction: " << turn_direction << endl;
+          result.wpts.waypoints.push_back(dodge_point);
+      }
+
       isPrecisionDriving = false;
       interrupt = false;
       precisionInterrupt = false;
     }
     else
     {
-      result.pd.cmdVel = searchVelocity;
-      result.pd.cmdAngularError = 0.0;
+        result.pd.cmdVel = searchVelocity;
+        result.pd.cmdAngularError = 0.0;
     }
 
     return result;
@@ -373,4 +417,10 @@ void DropOffController::SetCPFASearchType(CPFASearchType type)
 {
   cpfa_search_type = type;
   result.cpfa_search_type = type;
+}
+
+void DropOffController::setObstacleAvoidance(bool turn_direction) 
+{
+    this->turn_direction = turn_direction;
+    this->avoided_obstacle = true;
 }

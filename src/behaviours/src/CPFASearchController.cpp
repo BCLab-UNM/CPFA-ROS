@@ -50,13 +50,13 @@ Result CPFASearchController::DoWork() {
       if(turn_direction)
       {
         // Just turned counterlockwise, set point to the left of the robot
-        dodge_point.x = current_location.x + 0.5 * cos(current_location.theta + M_PI/4);
-        dodge_point.y = current_location.y + 0.5 * sin(current_location.theta + M_PI/4);
+        dodge_point.x = current_location.x + 0.5 * cos(current_location.theta + M_PI/2);
+        dodge_point.y = current_location.y + 0.5 * sin(current_location.theta + M_PI/2);
       } else
       {
         // Just turned clockwise, set point to the right of the robot
-        dodge_point.x = current_location.x + 0.5 * cos(current_location.theta - M_PI/4);
-        dodge_point.y = current_location.y + 0.5 * sin(current_location.theta - M_PI/4);
+        dodge_point.x = current_location.x + 0.5 * cos(current_location.theta - M_PI/2);
+        dodge_point.y = current_location.y + 0.5 * sin(current_location.theta - M_PI/2);
       }
 
       cout << "current_location x: " << current_location.x << " y: " << current_location.y << " theta: " << current_location.theta << endl;
