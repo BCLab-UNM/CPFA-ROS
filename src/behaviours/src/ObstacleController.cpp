@@ -24,14 +24,14 @@ Result ObstacleController::DoWork() {
 
     result.pd.cmdVel = 0.0;
 
-    //cout << "countLeft: " << countLeft << " countRight: " << countRight << endl;
-    //if(countLeft < countRight) {
+    cout << "countLeft: " << countLeft << " countRight: " << countRight << endl;
+    if(countLeft < countRight) {
       //result.pd.cmdAngular = K_angular;
-      //turn_direction = true; // counterclockwise
-    //} else {
+      turn_direction = true; // counterclockwise
+    } else {
       //result.pd.cmdAngular = -K_angular;
-      //turn_direction = false; // clockwise
-    //}
+      turn_direction = false; // clockwise
+    }
 
     result.pd.cmdAngular = 0;
     result.pd.setPointVel = 0.0;
