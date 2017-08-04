@@ -270,9 +270,19 @@ void behaviourStateMachine(const ros::TimerEvent&) {
     cout << "Rover: " << publishedName << endl;
     cout << "timerTimeElapsed: " << timerTimeElapsed << endl;
 
-    if(distanceToCenter() > 0.75) {
+    float dist = distanceToCenter();
+    if(dist > 0.75) {
       centerUpdated = false;
+    } 
+
+    if (dist < 1.3 && logicController.GetCPFAState() == sense_local_resource_density) {
+        if (logicController.GetCPFASearchType() == random_search) {
+            logicController.SetCPFAState(search_with_uninformed_walk);
+        } else {
+            logicController.SetCPFAState(search_with_informed_walk);
+        }
     }
+        
 
     if (logicController.layPheromone()) {
       behaviours::PheromoneTrail trail;
