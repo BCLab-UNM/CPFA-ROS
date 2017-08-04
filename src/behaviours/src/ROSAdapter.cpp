@@ -434,9 +434,21 @@ void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& messag
           {
             if(loc.id == 0 && distanceToCenter() < 1.2) 
             {
+              CPFAState cpfa_state = logicController.GetCPFAState();
+              if (cpfa_state == sense_local_resource_density) 
+              {
+                  CPFASearchType cpfa_search_type = logicController.GetCPFASearchType();
+                  if (cpfa_search_type == random_search) 
+                  {
+                      logicController.SetCPFAState(search_with_uninformed_walk);
+                  } else 
+                  {
+                    logicController.SetCPFAState(search_with_informed_walk);        
+                  }
               break;
             }
             tags.push_back(loc);
+            }
           }
 
       }
