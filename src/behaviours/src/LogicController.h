@@ -7,11 +7,27 @@
 #include "SearchController.h"
 #include "ObstacleController.h"
 #include "DriveController.h"
+#include "CPFAParameters.h"
 
 #include <vector>
 #include <queue>
+#include <stdlib.h>
 
-using namespace std;
+enum LogicState {
+  LOGIC_STATE_INTERRUPT = 0,
+  LOGIC_STATE_WAITING,
+  LOGIC_STATE_PRECISION_COMMAND
+};
+
+enum ProcessState {
+  PROCESS_STATE_START = 0,
+  PROCESS_STATE_SITE_FIDELITY,
+  PROCESS_STATE_PHEROMONE,
+  PROCESS_STATE_RANDOM_DISPERSAL,
+  PROCESS_STATE_SEARCHING, // uninformed and informed correlated random walk
+  PROCESS_STATE_RETURN_TO_NEST,
+  PROCESS_STATE_DROPOFF,
+};
 
 struct PrioritizedController {
   int priority = -1;
@@ -52,19 +68,10 @@ protected:
 
 private:
 
-  enum LogicState {
-    LOGIC_STATE_INTERRUPT = 0,
-    LOGIC_STATE_WAITING,
-    LOGIC_STATE_PRECISION_COMMAND
-  };
-
-  enum ProcessState {
-    _FIRST = 0,
-    PROCCESS_STATE_SEARCHING = 0,
-    PROCCESS_STATE_TARGET_PICKEDUP,
-    PROCCESS_STATE_DROP_OFF,
-    _LAST
-  };
+  /* CPFA helper functions */
+  ProcessState CPFAStateMachine(ProcessState state);
+  double PoissonCDF(double lambda);
+  /* End CPFA helper functions */
 
   LogicState logicState;
   ProcessState processState;
@@ -81,6 +88,17 @@ private:
   void controllerInterconnect();
 
   long int current_time = 0;
+
+  /* CPFA State Machine variables */
+  bool target_held = false;
+  bool target_dropped_off = true;
+  bool nest_has_been_reached = false;
+  bool num_pheromones = 0;
+  int local_resource_density = 0;
+
+  CPFAParameters CPFA_parameters;
+  /* End CPFA State variables */
+
 };
 
 #endif // LOGICCONTROLLER_H

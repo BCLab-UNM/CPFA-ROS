@@ -2,7 +2,10 @@
 
 LogicController::LogicController() {
   logicState = LOGIC_STATE_INTERRUPT;
-  processState = PROCCESS_STATE_SEARCHING;
+  processState = PROCESS_STATE_SEARCHING;
+
+  // Melanie wants fixed seeds
+  srand(CPFA_parameters.random_seed);
 
   ProcessData();
 
@@ -15,7 +18,7 @@ LogicController::~LogicController() {}
 void LogicController::Reset() {
 
   logicState = LOGIC_STATE_INTERRUPT;
-  processState = PROCCESS_STATE_SEARCHING;
+  processState = PROCESS_STATE_SEARCHING;
 
   ProcessData();
 
@@ -84,27 +87,14 @@ Result LogicController::DoWork() {
         control_queue.top().controller->Reset();
       }
 
-      //ask for the procces state to change to the next state or loop around to the begining
-      if(result.b == nextProcess) {
-        if (processState == _LAST - 1) {
-          processState = _FIRST;
-        }
-        else {
-          processState = (ProcessState)((int)processState + 1);
-        }
-      }
-      //ask for the procces state to change to the previouse state or loop around to the end
-      else if(result.b == prevProcess) {
-        if (processState == _FIRST) {
-          processState = (ProcessState)((int)_LAST - 1);
-        }
-        else {
-          processState = (ProcessState)((int)processState - 1);
-        }
-      }
-
       //update the priorites of the controllers based upon the new process state.
-      if (result.b == nextProcess || result.b == prevProcess) {
+      if (result.b == COMPLETED || result.b == FAILED) {
+        
+        // Custom code starts here
+        // what do you want to do here?
+        processState = CPFAStateMachine(processState);
+        // Custom code ends here
+
         ProcessData();
         result.b = wait;
         driveController.Reset(); //it is assumed that the drive controller may be in a bad state if interrupted so reset it
@@ -185,32 +175,73 @@ void LogicController::UpdateData() {
 void LogicController::ProcessData() {
 
   //this controller priority is used when searching
-  if (processState == PROCCESS_STATE_SEARCHING) {
+  if (processState == PROCESS_STATE_START)
+  {
     prioritizedControllers = {
       PrioritizedController{0, (Controller*)(&searchController)},
       PrioritizedController{1, (Controller*)(&obstacleController)},
+      PrioritizedController{-1, (Controller*)(&dropOffController)},
+      PrioritizedController{-1, (Controller*)(&pickUpController)},
+    };
+  }
+  else if (processState == PROCESS_STATE_SITE_FIDELITY)
+  {
+    prioritizedControllers = {
+      PrioritizedController{1, (Controller*)(&obstacleController)},
+      //PrioritizedController{0, (Controller*)(&site_fidelity_controller)},
+      PrioritizedController{-1, (Controller*)(&searchController)},
+      PrioritizedController{-1, (Controller*)(&pickUpController)},
+      PrioritizedController{-1, (Controller*)(&dropOffController)}
+    };
+  }
+  else if (processState == PROCESS_STATE_PHEROMONE)
+  {
+    prioritizedControllers = {
+      PrioritizedController{1, (Controller*)(&obstacleController)},
+      //PrioritizedController{0, (Controller*)(&pheromone_controller)},
+      PrioritizedController{-1, (Controller*)(&searchController)},
+      PrioritizedController{-1, (Controller*)(&pickUpController)},
+      PrioritizedController{-1, (Controller*)(&dropOffController)}
+    };
+  }
+  else if (processState == PROCESS_STATE_RANDOM_DISPERSAL)
+  {
+    prioritizedControllers = {
+      PrioritizedController{1, (Controller*)(&obstacleController)},
+      //PrioritizedController{0, (Controller*)(&random_dispersal_controller)},
+      PrioritizedController{-1, (Controller*)(&searchController)},
+      PrioritizedController{-1, (Controller*)(&pickUpController)},
+      PrioritizedController{-1, (Controller*)(&dropOffController)}
+    };
+  }
+  else if (processState == PROCESS_STATE_SEARCHING)
+  {
+    prioritizedControllers = {
       PrioritizedController{2, (Controller*)(&pickUpController)},
+      PrioritizedController{1, (Controller*)(&obstacleController)},
+      PrioritizedController{0, (Controller*)(&searchController)},
       PrioritizedController{-1, (Controller*)(&dropOffController)}
     };
   }
 
   //this priority is used when returning a target to the center collection zone
-  else if (processState  == PROCCESS_STATE_TARGET_PICKEDUP) {
+  else if (processState  == PROCESS_STATE_RETURN_TO_NEST) {
     prioritizedControllers = {
+      PrioritizedController{1, (Controller*)(&obstacleController)},
+      //PrioritizedController{0, (Controller*)(&return_to_nest_controller)},
       PrioritizedController{-1, (Controller*)(&searchController)},
-      PrioritizedController{2, (Controller*)(&obstacleController)},
       PrioritizedController{-1, (Controller*)(&pickUpController)},
-      PrioritizedController{1, (Controller*)(&dropOffController)}
+      PrioritizedController{-1, (Controller*)(&dropOffController)}
     };
   }
   //this priority is used when returning a target to the center collection zone
-  else if (processState  == PROCCESS_STATE_DROP_OFF)
+  else if (processState  == PROCESS_STATE_DROPOFF)
   {
     prioritizedControllers = {
       PrioritizedController{-1, (Controller*)(&searchController)},
-      PrioritizedController{-1, (Controller*)(&obstacleController)},
+      PrioritizedController{1, (Controller*)(&obstacleController)},
       PrioritizedController{-1, (Controller*)(&pickUpController)},
-      PrioritizedController{1, (Controller*)(&dropOffController)}
+      PrioritizedController{0, (Controller*)(&dropOffController)}
     };
   }
 }
@@ -228,7 +259,7 @@ bool LogicController::HasWork() {
 
 void LogicController::controllerInterconnect() {
 
-  if (processState == PROCCESS_STATE_SEARCHING) {
+  if (processState == PROCESS_STATE_SEARCHING) {
 
     //obstacle needs to know if the center ultrasound should be ignored
     if(pickUpController.GetIgnoreCenter()) {
@@ -300,4 +331,76 @@ void LogicController::SetCurrentTimeInMilliSecs( long int time )
   dropOffController.SetCurrentTimeInMilliSecs( time );
   pickUpController.SetCurrentTimeInMilliSecs( time );
   obstacleController.SetCurrentTimeInMilliSecs( time );
+}
+
+ProcessState LogicController::CPFAStateMachine(ProcessState state) 
+{
+  ProcessState new_state;
+
+  // Determine next process state for appropriate CPFA state
+  switch(state) {
+    case PROCESS_STATE_START:
+      new_state = PROCESS_STATE_RANDOM_DISPERSAL;
+      break;
+
+      // Sets target location to a site fidelity location, pheromone, or random location.
+      // Preset when rover has picked up a resource and is returning to collection zone
+    case PROCESS_STATE_SITE_FIDELITY:
+    case PROCESS_STATE_PHEROMONE:
+    case PROCESS_STATE_RANDOM_DISPERSAL:
+      new_state = PROCESS_STATE_SEARCHING;
+      break;
+
+      // Searches at a site fidelity location or pheromone location
+    case PROCESS_STATE_SEARCHING:
+      new_state = PROCESS_STATE_RETURN_TO_NEST;
+      break;
+
+      // Counts local resource density while picking up a resource
+    case PROCESS_STATE_RETURN_TO_NEST:
+      if (target_held) 
+      {
+        new_state = PROCESS_STATE_DROPOFF;
+      }
+      else if (num_pheromones > 0)
+      {
+        new_state = PROCESS_STATE_PHEROMONE;
+      }
+      else
+      {
+        new_state = PROCESS_STATE_RANDOM_DISPERSAL;
+      }
+      break;
+
+      // Only set when Rover has given up search
+    case PROCESS_STATE_DROPOFF:
+      if (PoissonCDF(CPFA_parameters.rate_of_site_fidelity) > rand() * 1.0f/INT_MAX)
+      {
+        new_state = PROCESS_STATE_SITE_FIDELITY;
+      }
+      else if (num_pheromones > 0)
+      {
+        new_state = PROCESS_STATE_PHEROMONE;
+      }
+      else 
+      {
+        new_state = PROCESS_STATE_RANDOM_DISPERSAL;
+      }
+      break;
+  }
+  return new_state;
+}
+
+
+double LogicController::PoissonCDF(double lambda)
+{
+  double sumAccumulator       = 1.0;
+  double factorialAccumulator = 1.0;
+
+  for (size_t i = 1; i <= local_resource_density; i++) {
+    factorialAccumulator *= i;
+    sumAccumulator += pow(lambda, i) / factorialAccumulator;
+  }
+
+  return (exp(-lambda) * sumAccumulator);
 }

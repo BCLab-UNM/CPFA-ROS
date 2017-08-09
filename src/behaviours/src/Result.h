@@ -46,9 +46,9 @@ enum ResultType {
 
 enum BehaviorTrigger {
   wait,
-  prevProcess,
+  prevProcess, // deprecated, will be removed later
   noChange,
-  nextProcess,
+  nextProcess, // deprecated, will be removed later
   COMPLETED,
   FAILED
 };
