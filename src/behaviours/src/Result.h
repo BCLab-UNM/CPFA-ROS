@@ -48,7 +48,9 @@ enum BehaviorTrigger {
   wait,
   prevProcess,
   noChange,
-  nextProcess
+  nextProcess,
+  COMPLETED,
+  FAILED
 };
 
 struct PrecisionDriving {
