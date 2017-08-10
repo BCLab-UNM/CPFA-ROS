@@ -5,6 +5,7 @@
 #include "Controller.h"
 #include "TagPoint.h"
 #include <math.h>
+#include <vector>
 
 class DropOffController : virtual Controller
 {
@@ -22,12 +23,12 @@ public:
   void SetCurrentLocation(Point current);
   void SetTargetPickedUp();
   void SetBlockBlockingUltrasound(bool blockBlock);
-  void SetTargetData(vector<TagPoint> tags);
+  void SetTargetData(std::vector<TagPoint> tags);
   bool HasTarget() {return targetHeld;}
 
   float GetSpinner() {return spinner;}
 
-  void UpdateData(vector<TagPoint> tags);
+  void UpdateData(std::vector<TagPoint> tags);
 
   void SetCurrentTimeInMilliSecs( long int time );
 

@@ -1,3 +1,5 @@
+#ifndef RESULT_H
+#define RESULT_H
 // Defines the Result type which used to standardize the information that
 // can be returned by a controller object.
 
@@ -29,8 +31,6 @@
 
 #include "Point.h"
 #include <iostream>
-
-using namespace std;
 
 enum PIDType {
   FAST_PID, //quickest turn reasponse time
@@ -65,7 +65,7 @@ struct PrecisionDriving {
 };
 
 struct Waypoints {
-  vector<Point> waypoints;
+  std::vector<Point> waypoints;
 };
 
 struct Result {
@@ -81,3 +81,5 @@ struct Result {
 
   bool reset;
 };
+
+#endif

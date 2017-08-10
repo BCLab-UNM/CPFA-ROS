@@ -4,8 +4,6 @@
 #include <vector>
 #include <ros/ros.h>
 
-using namespace std;
-
 struct PIDConfig {
   float Kp = 0;
   float Ki = 0;
@@ -40,9 +38,9 @@ public:
 
 private:
 
-  vector<float> Error;
+  std::vector<float> Error;
   float prevSetPoint = std::numeric_limits<float>::min();
-  vector<float> integralErrorHistArray;
+  std::vector<float> integralErrorHistArray;
   int step = 0;
   float hz = 10;
 

@@ -7,6 +7,7 @@
 #include "SearchController.h"
 #include "ObstacleController.h"
 #include "DriveController.h"
+#include "SiteFidelityController.h"
 #include "CPFAParameters.h"
 
 #include <vector>
@@ -52,7 +53,7 @@ public:
   bool ShouldInterrupt() override;
   bool HasWork() override;
 
-  void SetAprilTags(vector<TagPoint> tags);
+  void SetAprilTags(std::vector<TagPoint> tags);
   void SetSonarData(float left, float center, float right);
   void SetPositionData(Point currentLocation);
   void SetMapPositionData(Point currentLocationMap);
@@ -81,9 +82,10 @@ private:
   SearchController searchController;
   ObstacleController obstacleController;
   DriveController driveController;
+  SiteFidelityController site_fidelity_controller;
 
   std::vector<PrioritizedController> prioritizedControllers;
-  priority_queue<PrioritizedController> control_queue;
+  std::priority_queue<PrioritizedController> control_queue;
 
   void controllerInterconnect();
 

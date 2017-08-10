@@ -1,5 +1,7 @@
 #include "DriveController.h"
 
+using namespace std;
+
 DriveController::DriveController() {
 
   fastVelPID.SetConfiguration(fastVelConfig());

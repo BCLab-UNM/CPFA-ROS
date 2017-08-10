@@ -2,6 +2,8 @@
 #include <limits> // For numeric limits
 #include <cmath> // For hypot
 
+using namespace std;
+
 PickUpController::PickUpController() {
   lockTarget = false;
   timeOut = false;

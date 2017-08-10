@@ -1,5 +1,7 @@
 #include "SearchController.h"
 
+using namespace std;
+
 SearchController::SearchController() {
   rng = new random_numbers::RandomNumberGenerator();
   currentLocation.x = 0;

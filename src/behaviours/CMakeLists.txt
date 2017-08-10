@@ -30,6 +30,7 @@ add_executable(
   src/PID.cpp
   src/DriveController.cpp
   src/LogicController.cpp
+  src/SiteFidelityController.cpp
 )
 
 add_dependencies(behaviours ${catkin_EXPORTED_TARGETS})

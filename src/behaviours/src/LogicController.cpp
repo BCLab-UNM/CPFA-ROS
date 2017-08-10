@@ -1,5 +1,7 @@
 #include "LogicController.h"
 
+using namespace std;
+
 LogicController::LogicController() {
   logicState = LOGIC_STATE_INTERRUPT;
   processState = PROCESS_STATE_SEARCHING;
@@ -188,7 +190,7 @@ void LogicController::ProcessData() {
   {
     prioritizedControllers = {
       PrioritizedController{1, (Controller*)(&obstacleController)},
-      //PrioritizedController{0, (Controller*)(&site_fidelity_controller)},
+      PrioritizedController{0, (Controller*)(&site_fidelity_controller)},
       PrioritizedController{-1, (Controller*)(&searchController)},
       PrioritizedController{-1, (Controller*)(&pickUpController)},
       PrioritizedController{-1, (Controller*)(&dropOffController)}
@@ -291,6 +293,7 @@ void LogicController::SetPositionData(Point currentLocation) {
   dropOffController.SetCurrentLocation(currentLocation);
   obstacleController.SetCurrentLocation(currentLocation);
   driveController.SetCurrentLocation(currentLocation);
+  site_fidelity_controller.setCurrentLocation(currentLocation);
 }
 
 void LogicController::SetMapPositionData(Point currentLocationMap) {

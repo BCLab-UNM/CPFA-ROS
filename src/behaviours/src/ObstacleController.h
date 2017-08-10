@@ -16,7 +16,7 @@ public:
   Result DoWork() override;
   void SetSonarData(float left, float center, float right);
   void SetCurrentLocation(Point currentLocation);
-  void SetTagData(vector<TagPoint> tags);
+  void SetTagData(std::vector<TagPoint> tags);
   bool ShouldInterrupt() override;
   bool HasWork() override;
   void SetIgnoreCenter();

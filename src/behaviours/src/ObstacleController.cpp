@@ -1,5 +1,7 @@
 #include "ObstacleController.h"
 
+using namespace std;
+
 ObstacleController::ObstacleController()
 {
   obstacleAvoided = true;

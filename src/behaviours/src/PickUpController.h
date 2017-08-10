@@ -12,7 +12,7 @@ public:
 
   void Reset() override;
   Result DoWork() override;
-  void SetTagData(vector<TagPoint> tags);
+  void SetTagData(std::vector<TagPoint> tags);
   bool ShouldInterrupt() override;
   bool HasWork() override;
 

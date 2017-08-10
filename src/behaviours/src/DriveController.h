@@ -47,7 +47,7 @@ private:
   Point centerLocationMap;
   Point centerLocationOdom;
 
-  vector<Point> waypoints;
+  std::vector<Point> waypoints;
 
   //PID configs************************
   PIDConfig fastVelConfig();
