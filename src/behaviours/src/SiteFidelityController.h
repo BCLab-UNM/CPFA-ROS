@@ -9,21 +9,22 @@
 #include <math.h> // hypot
 
 class SiteFidelityController : virtual Controller {
-  public:
-    SiteFidelityController();
-    ~SiteFidelityController();
 
-    void Reset() override;
-    Result DoWork() override;
-    bool ShouldInterrupt() override;
-    bool HasWork() override;
+public:
+  SiteFidelityController();
+  ~SiteFidelityController();
 
-    // Let site fidelity controller know that target 
-    // has been picked up, so that we can save that current
-    // location for site fidelity
-    void setTargetPickedUp(); 
+  void Reset() override;
+  Result DoWork() override;
+  bool ShouldInterrupt() override;
+  bool HasWork() override;
 
-    void setCurrentLocation(Point current_location);
+  // Let site fidelity controller know that target 
+  // has been picked up, so that we can save that current
+  // location for site fidelity
+  void setTargetPickedUp(); 
+
+  void setCurrentLocation(Point current_location);
 
 private:
 

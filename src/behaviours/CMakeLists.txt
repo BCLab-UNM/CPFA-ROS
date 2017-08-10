@@ -31,6 +31,7 @@ add_executable(
   src/DriveController.cpp
   src/LogicController.cpp
   src/SiteFidelityController.cpp
+  src/RandomDispersalController.cpp
 )
 
 add_dependencies(behaviours ${catkin_EXPORTED_TARGETS})
