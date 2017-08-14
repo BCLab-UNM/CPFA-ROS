@@ -8,6 +8,7 @@
 #include "ObstacleController.h"
 #include "DriveController.h"
 #include "SiteFidelityController.h"
+#include "RandomDispersalController.h"
 #include "CPFAParameters.h"
 
 #include <vector>
@@ -61,8 +62,9 @@ public:
   void SetMapVelocityData(float linearVelocity, float angularVelocity);
   void SetCenterLocationOdom(Point centerLocationOdom);
   void SetCenterLocationMap(Point centerLocationMap);
-
   void SetCurrentTimeInMilliSecs( long int time );
+
+  void setTargetHeld();
 
 protected:
   void ProcessData();
@@ -83,6 +85,7 @@ private:
   ObstacleController obstacleController;
   DriveController driveController;
   SiteFidelityController site_fidelity_controller;
+  RandomDispersalController random_dispersal_controller;
 
   std::vector<PrioritizedController> prioritizedControllers;
   std::priority_queue<PrioritizedController> control_queue;
@@ -96,6 +99,7 @@ private:
   bool target_dropped_off = true;
   bool nest_has_been_reached = false;
   bool num_pheromones = 0;
+  bool informed_search = false;
   int local_resource_density = 0;
 
   CPFAParameters CPFA_parameters;

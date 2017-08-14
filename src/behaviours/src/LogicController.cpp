@@ -210,7 +210,7 @@ void LogicController::ProcessData() {
   {
     prioritizedControllers = {
       PrioritizedController{1, (Controller*)(&obstacleController)},
-      //PrioritizedController{0, (Controller*)(&random_dispersal_controller)},
+      PrioritizedController{0, (Controller*)(&random_dispersal_controller)},
       PrioritizedController{-1, (Controller*)(&searchController)},
       PrioritizedController{-1, (Controller*)(&pickUpController)},
       PrioritizedController{-1, (Controller*)(&dropOffController)}
@@ -273,6 +273,7 @@ void LogicController::controllerInterconnect() {
       dropOffController.SetTargetPickedUp();
       obstacleController.SetTargetHeld();
       searchController.SetSuccesfullPickup();
+      target_held = true;
     }
   }
 
@@ -285,6 +286,21 @@ void LogicController::controllerInterconnect() {
   if(obstacleController.GetShouldClearWaypoints()) {
     driveController.Reset();
   }
+
+  // Let search controller know whether it should use an
+  // informed search or an uninformed search
+  if (informed_search) 
+  {
+    searchController.setSearchType(informed_search);
+    informed_search = false;
+  }
+
+  if (target_held)
+  {
+    informed_search = false;
+    searchController.setSearchType(informed_search);
+  }
+  
 }
 
 
@@ -350,7 +366,12 @@ ProcessState LogicController::CPFAStateMachine(ProcessState state)
       // Preset when rover has picked up a resource and is returning to collection zone
     case PROCESS_STATE_SITE_FIDELITY:
     case PROCESS_STATE_PHEROMONE:
+      informed_search = true;
+      new_state = PROCESS_STATE_SEARCHING;
+      break;
+
     case PROCESS_STATE_RANDOM_DISPERSAL:
+      informed_search = false;
       new_state = PROCESS_STATE_SEARCHING;
       break;
 
@@ -406,4 +427,9 @@ double LogicController::PoissonCDF(double lambda)
   }
 
   return (exp(-lambda) * sumAccumulator);
+}
+
+void LogicController::setTargetHeld() 
+{
+  target_held = true;
 }
