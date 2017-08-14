@@ -32,6 +32,7 @@ add_executable(
   src/LogicController.cpp
   src/SiteFidelityController.cpp
   src/RandomDispersalController.cpp
+  src/ReturnToNestController.cpp
 )
 
 add_dependencies(behaviours ${catkin_EXPORTED_TARGETS})
