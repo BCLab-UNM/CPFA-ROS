@@ -4,15 +4,13 @@ using namespace std;
 
 DropOffController::DropOffController() {
 
-  reachedCollectionPoint = false;
-
   result.type = behavior;
   result.b = wait;
   result.wristAngle = 0.8;
   result.reset = false;
   interrupt = false;
 
-  circularCenterSearching = false;
+ // circularCenterSearching = false;
   spinner = 0;
   centerApproach = false;
   seenEnoughCenterTags = false;
@@ -22,7 +20,6 @@ DropOffController::DropOffController() {
   countRight = 0;
 
   isPrecisionDriving = false;
-  startWaypoint = false;
   timerTimeElapsed = -1;
 
 }
@@ -45,7 +42,7 @@ Result DropOffController::DoWork() {
 
   //if we are in the routine for exiting the circle once we have dropped a block off and reseting all our flags
   //to resart our search.
-  if(reachedCollectionPoint)
+  if(false)
   {
     cout << "2" << endl;
     if (timerTimeElapsed >= 5)
@@ -78,50 +75,7 @@ Result DropOffController::DoWork() {
     return result;
   }
 
-  double distanceToCenter = hypot(this->centerLocation.x - this->currentLocation.x, this->centerLocation.y - this->currentLocation.y);
 
-  //check to see if we are driving to the center location or if we need to drive in a circle and look.
-  if (distanceToCenter > collectionPointVisualDistance && !circularCenterSearching && (count == 0)) {
-
-    result.type = waypoint;
-    result.wpts.waypoints.clear();
-    result.wpts.waypoints.push_back(this->centerLocation);
-    startWaypoint = false;
-    isPrecisionDriving = false;
-
-    timerTimeElapsed = 0;
-
-    return result;
-
-  }
-  else if (timerTimeElapsed >= 2)//spin search for center
-  {
-    Point nextSpinPoint;
-
-    //sets a goal that is 60cm from the centerLocation and spinner
-    //radians counterclockwise from being purly along the x-axis.
-    nextSpinPoint.x = centerLocation.x + (initialSpinSize + spinSizeIncrease) * cos(spinner);
-    nextSpinPoint.y = centerLocation.y + (initialSpinSize + spinSizeIncrease) * sin(spinner);
-    nextSpinPoint.theta = atan2(nextSpinPoint.y - currentLocation.y, nextSpinPoint.x - currentLocation.x);
-
-    result.type = waypoint;
-    result.wpts.waypoints.clear();
-    result.wpts.waypoints.push_back(nextSpinPoint);
-
-    spinner += 45*(M_PI/180); //add 45 degrees in radians to spinner.
-    if (spinner > 2*M_PI) {
-      spinner -= 2*M_PI;
-    }
-    spinSizeIncrease += spinSizeIncrement/8;
-    circularCenterSearching = true;
-    //safety flag to prevent us trying to drive back to the
-    //center since we have a block with us and the above point is
-    //greater than collectionPointVisualDistance from the center.
-
-    returnTimer = current_time;
-    timerTimeElapsed = 0;
-
-  }
 
   bool left = (countLeft > 0);
   bool right = (countRight > 0);
@@ -223,7 +177,7 @@ Result DropOffController::DoWork() {
     {
       cout << "4" << endl;
       //go back to drive to center base location instead of drop off attempt
-      reachedCollectionPoint = false;
+      //reachedCollectionPoint = false;
       seenEnoughCenterTags = false;
       centerApproach = false;
 
@@ -250,7 +204,7 @@ Result DropOffController::DoWork() {
 
   if (!centerSeen && seenEnoughCenterTags)
   {
-    reachedCollectionPoint = true;
+    //reachedCollectionPoint = true;
     centerApproach = false;
     returnTimer = current_time;
   }
@@ -277,16 +231,13 @@ void DropOffController::Reset() {
 
 
   //reset flags
-  reachedCollectionPoint = false;
+  //reachedCollectionPoint = false;
   seenEnoughCenterTags = false;
-  circularCenterSearching = false;
   isPrecisionDriving = false;
   finalInterrupt = false;
   precisionInterrupt = false;
-  targetHeld = false;
-  startWaypoint = false;
+  target_held = false;
   first_center = true;
-  cout << "6" << endl;
 
 }
 
@@ -294,9 +245,9 @@ void DropOffController::SetTargetData(vector<TagPoint> tags) {
   countRight = 0;
   countLeft = 0;
 
-  if(targetHeld) {
+  if(target_held) {
     // if a target is detected and we are looking for center tags
-    if (tags.size() > 0 && !reachedCollectionPoint) {
+    if (tags.size() > 0 /*&& !reachedCollectionPoint*/) {
 
       // this loop is to get the number of center tags
       for (int i = 0; i < tags.size(); i++) {
@@ -319,19 +270,13 @@ void DropOffController::SetTargetData(vector<TagPoint> tags) {
 void DropOffController::ProcessData() {
   if((countLeft + countRight) > 0) {
     isPrecisionDriving = true;
-  } else {
-    startWaypoint = true;
   }
 }
 
 bool DropOffController::ShouldInterrupt() {
   ProcessData();
-  if (startWaypoint && !interrupt) {
-    interrupt = true;
-    precisionInterrupt = false;
-    return true;
-  }
-  else if (isPrecisionDriving && !precisionInterrupt) {
+
+  if (isPrecisionDriving && !precisionInterrupt) {
     precisionInterrupt = true;
     return true;
   }
@@ -346,12 +291,6 @@ bool DropOffController::HasWork() {
     long int elapsed = current_time - returnTimer;
     timerTimeElapsed = elapsed/1e3; // Convert from milliseconds to seconds
   }
-
-  if (circularCenterSearching && timerTimeElapsed < 2 && !isPrecisionDriving) {
-    return false;
-  }
-
-  return ((startWaypoint || isPrecisionDriving));
 }
 
 bool DropOffController::IsChangingMode() {
@@ -367,11 +306,7 @@ void DropOffController::SetCurrentLocation(Point current) {
 }
 
 void DropOffController::SetTargetPickedUp() {
-  targetHeld = true;
-}
-
-void DropOffController::SetBlockBlockingUltrasound(bool blockBlock) {
-  targetHeld = targetHeld || blockBlock;
+  target_held = true;
 }
 
 void DropOffController::SetCurrentTimeInMilliSecs( long int time )

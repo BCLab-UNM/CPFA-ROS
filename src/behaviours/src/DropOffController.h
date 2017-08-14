@@ -22,11 +22,8 @@ public:
   void SetCenterLocation(Point center);
   void SetCurrentLocation(Point current);
   void SetTargetPickedUp();
-  void SetBlockBlockingUltrasound(bool blockBlock);
   void SetTargetData(std::vector<TagPoint> tags);
-  bool HasTarget() {return targetHeld;}
-
-  float GetSpinner() {return spinner;}
+  bool HasTarget() {return target_held;}
 
   void UpdateData(std::vector<TagPoint> tags);
 
@@ -90,15 +87,9 @@ private:
   /*
      *  Flags
      */
-
+  
   //Flag indicating that a target has been picked up and is held
-  bool targetHeld;
-
-  //Flag indicating that we're in the center
-  bool reachedCollectionPoint;
-
-  //Flag indicating that we're driving in a circle to find the nest
-  bool circularCenterSearching;
+  bool target_held;
 
   //Flag for when we are entering the center circle
   bool centerApproach;
@@ -108,9 +99,6 @@ private:
 
   //Flag to indicate a switch to precision driving
   bool isPrecisionDriving;
-
-  //Flag to indicate that we're starting to follow waypoints
-  bool startWaypoint;
 
   Result result;
 
