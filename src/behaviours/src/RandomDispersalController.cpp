@@ -1,5 +1,7 @@
 #include "RandomDispersalController.h"
 
+
+using namespace std;
 RandomDispersalController::RandomDispersalController()
 {
   srand(CPFA_parameters.random_seed);
@@ -12,6 +14,9 @@ void RandomDispersalController::Reset() {}
 Result RandomDispersalController::DoWork()
 {
   Result result;
+  has_control = true;
+  
+  cout << "dispersal doing work" << endl;
 
   if (switch_to_search)
   {
@@ -28,6 +33,8 @@ Result RandomDispersalController::DoWork()
       init = true;
       //pick random heading that is in the 180 degree arc away from the center
       goal_location.theta = current_location.theta + rand() * (M_PI)/INT_MAX + M_PI/2;
+      
+      cout << "first goal" << endl;
 
   }
   else
@@ -37,13 +44,21 @@ Result RandomDispersalController::DoWork()
     {
       result.type = precisionDriving;
       result.PIDMode = FAST_PID;
-      result.pd.cmdVel = travel_speed;
 
       float angular_error = 0;
       //calculate anguar error between current heading and desired heading
       angular_error = angles::shortest_angular_distance(current_location.theta, goal_location.theta);
 
       result.pd.cmdAngularError = angular_error;
+      
+      if (angular_error < 0.4)
+      {
+        result.pd.cmdVel = travel_speed;
+      }
+      else
+      {
+        result.pd.cmdVel = 0.0;
+      }
 
 
     }
@@ -60,10 +75,13 @@ Result RandomDispersalController::DoWork()
 
 void RandomDispersalController::ProcessData()
 {
-  if (rand() * 1.0f/INT_MAX < CPFA_parameters.probability_of_switching_to_searching)
+  if (!switch_to_search && has_control)
   {
-    //switch to uninformed coralated search
-    switch_to_search = true;
+    if (rand() * 1.0f/INT_MAX < CPFA_parameters.probability_of_switching_to_searching)
+    {
+      //switch to uninformed coralated search
+      switch_to_search = true;
+    }
   }
 }
 
@@ -76,6 +94,7 @@ bool RandomDispersalController::ShouldInterrupt()
   if (switch_to_search)
   {
     interrupt = true;
+    has_control = false;
   }
 
 
@@ -85,5 +104,6 @@ bool RandomDispersalController::ShouldInterrupt()
 
 bool RandomDispersalController::HasWork()
 {
+  cout << "RDC has work" << endl;
   return true;
 }

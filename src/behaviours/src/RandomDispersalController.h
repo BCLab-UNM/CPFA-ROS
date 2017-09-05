@@ -35,6 +35,7 @@ private:
   bool goal_location_set = false;
   bool init = false;
   bool switch_to_search = false;
+  bool has_control = false;
   float travel_speed = 0.2;
 
   CPFAParameters CPFA_parameters;

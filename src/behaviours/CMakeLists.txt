@@ -10,10 +10,11 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   random_numbers
   tf
+  apriltags_ros
 )
 
 catkin_package(
-  CATKIN_DEPENDS geometry_msgs roscpp sensor_msgs std_msgs random_numbers tf
+  CATKIN_DEPENDS geometry_msgs roscpp sensor_msgs std_msgs random_numbers tf apriltags_ros
 )
 
 include_directories(
@@ -29,6 +30,7 @@ add_executable(
   src/ROSAdapter.cpp
   src/PID.cpp
   src/DriveController.cpp
+  src/RangeController.cpp
   src/LogicController.cpp
   src/SiteFidelityController.cpp
   src/RandomDispersalController.cpp

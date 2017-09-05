@@ -10,6 +10,8 @@
 #include "SiteFidelityController.h"
 #include "RandomDispersalController.h"
 #include "CPFAParameters.h"
+#include "RangeController.h"
+#include "ReturnToNestController.h"
 
 #include <vector>
 #include <queue>
@@ -65,6 +67,11 @@ public:
   void SetCurrentTimeInMilliSecs( long int time );
 
   void setTargetHeld();
+  // Tell the logic controller whether rovers should automatically
+  // resstrict their foraging range. If so provide the shape of the
+  // allowed range.
+  void setVirtualFenceOn( RangeShape* range );
+  void setVirtualFenceOff( );
 
 protected:
   void ProcessData();
@@ -86,6 +93,8 @@ private:
   DriveController driveController;
   SiteFidelityController site_fidelity_controller;
   RandomDispersalController random_dispersal_controller;
+  RangeController range_controller;
+  ReturnToNestController return_to_nest_controller;
 
   std::vector<PrioritizedController> prioritizedControllers;
   std::priority_queue<PrioritizedController> control_queue;

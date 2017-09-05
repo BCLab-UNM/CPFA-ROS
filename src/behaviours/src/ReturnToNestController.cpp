@@ -4,6 +4,7 @@ using namespace std;
 
 ReturnToNestController::ReturnToNestController()
 {
+  result.wristAngle = 0.7;
 }
 
 ReturnToNestController::~ReturnToNestController()
@@ -14,12 +15,18 @@ ReturnToNestController::~ReturnToNestController()
 Result ReturnToNestController::DoWork()
 {
   double distanceToCenter = hypot(this->centerLocation.x - this->currentLocation.x, this->centerLocation.y - this->currentLocation.y);
+  
+  cout << "working RTN controller " << endl;
+
+    long int elapsed = current_time - returnTimer;
+    timerTimeElapsed = elapsed/1e3; // Convert from milliseconds to seconds
 
   if (reached_collection_point)
   {
     result.type = behavior;
     result.b = COMPLETED;
     result.reset = true;
+    cout << "reached collection point RTN" << endl;
   }
   //check to see if we are driving to the center location or if we need to drive in a circle and look.
   else if ((distanceToCenter > collectionPointVisualDistance && !circular_center_searching)) 
@@ -29,6 +36,8 @@ Result ReturnToNestController::DoWork()
     result.wpts.waypoints.clear();
     result.wpts.waypoints.push_back(this->centerLocation);
     start_waypoint = false;
+    
+    cout << "RTN drive to center" << endl;
     
     return result;
 
@@ -59,6 +68,8 @@ Result ReturnToNestController::DoWork()
 
     returnTimer = current_time;
     timerTimeElapsed = 0;
+    
+    cout << "spin search RTN" << endl;
 
   }
 
@@ -67,7 +78,9 @@ Result ReturnToNestController::DoWork()
 
 void ReturnToNestController::ProcessData()
 {
-
+  long int elapsed = current_time - returnTimer;
+  timerTimeElapsed = elapsed/1e3; // Convert from milliseconds to seconds
+  cout << "procces data return to nest" << endl;
 }
 
 bool ReturnToNestController::ShouldInterrupt() {
@@ -75,13 +88,15 @@ bool ReturnToNestController::ShouldInterrupt() {
 
   bool should_interrupt = false;
 
-  if (start_waypoint && !interrupt) {
+  if (start_waypoint && !interrupt && target_held) {
     interrupt = true;
     should_interrupt = true;
+    cout << " interupt from RTN 1" << endl;
   }
   else if (reached_collection_point)
   {
     should_interrupt = true;
+    cout << "reach collection interupt" << endl;
   }
 
   return should_interrupt;
@@ -90,10 +105,14 @@ bool ReturnToNestController::ShouldInterrupt() {
 bool ReturnToNestController::HasWork()
 {
   bool has_work = false;
-  if (reached_collection_point || timerTimeElapsed)
+  cout << "asked for work";
+  if (timerTimeElapsed >= 2 && target_held)
   {
-    
+    cout << "has work RT N" << endl; 
+    has_work = true;
   }
+  
+  return has_work;
 }
 
 void ReturnToNestController::SetTargetData(vector<TagPoint> tags) {
