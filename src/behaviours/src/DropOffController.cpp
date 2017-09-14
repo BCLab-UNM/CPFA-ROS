@@ -20,7 +20,7 @@ DropOffController::DropOffController() {
   countRight = 0;
 
   isPrecisionDriving = false;
-  timerTimeElapsed = -1;
+  timerTimeElapsed = 0;
 
 }
 
@@ -42,15 +42,15 @@ Result DropOffController::DoWork() {
 
   //if we are in the routine for exiting the circle once we have dropped a block off and reseting all our flags
   //to resart our search.
-  if(false)
+  if(reachedCollectionPoint)
   {
-    cout << "2" << endl;
+    cout << "2 time is : "<< timerTimeElapsed << endl;
     if (timerTimeElapsed >= 5)
     {
       if (finalInterrupt)
       {
         result.type = behavior;
-        result.b = nextProcess;
+        result.b = COMPLETED;
         result.reset = true;
         return result;
       }
@@ -62,6 +62,7 @@ Result DropOffController::DoWork() {
     }
     else if (timerTimeElapsed >= 0.1)
     {
+      cout << "11" << endl;
       isPrecisionDriving = true;
       result.type = precisionDriving;
 
@@ -207,7 +208,7 @@ Result DropOffController::DoWork() {
 
   if (!centerSeen && seenEnoughCenterTags)
   {
-    //reachedCollectionPoint = true;
+    reachedCollectionPoint = true;
     centerApproach = false;
     returnTimer = current_time;
   }
@@ -227,14 +228,14 @@ void DropOffController::Reset() {
   spinner = 0;
   spinSizeIncrease = 0;
   prevCount = 0;
-  timerTimeElapsed = -1;
+  timerTimeElapsed = 0;
 
   countLeft = 0;
   countRight = 0;
 
 
   //reset flags
-  //reachedCollectionPoint = false;
+  reachedCollectionPoint = false;
   seenEnoughCenterTags = false;
   isPrecisionDriving = false;
   finalInterrupt = false;
@@ -290,10 +291,14 @@ bool DropOffController::ShouldInterrupt() {
 
 bool DropOffController::HasWork() {
 
-  if(timerTimeElapsed > -1) {
-    long int elapsed = current_time - returnTimer;
-    timerTimeElapsed = elapsed/1e3; // Convert from milliseconds to seconds
+  bool has_work = false;
+
+  if (target_held)
+  {
+    has_work = true;
   }
+
+  return has_work;
 }
 
 bool DropOffController::IsChangingMode() {

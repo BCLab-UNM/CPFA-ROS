@@ -77,6 +77,8 @@ private:
 
   bool interrupt = false;
 
+  bool has_control = false;
+
 
 };
 

@@ -23,7 +23,8 @@ public:
   bool ShouldInterrupt() override;
   bool HasWork() override;
 
-  void setCurrentLocation(Point current_location);
+  void setCurrentLocation(Point current_location) {this->current_location = current_location;}
+  void setCurrentTime(long int time) {current_time = time;}
 
 private:
 
@@ -37,6 +38,7 @@ private:
   bool switch_to_search = false;
   bool has_control = false;
   float travel_speed = 0.2;
+  long int current_time;
 
   CPFAParameters CPFA_parameters;
 };

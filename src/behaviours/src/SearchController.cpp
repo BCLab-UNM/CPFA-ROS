@@ -19,6 +19,7 @@ SearchController::SearchController() {
 
 void SearchController::Reset() {
   result.reset = false;
+  attemptCount = 0;
 }
 
 /**
@@ -31,6 +32,7 @@ Result SearchController::DoWork() {
     informed_search = false;
     result.type = behavior;
     result.b = COMPLETED;
+    result.reset = true;
     return result;
   }
 
@@ -42,10 +44,6 @@ Result SearchController::DoWork() {
 
   if (attemptCount > 0 && attemptCount < 5) {
     attemptCount++;
-    if (succesfullPickup) {
-      succesfullPickup = false;
-      attemptCount = 1;
-    }
     return result;
   }
   else if (attemptCount >= 5 || attemptCount == 0) {
@@ -103,7 +101,7 @@ bool SearchController::HasWork() {
 }
 
 void SearchController::SetSuccesfullPickup() {
-  succesfullPickup = true;
+  Reset();
 }
 
 void SearchController::setSearchType(bool informed_search) 

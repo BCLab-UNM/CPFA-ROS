@@ -2,11 +2,11 @@
 #define CPFA_PARAMETERS_H
 
 struct CPFAParameters {
-  const float random_seed = 100.0f;
+  const float random_seed = -1;
 
   // CPFA Parameters according to beyond pheromones
-  const float probability_of_switching_to_searching = 0.13;
-  const float probability_of_returning_to_nest = 0.0;
+  const float probability_of_switching_to_searching = 0.005;
+  const float probability_of_returning_to_nest = 0.01;
 
   // In radians
   const float uninformed_search_variation = 0.4;

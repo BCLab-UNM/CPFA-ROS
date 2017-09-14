@@ -40,7 +40,7 @@ Result LogicController::DoWork() {
   //most important. A priority of less than 0 is an ignored controller use -1 for standards sake.
   //if any controller needs and interrupt the logic state is changed to interrupt
   for(PrioritizedController cntrlr : prioritizedControllers) {
-    if(cntrlr.controller->ShouldInterrupt() && cntrlr.priority >= 0) 
+    if(cntrlr.controller->ShouldInterrupt() && cntrlr.priority >= 0)
     {
       logicState = LOGIC_STATE_INTERRUPT;
       //do not break all shouldInterupts may need calling in order to properly pre-proccess data.
@@ -200,7 +200,7 @@ void LogicController::ProcessData() {
   {
     prioritizedControllers = {
       PrioritizedController{2, (Controller*)(&obstacleController)},
-      //PrioritizedController{0, (Controller*)(&pheromone_controller)},
+     // PrioritizedController{0, (Controller*)(&pheromone_controller)},
       PrioritizedController{-1, (Controller*)(&searchController)},
       PrioritizedController{-1, (Controller*)(&pickUpController)},
       PrioritizedController{-1, (Controller*)(&dropOffController)},
@@ -252,6 +252,12 @@ void LogicController::ProcessData() {
       PrioritizedController{1, (Controller*)(&dropOffController)}
     };
   }
+  else if (processState == PROCESS_STATE_SLRD)
+  {
+    prioritizedControllers = {
+      //PrioritizedController{0, (Controller*)(&pheromone_controller)}
+    };
+  }
 }
 
 bool LogicController::ShouldInterrupt() {
@@ -279,6 +285,7 @@ void LogicController::controllerInterconnect() {
       dropOffController.SetTargetPickedUp();
       obstacleController.SetTargetHeld();
       searchController.SetSuccesfullPickup();
+      site_fidelity_controller.setTargetPickedUp();
       target_held = true;
     }
   }
@@ -295,7 +302,7 @@ void LogicController::controllerInterconnect() {
   
   // Let search controller know whether it should use an
   // informed search or an uninformed search
-  if (informed_search) 
+  if (informed_search)
   {
     searchController.setSearchType(informed_search);
     informed_search = false;
@@ -316,6 +323,8 @@ void LogicController::SetPositionData(Point currentLocation) {
   obstacleController.SetCurrentLocation(currentLocation);
   driveController.SetCurrentLocation(currentLocation);
   site_fidelity_controller.setCurrentLocation(currentLocation);
+  return_to_nest_controller.SetCurrentLocation(currentLocation);
+  random_dispersal_controller.setCurrentLocation(currentLocation);
 }
 
 // Recieves position in the world frame with global data (GPS)
@@ -336,6 +345,7 @@ void LogicController::SetAprilTags(vector<TagPoint> tags) {
   pickUpController.SetTagData(tags);
   obstacleController.SetTagData(tags);
   dropOffController.SetTargetData(tags);
+  return_to_nest_controller.SetTargetData(tags);
 }
 
 void LogicController::SetSonarData(float left, float center, float right) {
@@ -347,6 +357,7 @@ void LogicController::SetSonarData(float left, float center, float right) {
 void LogicController::SetCenterLocationOdom(Point centerLocationOdom) {
   searchController.SetCenterLocation(centerLocationOdom);
   dropOffController.SetCenterLocation(centerLocationOdom);
+  return_to_nest_controller.SetCenterLocation(centerLocationOdom);
 }
 
 void LogicController::setVirtualFenceOn( RangeShape* range )
@@ -370,6 +381,7 @@ void LogicController::SetCurrentTimeInMilliSecs( long int time )
   dropOffController.SetCurrentTimeInMilliSecs( time );
   pickUpController.SetCurrentTimeInMilliSecs( time );
   obstacleController.SetCurrentTimeInMilliSecs( time );
+  random_dispersal_controller.setCurrentTime( time );
 }
 
 ProcessState LogicController::CPFAStateMachine(ProcessState state) 
@@ -406,7 +418,7 @@ ProcessState LogicController::CPFAStateMachine(ProcessState state)
     
     // Counts local resource density while picking up a resource
   case PROCESS_STATE_RETURN_TO_NEST:
-    if (target_held) 
+    if (target_held)
     {
       new_state = PROCESS_STATE_DROPOFF;
       cout << "Switch from RTN to Drop off" << endl;
@@ -425,6 +437,7 @@ ProcessState LogicController::CPFAStateMachine(ProcessState state)
     
     // Only set when Rover has given up search
   case PROCESS_STATE_DROPOFF:
+    target_held = false;
     if (PoissonCDF(CPFA_parameters.rate_of_site_fidelity) > rand() * 1.0f/INT_MAX)
     {
       new_state = PROCESS_STATE_SITE_FIDELITY;
@@ -435,7 +448,7 @@ ProcessState LogicController::CPFAStateMachine(ProcessState state)
       new_state = PROCESS_STATE_PHEROMONE;
       cout << "Switch from DropOff to Pheromone" << endl;
     }
-    else 
+    else
     {
       new_state = PROCESS_STATE_RANDOM_DISPERSAL;
       cout << "Switch from DropOff to Random Dispersal" << endl;

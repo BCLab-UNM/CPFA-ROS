@@ -14,12 +14,14 @@ ReturnToNestController::~ReturnToNestController()
 
 Result ReturnToNestController::DoWork()
 {
-  double distanceToCenter = hypot(this->centerLocation.x - this->currentLocation.x, this->centerLocation.y - this->currentLocation.y);
+  double distanceToCenter = hypot(centerLocation.x - currentLocation.x, centerLocation.y - currentLocation.y);
   
-  cout << "working RTN controller " << endl;
+  cout << "working RTN controller distance : "<< distanceToCenter << " cPVD : " << collectionPointVisualDistance << " ccs " << circular_center_searching << endl;
 
-    long int elapsed = current_time - returnTimer;
-    timerTimeElapsed = elapsed/1e3; // Convert from milliseconds to seconds
+  long int elapsed = current_time - returnTimer;
+  timerTimeElapsed = elapsed/1e3; // Convert from milliseconds to seconds
+
+  has_control = true;
 
   if (reached_collection_point)
   {
@@ -29,9 +31,8 @@ Result ReturnToNestController::DoWork()
     cout << "reached collection point RTN" << endl;
   }
   //check to see if we are driving to the center location or if we need to drive in a circle and look.
-  else if ((distanceToCenter > collectionPointVisualDistance && !circular_center_searching)) 
+  else if ((distanceToCenter > collectionPointVisualDistance && !circular_center_searching))
   {
-
     result.type = waypoint;
     result.wpts.waypoints.clear();
     result.wpts.waypoints.push_back(this->centerLocation);
@@ -80,7 +81,7 @@ void ReturnToNestController::ProcessData()
 {
   long int elapsed = current_time - returnTimer;
   timerTimeElapsed = elapsed/1e3; // Convert from milliseconds to seconds
-  cout << "procces data return to nest" << endl;
+  cout << "procces data return to nest and time is : " << timerTimeElapsed << endl;
 }
 
 bool ReturnToNestController::ShouldInterrupt() {
@@ -104,25 +105,28 @@ bool ReturnToNestController::ShouldInterrupt() {
 
 bool ReturnToNestController::HasWork()
 {
-  bool has_work = false;
-  cout << "asked for work";
-  if (timerTimeElapsed >= 2 && target_held)
+  bool has_work = true;
+  if (circular_center_searching && timerTimeElapsed < 2)
   {
-    cout << "has work RT N" << endl; 
-    has_work = true;
+    has_work = false;
   }
-  
+
   return has_work;
 }
 
 void ReturnToNestController::SetTargetData(vector<TagPoint> tags) {
 
   // if a target is detected and we are looking for center tags
-  if (tags.size() > 0 && !reached_collection_point) {
-    for (int i = 0; i < tags.size(); i++) {
-      if (tags[i].id == 256) {
-        reached_collection_point = true;
-        break;
+  if (has_control)
+  {
+    if (tags.size() > 0 && !reached_collection_point)
+    {
+      for (int i = 0; i < tags.size(); i++)
+      {
+        if (tags[i].id == 256) {
+          reached_collection_point = true;
+          break;
+        }
       }
     }
   }
@@ -133,4 +137,5 @@ void ReturnToNestController::Reset()
   reached_collection_point = false;
   interrupt = false;
   spinSizeIncrease = 0;
+  has_control = false;
 }

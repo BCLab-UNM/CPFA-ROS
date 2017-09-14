@@ -108,6 +108,7 @@ private:
   bool precisionInterrupt = false;
   bool finalInterrupt = false;
   bool first_center = true;
+  bool reachedCollectionPoint = false;
 
 };
 #endif // end header define

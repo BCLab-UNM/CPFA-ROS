@@ -4,7 +4,7 @@
 using namespace std;
 RandomDispersalController::RandomDispersalController()
 {
-  srand(CPFA_parameters.random_seed);
+
 }
 
 RandomDispersalController::~RandomDispersalController() {}
@@ -15,6 +15,9 @@ Result RandomDispersalController::DoWork()
 {
   Result result;
   has_control = true;
+
+  result.type = precisionDriving;
+  result.PIDMode = FAST_PID;
   
   cout << "dispersal doing work" << endl;
 
@@ -23,18 +26,27 @@ Result RandomDispersalController::DoWork()
     //change from traveling state to uninformed search state
     goal_location_set = false;
     switch_to_search = false;
+    has_control = false;
     result.type = behavior;
     result.b = COMPLETED;
   }
-  //first run of Random Dsipersal Controller 
+  //first run of Random Dsipersal Controller
   else if (!init)
   {
-      goal_location_set = true;
-      init = true;
-      //pick random heading that is in the 180 degree arc away from the center
-      goal_location.theta = current_location.theta + rand() * (M_PI)/INT_MAX + M_PI/2;
-      
-      cout << "first goal" << endl;
+    if (CPFA_parameters.random_seed != -1)
+    {
+      srand(CPFA_parameters.random_seed);
+    }
+    else
+    {
+      srand(current_time/1e3);
+    }
+    goal_location_set = true;
+    init = true;
+    //pick random heading that is in the 180 degree arc away from the center
+    goal_location.theta = current_location.theta + (rand() * (M_PI)/INT_MAX) + M_PI/2;
+
+    cout << "first goal is : " << goal_location.theta << endl;
 
   }
   else
@@ -42,8 +54,6 @@ Result RandomDispersalController::DoWork()
     // Initial random heading not set
     if (goal_location_set)
     {
-      result.type = precisionDriving;
-      result.PIDMode = FAST_PID;
 
       float angular_error = 0;
       //calculate anguar error between current heading and desired heading

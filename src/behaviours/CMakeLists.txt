@@ -35,6 +35,8 @@ add_executable(
   src/SiteFidelityController.cpp
   src/RandomDispersalController.cpp
   src/ReturnToNestController.cpp
+  src/Pheromone.cpp
+  src/PheromoneController.cpp
 )
 
 add_dependencies(behaviours ${catkin_EXPORTED_TARGETS})

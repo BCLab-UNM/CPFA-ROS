@@ -53,6 +53,7 @@ bool SiteFidelityController::HasWork()
 void SiteFidelityController::setTargetPickedUp()
 {
   target_picked_up = true;
+  ProcessData();
 }
 
 void SiteFidelityController::setCurrentLocation(Point current_location)

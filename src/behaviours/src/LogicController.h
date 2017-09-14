@@ -12,18 +12,21 @@
 #include "CPFAParameters.h"
 #include "RangeController.h"
 #include "ReturnToNestController.h"
+#include "PheromoneController.h"
 
 #include <vector>
 #include <queue>
 #include <stdlib.h>
 
-enum LogicState {
+enum LogicState
+{
   LOGIC_STATE_INTERRUPT = 0,
   LOGIC_STATE_WAITING,
   LOGIC_STATE_PRECISION_COMMAND
 };
 
-enum ProcessState {
+enum ProcessState
+{
   PROCESS_STATE_START = 0,
   PROCESS_STATE_SITE_FIDELITY,
   PROCESS_STATE_PHEROMONE,
@@ -31,6 +34,7 @@ enum ProcessState {
   PROCESS_STATE_SEARCHING, // uninformed and informed correlated random walk
   PROCESS_STATE_RETURN_TO_NEST,
   PROCESS_STATE_DROPOFF,
+  PROCESS_STATE_SLRD, //sense local resource density
 };
 
 struct PrioritizedController {
@@ -95,6 +99,7 @@ private:
   RandomDispersalController random_dispersal_controller;
   RangeController range_controller;
   ReturnToNestController return_to_nest_controller;
+  //PheromoneController pheromone_controller;
 
   std::vector<PrioritizedController> prioritizedControllers;
   std::priority_queue<PrioritizedController> control_queue;
