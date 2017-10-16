@@ -124,6 +124,8 @@ namespace rqt_rover_gui
     connect(ui.ekf_checkbox, SIGNAL(toggled(bool)), this, SLOT(EKFCheckboxToggledEventHandler(bool)));
     connect(ui.gps_checkbox, SIGNAL(toggled(bool)), this, SLOT(GPSCheckboxToggledEventHandler(bool)));
     connect(ui.encoder_checkbox, SIGNAL(toggled(bool)), this, SLOT(encoderCheckboxToggledEventHandler(bool)));
+    connect(ui.global_offset_checkbox, SIGNAL(toggled(bool)), this, SLOT(globalOffsetCheckboxToggledEventHandler(bool)));
+    connect(ui.unique_rover_colors_checkbox, SIGNAL(toggled(bool)), this, SLOT(uniqueRoverColorsCheckboxToggledEventHandler(bool)));
     connect(ui.autonomous_control_radio_button, SIGNAL(toggled(bool)), this, SLOT(autonomousRadioButtonEventHandler(bool)));
     connect(ui.joystick_control_radio_button, SIGNAL(toggled(bool)), this, SLOT(joystickRadioButtonEventHandler(bool)));
     connect(ui.all_autonomous_button, SIGNAL(pressed()), this, SLOT(allAutonomousButtonEventHandler()));
@@ -157,7 +159,10 @@ namespace rqt_rover_gui
     connect(this, SIGNAL(sendDiagLogMessage(QString)), this, SLOT(receiveDiagLogMessage(QString)));
     connect(ui.custom_world_path_button, SIGNAL(pressed()), this, SLOT(customWorldButtonEventHandler()));
     connect(ui.custom_distribution_radio_button, SIGNAL(toggled(bool)), this, SLOT(customWorldRadioButtonEventHandler(bool)));
+    connect(ui.powerlaw_distribution_radio_button, SIGNAL(toggled(bool)), this, SLOT(powerlawDistributionRadioButtonEventHandler(bool)));
+    connect(ui.unbounded_radio_button, SIGNAL(toggled(bool)), this, SLOT(unboundedRadioButtonEventHandler(bool)));
     connect(ui.override_num_rovers_checkbox, SIGNAL(toggled(bool)), this, SLOT(overrideNumRoversCheckboxToggledEventHandler(bool)));
+    connect(ui.create_savable_world_checkbox, SIGNAL(toggled(bool)), this, SLOT(createSavableWorldCheckboxToggledEventHandler(bool)));
 
     // Receive log messages from contained frames
     connect(ui.map_frame, SIGNAL(sendInfoLogMessage(QString)), this, SLOT(receiveInfoLogMessage(QString)));
@@ -211,7 +216,7 @@ namespace rqt_rover_gui
     info_log_subscriber = nh.subscribe("/infoLog", 10, &RoverGUIPlugin::infoLogMessageEventHandler, this);
     diag_log_subscriber = nh.subscribe("/diagsLog", 10, &RoverGUIPlugin::diagLogMessageEventHandler, this);
 
-    emit updateNumberOfSatellites("<font color='white'>Number of GPS Satellites: ---</font>");
+    emit updateNumberOfSatellites("<font color='white'>---</font>");
   }
 
   void RoverGUIPlugin::shutdownPlugin()
@@ -429,10 +434,10 @@ void RoverGUIPlugin::GPSNavSolutionEventHandler(const ros::MessageEvent<const ub
     // and the number of detected satellites is > 0
     if (selected_rover_name.compare("") != 0 && msg.get()->numSV > 0) {
         // Update the label in the GUI with the selected rover's information
-        QString newLabelText = "Number of GPS Satellites: " + QString::number(rover_numSV_state[selected_rover_name]);
+        QString newLabelText = QString::number(rover_numSV_state[selected_rover_name]);
         emit updateNumberOfSatellites("<font color='white'>" + newLabelText + "</font>");
     } else {
-        emit updateNumberOfSatellites("<font color='white'>Number of GPS Satellites: ---</font>");
+        emit updateNumberOfSatellites("<font color='white'>---</font>");
     }
 }
 
@@ -674,10 +679,10 @@ void RoverGUIPlugin::currentRoverChangedEventHandler(QListWidgetItem *current, Q
 
     // only update the number of satellites if a valid rover name has been selected
     if (selected_rover_name.compare("") != 0 && rover_numSV_state[selected_rover_name] > 0) {
-        QString newLabelText = "Number of GPS Satellites: " + QString::number(rover_numSV_state[selected_rover_name]);
+        QString newLabelText = QString::number(rover_numSV_state[selected_rover_name]);
         emit updateNumberOfSatellites("<font color='white'>" + newLabelText + "</font>");
     } else {
-        emit updateNumberOfSatellites("<font color='white'>Number of GPS Satellites: ---</font>");
+        emit updateNumberOfSatellites("<font color='white'>---</font>");
     }
 
     // Enable control mode radio group now that a rover has been selected
@@ -1132,6 +1137,16 @@ void RoverGUIPlugin::encoderCheckboxToggledEventHandler(bool checked)
     ui.map_frame->setDisplayEncoderData(checked);
 }
 
+void RoverGUIPlugin::globalOffsetCheckboxToggledEventHandler(bool checked)
+{
+    ui.map_frame->setGlobalOffset(checked);
+}
+
+void RoverGUIPlugin::uniqueRoverColorsCheckboxToggledEventHandler(bool checked)
+{
+    ui.map_frame->setDisplayUniqueRoverColors(checked);
+}
+
 void RoverGUIPlugin::displayDiagLogMessage(QString msg)
 {
     if (msg.isEmpty()) msg = "Message is empty";
@@ -1325,11 +1340,11 @@ void RoverGUIPlugin::allAutonomousButtonEventHandler()
     // this catches the case when the /clock timer is not running
     // AKA: when we are not running a simulation
     if (current_simulated_time_in_seconds > 0.0) {
-        if (ui.simulation_timer_combo_box->currentText() == "no time limit") {
+        if (ui.simulation_timer_combobox->currentText() == "no time limit") {
             timer_start_time_in_seconds = 0.0;
             timer_stop_time_in_seconds = 0.0;
             is_timer_on = false;
-        } else if (ui.simulation_timer_combo_box->currentText() == "10 min (Testing)") {
+        } else if (ui.simulation_timer_combobox->currentText() == "10 min (Testing)") {
             timer_start_time_in_seconds = current_simulated_time_in_seconds;
             timer_stop_time_in_seconds = timer_start_time_in_seconds + 600.0;
             is_timer_on = true;
@@ -1349,9 +1364,31 @@ void RoverGUIPlugin::allAutonomousButtonEventHandler()
                                                  QString::number(getHours(timer_stop_time_in_seconds)) + " hours, " +
                                                  QString::number(getMinutes(timer_stop_time_in_seconds)) + " minutes, " +
                                                  QString::number(floor(getSeconds(timer_stop_time_in_seconds))) + " seconds</font>");
-            ui.simulation_timer_combo_box->setEnabled(false);
-            ui.simulation_timer_combo_box->setStyleSheet("color: grey; border:2px solid grey;");
-        } else if (ui.simulation_timer_combo_box->currentText() == "30 min (Preliminary)") {
+            ui.simulation_timer_combobox->setEnabled(false);
+            ui.simulation_timer_combobox->setStyleSheet("color: grey; border:2px solid grey;");
+        } else if (ui.simulation_timer_combobox->currentText() == "20 min (Preliminary)") {
+            timer_start_time_in_seconds = current_simulated_time_in_seconds;
+            timer_stop_time_in_seconds = timer_start_time_in_seconds + 1200.0;
+            is_timer_on = true;
+            emit sendInfoLogMessage("\nSetting experiment timer to start at: " +
+                                    QString::number(getHours(timer_start_time_in_seconds)) + " hours, " +
+                                    QString::number(getMinutes(timer_start_time_in_seconds)) + " minutes, " +
+                                    QString::number(getSeconds(timer_start_time_in_seconds)) + " seconds");
+            ui.simulationTimerStartLabel->setText("<font color='white'>" +
+                                                  QString::number(getHours(timer_start_time_in_seconds)) + " hours, " +
+                                                  QString::number(getMinutes(timer_start_time_in_seconds)) + " minutes, " +
+                                                  QString::number(floor(getSeconds(timer_start_time_in_seconds))) + " seconds</font>");
+            emit sendInfoLogMessage("Setting experiment timer to stop at: " +
+                                    QString::number(getHours(timer_stop_time_in_seconds)) + " hours, " +
+                                    QString::number(getMinutes(timer_stop_time_in_seconds)) + " minutes, " +
+                                    QString::number(getSeconds(timer_stop_time_in_seconds)) + " seconds\n");
+            ui.simulationTimerStopLabel->setText("<font color='white'>" +
+                                                 QString::number(getHours(timer_stop_time_in_seconds)) + " hours, " +
+                                                 QString::number(getMinutes(timer_stop_time_in_seconds)) + " minutes, " +
+                                                 QString::number(floor(getSeconds(timer_stop_time_in_seconds))) + " seconds</font>");
+            ui.simulation_timer_combobox->setEnabled(false);
+            ui.simulation_timer_combobox->setStyleSheet("color: grey; border:2px solid grey;");
+        } else if (ui.simulation_timer_combobox->currentText() == "30 min (Preliminary)") {
             timer_start_time_in_seconds = current_simulated_time_in_seconds;
             timer_stop_time_in_seconds = timer_start_time_in_seconds + 1800.0;
             is_timer_on = true;
@@ -1371,9 +1408,9 @@ void RoverGUIPlugin::allAutonomousButtonEventHandler()
                                                  QString::number(getHours(timer_stop_time_in_seconds)) + " hours, " +
                                                  QString::number(getMinutes(timer_stop_time_in_seconds)) + " minutes, " +
                                                  QString::number(floor(getSeconds(timer_stop_time_in_seconds))) + " seconds</font>");
-            ui.simulation_timer_combo_box->setEnabled(false);
-            ui.simulation_timer_combo_box->setStyleSheet("color: grey; border:2px solid grey;");
-        } else if (ui.simulation_timer_combo_box->currentText() == "60 min (Final)") {
+            ui.simulation_timer_combobox->setEnabled(false);
+            ui.simulation_timer_combobox->setStyleSheet("color: grey; border:2px solid grey;");
+        } else if (ui.simulation_timer_combobox->currentText() == "60 min (Final)") {
             timer_start_time_in_seconds = current_simulated_time_in_seconds;
             timer_stop_time_in_seconds = timer_start_time_in_seconds + 3600.0;
             is_timer_on = true;
@@ -1393,8 +1430,8 @@ void RoverGUIPlugin::allAutonomousButtonEventHandler()
                                                  QString::number(getHours(timer_stop_time_in_seconds)) + " hours, " +
                                                  QString::number(getMinutes(timer_stop_time_in_seconds)) + " minutes, " +
                                                  QString::number(floor(getSeconds(timer_stop_time_in_seconds))) + " seconds</font>");
-            ui.simulation_timer_combo_box->setEnabled(false);
-            ui.simulation_timer_combo_box->setStyleSheet("color: grey; border:2px solid grey;");
+            ui.simulation_timer_combobox->setEnabled(false);
+            ui.simulation_timer_combobox->setStyleSheet("color: grey; border:2px solid grey;");
         }
     }
     //Experiment Timer END
@@ -1477,8 +1514,8 @@ void RoverGUIPlugin::allStopButtonEventHandler()
     ui.all_stop_button->setStyleSheet("color: grey; border:2px solid grey;");
 
     // reset the simulation timer variables
-    ui.simulation_timer_combo_box->setEnabled(true);
-    ui.simulation_timer_combo_box->setStyleSheet("color: white; border:1px solid white; padding: 1px 0px 1px 3px");
+    ui.simulation_timer_combobox->setEnabled(true);
+    ui.simulation_timer_combobox->setStyleSheet("color: white; border:1px solid white; padding: 1px 0px 1px 3px");
     ui.simulationTimerStartLabel->setText("<font color='white'>---</font>");
     ui.simulationTimerStopLabel->setText("<font color='white'>---</font>");
     timer_start_time_in_seconds = 0.0;
@@ -1521,20 +1558,62 @@ void RoverGUIPlugin::customWorldButtonEventHandler()
 void RoverGUIPlugin::customWorldRadioButtonEventHandler(bool toggled)
 {
     ui.custom_world_path_button->setEnabled(toggled);
+    ui.number_of_tags_combobox->setEnabled(!toggled);
 
     // Set the button color to reflect whether or not it is disabled
     // Clear the sim path if custom distribution it deselected
     if( toggled )
     {
         ui.custom_world_path_button->setStyleSheet("color: white; border:2px solid white;");
+        ui.number_of_tags_label->setStyleSheet("color: grey;");
+        ui.number_of_tags_combobox->setStyleSheet("color: grey; border:2px solid grey; padding: 1px 0px 1px 3px");
     }
     else
     {
         sim_mgr.setCustomWorldPath("");
         ui.custom_world_path->setText("");
         ui.custom_world_path_button->setStyleSheet("color: grey; border:2px solid grey;");
+        ui.number_of_tags_label->setStyleSheet("color: white;");
+        ui.number_of_tags_combobox->setStyleSheet("color: white; border:2px solid white; padding: 1px 0px 1px 3px");
     }
 }
+
+// Currently, we cannot use the power law distribution with custon numbers of cubes.
+// I.E., we always use 256 tags, so disable the option to change the number of cubes when
+// generating a power law distribution. If we add dynamic power law distribution generation
+// in the future this block can be removed.
+void RoverGUIPlugin::powerlawDistributionRadioButtonEventHandler(bool toggled)
+{
+    ui.number_of_tags_combobox->setEnabled(!toggled);
+
+    if(!toggled)
+    {
+        ui.number_of_tags_label->setStyleSheet("color: white;");
+        ui.number_of_tags_combobox->setStyleSheet("color: white; border:2px solid white; padding: 1px 0px 1px 3px");
+    }
+    else
+    {
+        ui.number_of_tags_label->setStyleSheet("color: grey;");
+        ui.number_of_tags_combobox->setStyleSheet("color: grey; border:2px solid grey; padding: 1px 0px 1px 3px");
+    }
+}
+
+void RoverGUIPlugin::unboundedRadioButtonEventHandler(bool toggled)
+{
+    ui.unbounded_arena_size_combobox->setEnabled(toggled);
+
+    if(toggled)
+    {
+        ui.unbounded_arena_size_label->setStyleSheet("color: white;");
+        ui.unbounded_arena_size_combobox->setStyleSheet("color: white; border:2px solid white; padding: 1px 0px 1px 3px");
+    }
+    else
+    {
+        ui.unbounded_arena_size_label->setStyleSheet("color: grey;");
+        ui.unbounded_arena_size_combobox->setStyleSheet("color: grey; border:2px solid grey; padding: 1px 0px 1px 3px");
+    }
+}
+
 
 void RoverGUIPlugin::mapPopoutButtonEventHandler()
 {
@@ -1559,66 +1638,95 @@ void RoverGUIPlugin::buildSimulationButtonEventHandler()
     QProcess* sim_server_process = sim_mgr.startGazeboServer();
     connect(sim_server_process, SIGNAL(finished(int)), this, SLOT(gazeboServerFinishedEventHandler()));
 
-
-    if (ui.final_radio_button->isChecked())
+    if (ui.final_radio_button->isChecked() && !ui.create_savable_world_checkbox->isChecked())
     {
          arena_dim = 23.1;
          addFinalsWalls();
+         emit sendInfoLogMessage(QString("Set arena size to ")+QString::number(arena_dim)+"x"+QString::number(arena_dim));
     }
-    else
+    else if (ui.prelim_radio_button->isChecked() && !ui.create_savable_world_checkbox->isChecked())
     {
         arena_dim = 15;
         addPrelimsWalls();
-    }
-
-    emit sendInfoLogMessage(QString("Set arena size to ")+QString::number(arena_dim)+"x"+QString::number(arena_dim));
-
-    if (ui.texture_combobox->currentText() == "Gravel")
-    {
-    emit sendInfoLogMessage("Adding gravel ground plane...");
-    return_msg = sim_mgr.addGroundPlane("mars_ground_plane");
-    emit sendInfoLogMessage(return_msg);
-    }
-    else if (ui.texture_combobox->currentText() == "KSC Concrete")
-    {
-    emit sendInfoLogMessage("Adding concrete ground plane...");
-    return_msg = sim_mgr.addGroundPlane("concrete_ground_plane");
-    emit sendInfoLogMessage(return_msg);
-    }
-    else if (ui.texture_combobox->currentText() == "Car park")
-    {
-    emit sendInfoLogMessage("Adding carpark ground plane...");
-    return_msg = sim_mgr.addGroundPlane("carpark_ground_plane");
-    emit sendInfoLogMessage(return_msg);
+        emit sendInfoLogMessage(QString("Set arena size to ")+QString::number(arena_dim)+"x"+QString::number(arena_dim));
     }
     else
     {
-        emit sendInfoLogMessage("Unknown ground plane...");
+        arena_dim = ui.unbounded_arena_size_combobox->currentText().toInt();
+        emit sendInfoLogMessage(QString("Set arena size to ")+QString::number(arena_dim)+"x"+QString::number(arena_dim)+" with no barriers");
     }
 
+    if(!ui.create_savable_world_checkbox->isChecked())
+    {
+        if (ui.texture_combobox->currentText() == "Gravel")
+        {
+            emit sendInfoLogMessage("Adding gravel ground plane...");
+            return_msg = sim_mgr.addGroundPlane("mars_ground_plane");
+            emit sendInfoLogMessage(return_msg);
+        }
+        else if (ui.texture_combobox->currentText() == "KSC Concrete")
+        {
+            emit sendInfoLogMessage("Adding concrete ground plane...");
+            return_msg = sim_mgr.addGroundPlane("concrete_ground_plane");
+            emit sendInfoLogMessage(return_msg);
+        }
+        else if (ui.texture_combobox->currentText() == "Car park")
+        {
+            emit sendInfoLogMessage("Adding carpark ground plane...");
+            return_msg = sim_mgr.addGroundPlane("carpark_ground_plane");
+            emit sendInfoLogMessage(return_msg);
+        }
+        else
+        {
+            emit sendInfoLogMessage("Unknown ground plane...");
+        }
+    }
+    else
+    {
+        emit sendInfoLogMessage("Not using a ground plane texture...");
+    }
 
-    emit sendInfoLogMessage("Adding collection disk...");
-    float collection_disk_radius = 0.5; // meters
-    sim_mgr.addModel("collection_disk", "collection_disk", 0, 0, 0, collection_disk_radius);
-    score_subscriber = nh.subscribe("/collectionZone/score", 10, &RoverGUIPlugin::scoreEventHandler, this);
-    simulation_timer_subscriber = nh.subscribe("/clock", 10, &RoverGUIPlugin::simulationTimerEventHandler, this);
+    if(!ui.create_savable_world_checkbox->isChecked())
+    {
+        emit sendInfoLogMessage("Adding collection disk...");
+        float collection_disk_radius = 0.5; // meters
+        sim_mgr.addModel("collection_disk", "collection_disk", 0, 0, 0, collection_disk_radius);
+        score_subscriber = nh.subscribe("/collectionZone/score", 10, &RoverGUIPlugin::scoreEventHandler, this);
+        simulation_timer_subscriber = nh.subscribe("/clock", 10, &RoverGUIPlugin::simulationTimerEventHandler, this);
+    }
+    else
+    {
+        emit sendInfoLogMessage("Not adding collection disk...");
+    }
 
-    int n_rovers_created = 0;
-    int n_rovers = 3;
-    if (ui.final_radio_button->isChecked()) n_rovers = 6;
+    if(!ui.create_savable_world_checkbox->isChecked())
+    {
+        int n_rovers_created = 0;
+        int n_rovers = 3;
+        if (ui.final_radio_button->isChecked()) n_rovers = 6;
 
-    // If the user chose to override the number of rovers to add to the simulation read the selected value
-    if (ui.override_num_rovers_checkbox->isChecked()) n_rovers = ui.custom_num_rovers_combobox->currentText().toInt();
+        // If the user chose to override the number of rovers to add to the simulation read the selected value
+        // Please notice that this will override "n_rovers = 6" above if the final radio button is selected
+        if (ui.override_num_rovers_checkbox->isChecked()) n_rovers = ui.custom_num_rovers_combobox->currentText().toInt();
 
-    QProgressDialog progress_dialog;
-    progress_dialog.setWindowTitle("Creating rovers");
-    progress_dialog.setCancelButton(NULL); // no cancel button
-    progress_dialog.setWindowModality(Qt::ApplicationModal);
-    progress_dialog.setWindowFlags(progress_dialog.windowFlags() | Qt::WindowStaysOnTopHint);
-    progress_dialog.resize(500, 50);
-    progress_dialog.show();
+        QProgressDialog progress_dialog;
+        progress_dialog.setWindowTitle("Creating rovers");
+        progress_dialog.setCancelButton(NULL); // no cancel button
+        progress_dialog.setWindowModality(Qt::ApplicationModal);
+        progress_dialog.setWindowFlags(progress_dialog.windowFlags() | Qt::WindowStaysOnTopHint);
+        progress_dialog.resize(500, 50);
+        progress_dialog.show();
 
-    QString rovers[6] = {"achilles", "aeneas", "ajax", "diomedes", "hector", "paris"};
+        QString rovers[8] = {"achilles", "aeneas", "ajax", "diomedes", "hector", "paris", "thor", "zeus"};
+
+        QColor rover_colors[8] = { /* green         */ QColor(  0, 255,   0),
+                                   /* yellow        */ QColor(255, 255,   0),
+                                   /* white         */ QColor(255, 255, 255),
+                                   /* red           */ QColor(255,   0,   0),
+                                   /* deep sky blue */ QColor(  0, 191, 255),
+                                   /* hot pink      */ QColor(255, 105, 180),
+                                   /* chocolate     */ QColor(210, 105,  30),
+                                   /* indigo        */ QColor( 75,   0, 130) };
 
     /**
      * The distance to the rover from a corner position is calculated differently
@@ -1663,7 +1771,7 @@ void RoverGUIPlugin::buildSimulationButtonEventHandler()
      *     *           *
      *     *************
      */
-    QPointF rover_positions[6] =
+        QPointF rover_positions[8] =
     {
       /* cardinal rovers: North, East, South, West */
       QPointF(-1.308,  0.000), // 1.308 = distance_from_center_to_edge_of_collection_zone
@@ -1673,12 +1781,17 @@ void RoverGUIPlugin::buildSimulationButtonEventHandler()
 
       /* corner rovers: Northeast, Southwest */
       QPointF( 1.072,  1.072), // 1.072 = diagonal_distance_from_center_to_edge_of_collection_zone
-      QPointF(-1.072, -1.072)  //             + diagonal_distance_to_move_50cm
-    };                         //             + diagonal_distance_to_move_30cm
-                               // 1.072m = 0.508 + 0.354 + 0.212
+      QPointF(-1.072, -1.072), //             + diagonal_distance_to_move_50cm
+                                   //             + diagonal_distance_to_move_30cm
+                                   // 1.072m = 0.508 + 0.354 + 0.212
+
+          /* corner rovers: Northwest, Southeast */
+          QPointF(-1.072,  1.072),
+          QPointF( 1.072, -1.072)
+        };
 
     /* In this case, the yaw is the value that turns rover "left" and "right" */
-    float rover_yaw[6] =
+        float rover_yaw[8] =
     {
        0.000, //  0.00 * PI
        1.571, //  0.50 * PI
@@ -1691,6 +1804,9 @@ void RoverGUIPlugin::buildSimulationButtonEventHandler()
     // Add rovers to the simulation and start the associated ROS nodes
     for (int i = 0; i < n_rovers; i++)
     {
+            // add the global offset for sim rovers
+            ui.map_frame->setGlobalOffsetForRover(rovers[i].toStdString(), rover_positions[i].x(), rover_positions[i].y());
+            ui.map_frame->setUniqueRoverColor(rovers[i].toStdString(), rover_colors[i]);
         emit sendInfoLogMessage("Adding rover "+rovers[i]+"...");
         return_msg = sim_mgr.addRover(rovers[i], rover_positions[i].x(), rover_positions[i].y(), 0, 0, 0, rover_yaw[i]);
         emit sendInfoLogMessage(return_msg);
@@ -1706,6 +1822,11 @@ void RoverGUIPlugin::buildSimulationButtonEventHandler()
         {
           sleep(rover_load_delay); // Gives plugins enough time to finish loading
         }
+      }
+    }
+    else
+    {
+        emit sendInfoLogMessage("Not creating rovers...");
     }
 
    if (ui.powerlaw_distribution_radio_button->isChecked())
@@ -1745,13 +1866,21 @@ void RoverGUIPlugin::buildSimulationButtonEventHandler()
    ui.visualize_simulation_button->setStyleSheet("color: white;border:1px solid white;");
    ui.clear_simulation_button->setStyleSheet("color: white;border:1px solid white;");
 
-    ui.simulation_timer_combo_box->setEnabled(true);
-    ui.simulation_timer_combo_box->setStyleSheet("color: white; border:1px solid white; padding: 1px 0px 1px 3px");
+    ui.simulation_timer_combobox->setEnabled(true);
+    ui.simulation_timer_combobox->setStyleSheet("color: white; border:1px solid white; padding: 1px 0px 1px 3px");
 
    emit sendInfoLogMessage("Finished building simulation.");
 
-   // Visualize the simulation by default call button event handler
-   visualizeSimulationButtonEventHandler();
+    if (ui.start_visualization_on_build_checkbox->isChecked())
+    {
+        // Visualize the simulation by default call button event handler
+        visualizeSimulationButtonEventHandler();
+        display_sim_visualization = true;
+    }
+    else
+    {
+        display_sim_visualization = false;
+    }
 }
 
 void RoverGUIPlugin::clearSimulationButtonEventHandler()
@@ -1873,11 +2002,11 @@ void RoverGUIPlugin::clearSimulationButtonEventHandler()
     obstacle_call_count = 0;
     emit updateObstacleCallCount("<font color='white'>0</font>");
     emit updateNumberOfTagsCollected("<font color='white'>0</font>");
-    emit updateNumberOfSatellites("<font color='white'>Number of GPS Satellites: ---</font>");
+    emit updateNumberOfSatellites("<font color='white'>---</font>");
 
     // reset the simulation timer variables
-    ui.simulation_timer_combo_box->setEnabled(true);
-    ui.simulation_timer_combo_box->setStyleSheet("color: white; border:1px solid white; padding: 1px 0px 1px 3px");
+    ui.simulation_timer_combobox->setEnabled(true);
+    ui.simulation_timer_combobox->setStyleSheet("color: white; border:1px solid white; padding: 1px 0px 1px 3px");
     ui.simulationTimerStartLabel->setText("<font color='white'>---</font>");
     ui.simulationTimerStopLabel->setText("<font color='white'>---</font>");
     ui.currentSimulationTimeLabel->setText("<font color='white'>---</font>");
@@ -2623,6 +2752,49 @@ void RoverGUIPlugin::overrideNumRoversCheckboxToggledEventHandler(bool checked)
     ui.custom_num_rovers_combobox->setEnabled(checked);
     if (checked) ui.custom_num_rovers_combobox->setStyleSheet("color: white; border:1px solid white; padding: 1px 0px 1px 3px"); // The padding makes the item list color change work
     else ui.custom_num_rovers_combobox->setStyleSheet("color: grey; border:1px solid grey;");
+}
+
+void RoverGUIPlugin::createSavableWorldCheckboxToggledEventHandler(bool checked)
+{
+    ui.round_type_button_group->setEnabled(!checked);
+    ui.custom_num_rovers_combobox->setEnabled(!checked);
+    ui.override_num_rovers_checkbox->setEnabled(!checked);
+    ui.ground_texture_label->setEnabled(!checked);
+    ui.texture_combobox->setEnabled(!checked);
+    ui.simulation_timer_label->setEnabled(!checked);
+    ui.simulation_timer_combobox->setEnabled(!checked);
+
+    ui.prelim_radio_button->click();
+    unboundedRadioButtonEventHandler(false);
+
+    // change specific GUI elements to the "disabled" color scheme
+    if(checked)
+    {
+        ui.round_type_button_group->setStyleSheet("color: grey;");
+        ui.prelim_radio_button->setStyleSheet("color: grey;");
+        ui.final_radio_button->setStyleSheet("color: grey;");
+        ui.unbounded_radio_button->setStyleSheet("color: grey;");
+        ui.custom_num_rovers_combobox->setStyleSheet("color: grey; border:1px solid grey; padding: 1px 0px 1px 3px;");
+        ui.override_num_rovers_checkbox->setStyleSheet("clor: grey;");
+        ui.ground_texture_label->setStyleSheet("color: grey;");
+        ui.texture_combobox->setStyleSheet("color: grey; border:1px solid grey; padding: 1px 0px 1px 3px;");
+        ui.simulation_timer_label->setStyleSheet("color: grey;");
+        ui.simulation_timer_combobox->setStyleSheet("color: grey; border:1px solid grey; padding: 1px 0px 1px 3px;");
+    }
+    // change specific GUI elements to the "enabled" color scheme
+    else
+    {
+        ui.round_type_button_group->setStyleSheet("color: white;");
+        ui.prelim_radio_button->setStyleSheet("color: white;");
+        ui.final_radio_button->setStyleSheet("color: white;");
+        ui.unbounded_radio_button->setStyleSheet("color: white;");
+        ui.custom_num_rovers_combobox->setStyleSheet("color: white; border:1px solid white; padding: 1px 0px 1px 3px;");
+        ui.override_num_rovers_checkbox->setStyleSheet("color: white;");
+        ui.ground_texture_label->setStyleSheet("color: white");
+        ui.texture_combobox->setStyleSheet("color: white; border:1px solid white; padding: 1px 0px 1px 3px;");
+        ui.simulation_timer_label->setStyleSheet("color: white;");
+        ui.simulation_timer_combobox->setStyleSheet("color: white; border:1px solid white; padding: 1px 0px 1px 3px;");
+    }
 }
 
 // Slot used to update the GUI diagnostic data output. Ensures we update from the correct process.

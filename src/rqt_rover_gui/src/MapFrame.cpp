@@ -40,6 +40,8 @@ MapFrame::MapFrame(QWidget *parent, Qt::WindowFlags flags) : QFrame(parent)
     display_ekf_data = false;
     display_gps_data = false;
     display_encoder_data = false;
+  display_global_offset = false;
+  display_unique_rover_colors = false;
 
     frames = 0;
     popout_mapframe = NULL;
@@ -293,6 +295,7 @@ void MapFrame::paintEvent(QPaintEvent* event) {
 
     // End draw scale bars
 
+  int hardware_rover_color_index = 0;
     // Repeat the display code for each rover selected by the user - Using C++11 range syntax
     for(auto rover_to_display : display_list)
     {
@@ -351,13 +354,38 @@ void MapFrame::paintEvent(QPaintEvent* event) {
             scaled_encoder_rover_path.lineTo(x, y);
         }
 
-        painter.setPen(red);
+    QColor rover_color = QColor(255, 255, 255); // white
+
+    // if we have properly set a color for simulated rovers initialise the color here
+    // also make the popout map frame aware of the colors we use here
+    if(unique_simulated_rover_colors.find(rover_to_display) != unique_simulated_rover_colors.end())
+    {
+      rover_color = unique_simulated_rover_colors[rover_to_display];
+
+      if(popout_mapframe)
+      {
+        popout_mapframe->setUniqueRoverColor(rover_to_display, unique_simulated_rover_colors[rover_to_display]);
+      }
+    }
+    // caveat in the case that
+    //     1) we haven't set sim rover colors properly
+    //     2) we are using hardware rovers
+    else if(display_unique_rover_colors)
+    {
+      rover_color = unique_physical_rover_colors[hardware_rover_color_index];
+    }
+
+    painter.setPen(rover_color);
+
+    if(!display_unique_rover_colors) painter.setPen(red);
         if (display_gps_data) painter.drawPoints(&scaled_gps_rover_points[0], scaled_gps_rover_points.size());
         // if (display_gps_data) painter.drawPath(scaled_gps_rover_path);
 
-        painter.setPen(Qt::white);
-        if (display_ekf_data) painter.drawPath(scaled_ekf_rover_path);
-        painter.setPen(green);
+    if(!display_unique_rover_colors) painter.setPen(Qt::white);
+
+    if (display_ekf_data) painter.drawPath(scaled_ekf_rover_path);
+
+    if(!display_unique_rover_colors) painter.setPen(green);
         if (display_encoder_data) painter.drawPath(scaled_encoder_rover_path);
 
         painter.setPen(red);
@@ -368,22 +396,26 @@ void MapFrame::paintEvent(QPaintEvent* event) {
         painter.drawPoints(point_array, scaled_target_locations.size());
 
         // Draw a yellow circle at the current EKF estimated rover location
-        if(!map_data->getEKFPath(rover_to_display)->empty()) {
-          painter.setPen(Qt::yellow);
-          pair<float,float> current_coordinate;
-          current_coordinate = map_data->getEKFPath(rover_to_display)->back();
+    if(!map_data->getEKFPath(rover_to_display)->empty())
+    {
+      if(display_unique_rover_colors) painter.setPen(rover_color);
+      else painter.setPen(Qt::yellow);
 
-          float x = map_origin_x+((current_coordinate.first-min_seen_x)/max_seen_width)*(map_width-map_origin_x);
-          float y = map_origin_y+((current_coordinate.second-min_seen_y)/max_seen_height)*(map_height-map_origin_y);
-          float radius = 2.5;
+      pair<float,float> current_coordinate;
+      current_coordinate = map_data->getEKFPath(rover_to_display)->back();
 
-          painter.drawEllipse(QPointF(x,y), radius, radius);
-          painter.drawText(QPoint(x,y), QString::fromStdString(rover_to_display));
-        }
+      float x = map_origin_x+((current_coordinate.first-min_seen_x)/max_seen_width)*(map_width-map_origin_x);
+      float y = map_origin_y+((current_coordinate.second-min_seen_y)/max_seen_height)*(map_height-map_origin_y);
+      float radius = 2.5;
+
+      painter.drawEllipse(QPointF(x,y), radius, radius);
+      painter.drawText(QPoint(x,y), QString::fromStdString(rover_to_display));
+    }
 
         map_data->unlock();
 
         painter.setPen(Qt::white);
+    hardware_rover_color_index = (hardware_rover_color_index + 1) % 8;
     } // End rover display list set iteration
 
     // Diagnostic output
@@ -423,6 +455,31 @@ void MapFrame::setDisplayEKFData(bool display)
     display_ekf_data = display;
 
     if(popout_mapframe) popout_mapframe->setDisplayEKFData(display);
+}
+
+void MapFrame::setGlobalOffset(bool display)
+{
+    display_global_offset = display;
+    map_data->setGlobalOffset(display);
+
+    if(popout_mapframe) popout_mapframe->setGlobalOffset(display);
+}
+
+void MapFrame::setGlobalOffsetForRover(string rover, float x, float y)
+{
+    map_data->setGlobalOffsetForRover(rover, x, y);
+}
+
+void MapFrame::setDisplayUniqueRoverColors(bool display)
+{
+    display_unique_rover_colors = display;
+
+    if(popout_mapframe) popout_mapframe->setDisplayUniqueRoverColors(display);
+}
+
+void MapFrame::setUniqueRoverColor(string rover, QColor rover_color)
+{
+    unique_rover_colors[rover] = rover_color;
 }
 
 void MapFrame::setWhetherToDisplay(string rover, bool yes)
