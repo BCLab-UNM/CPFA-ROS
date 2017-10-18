@@ -6,7 +6,7 @@
 #include "Result.h"
 #include "Controller.h"
 #include "Pheromone.h"
-#include "TagPoint.h"
+#include "Tag.h"
 
 
 class PheromoneController : virtual Controller
@@ -22,10 +22,10 @@ public:
   bool HasWork() override;
 
   void setCurrentTimeInMilliSecs( long int time ) { current_time = time; }
-  void setTargetPickedUp () { target_held = true; }
+  void setTargetPickedUp () { targetHeld = true; }
   void setCurrentLocation (Point location) { currnet_location = location; }
 
-  void setTargetDate (std::vector<TagPoint> tags);
+  void setTargetDate (std::vector<Tag> tags);
 
 
 private:
@@ -38,7 +38,7 @@ private:
 
   Point currnet_location;
 
-  bool target_held = false;
+  bool targetHeld = false;
   bool sense_local_density = false;
 
   long int time_searching;

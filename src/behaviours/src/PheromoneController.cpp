@@ -14,10 +14,10 @@ void PheromoneController::Reset()
 Result PheromoneController::DoWork()
 {
   
-  if (target_held)
+  if (targetHeld)
   {
     sense_local_density = true;
-    target_held = false;
+    targetHeld = false;
     time_searching = current_time;
   }
   
@@ -61,7 +61,7 @@ bool PheromoneController::HasWork()
 }
 
 
-void PheromoneController::setTargetDate(vector<TagPoint> tags)
+void PheromoneController::setTargetDate(std::vector<Tag> tags)
 {
   
   int target_count = 0;
@@ -72,7 +72,7 @@ void PheromoneController::setTargetDate(vector<TagPoint> tags)
     {
       for (int i = 0; i < tags.size(); i++) 
       {
-        if (tags[i].id == 0) 
+        if (tags[i].getID() == 0) 
         {
           target_count++;
         }

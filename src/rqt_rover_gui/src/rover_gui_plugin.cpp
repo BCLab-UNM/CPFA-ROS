@@ -157,6 +157,7 @@ namespace rqt_rover_gui
     connect(this, SIGNAL(updateNumberOfSatellites(QString)), ui.gps_numSV_label, SLOT(setText(QString)));
     connect(this, SIGNAL(sendInfoLogMessage(QString)), this, SLOT(receiveInfoLogMessage(QString)));
     connect(this, SIGNAL(sendDiagLogMessage(QString)), this, SLOT(receiveDiagLogMessage(QString)));
+
     connect(ui.custom_world_path_button, SIGNAL(pressed()), this, SLOT(customWorldButtonEventHandler()));
     connect(ui.custom_distribution_radio_button, SIGNAL(toggled(bool)), this, SLOT(customWorldRadioButtonEventHandler(bool)));
     connect(ui.powerlaw_distribution_radio_button, SIGNAL(toggled(bool)), this, SLOT(customNumCubesRadioButtonEventHandler(bool)));
@@ -166,6 +167,12 @@ namespace rqt_rover_gui
     connect(ui.override_num_rovers_checkbox, SIGNAL(toggled(bool)), this, SLOT(overrideNumRoversCheckboxToggledEventHandler(bool)));
     connect(ui.create_savable_world_checkbox, SIGNAL(toggled(bool)), this, SLOT(createSavableWorldCheckboxToggledEventHandler(bool)));
 
+    connect(this, SIGNAL(updateMapFrameWithCurrentRoverName(QString)), ui.map_frame, SLOT(receiveCurrentRoverName(QString)));
+
+    // Receive waypoint commands from MapFrame
+    connect(ui.map_frame, SIGNAL(sendWaypointCmd(WaypointCmd, int, float, float)), this, SLOT(receiveWaypointCmd(WaypointCmd, int, float, float)));
+    connect(this, SIGNAL(sendWaypointReached(int)), ui.map_frame, SLOT(receiveWaypointReached(int)));
+    
     // Receive log messages from contained frames
     connect(ui.map_frame, SIGNAL(sendInfoLogMessage(QString)), this, SLOT(receiveInfoLogMessage(QString)));
 
@@ -198,10 +205,10 @@ namespace rqt_rover_gui
     // Make the custom rover number combo box look greyed out to begin with
     ui.custom_num_rovers_combobox->setStyleSheet("color: grey; border:1px solid grey;");
 
-    ui.tab_widget->setCurrentIndex(1);
     ui.number_of_tags_combobox->setEnabled(false);
     ui.number_of_tags_combobox->setStyleSheet("color: grey; border:1px solid grey;");
 
+    ui.tab_widget->setCurrentIndex(1);
     ui.texture_combobox->setItemData(0, QColor(Qt::white), Qt::TextColorRole);
 
     ui.visualize_simulation_button->setEnabled(false);
@@ -535,6 +542,11 @@ void RoverGUIPlugin::statusEventHandler(const ros::MessageEvent<std_msgs::String
     rover_statuses[rover_name] = rover_status;
 }
 
+void RoverGUIPlugin::waypointEventHandler(const swarmie_msgs::Waypoint& msg)
+{
+  emit sendWaypointReached(msg.id);
+}
+
 // Counts the number of obstacle avoidance calls
 void RoverGUIPlugin::obstacleEventHandler(const ros::MessageEvent<const std_msgs::UInt8> &event)
 {
@@ -621,6 +633,9 @@ void RoverGUIPlugin::currentRoverChangedEventHandler(QListWidgetItem *current, Q
     ui.rover_name->setText(rover_name_msg_qstr);
 
     emit sendInfoLogMessage(QString("Selected rover: ") + QString::fromStdString(selected_rover_name));
+
+    // Tell the MapFrame that the currently selected rover changed
+    emit updateMapFrameWithCurrentRoverName(QString::fromStdString(selected_rover_name));
 
     // Attempt to read the simulation model xml file if it exists. If it does not exist assume this is a physical rover.
     const char *name = "GAZEBO_MODEL_PATH";
@@ -732,6 +747,7 @@ void RoverGUIPlugin::pollRoversTimerEventHandler()
 
         // Shutdown the subscribers
         status_subscribers[*it].shutdown();
+        waypoint_subscribers[*it].shutdown();
         encoder_subscribers[*it].shutdown();
         gps_subscribers[*it].shutdown();
         gps_nav_solution_subscribers[*it].shutdown();
@@ -740,6 +756,7 @@ void RoverGUIPlugin::pollRoversTimerEventHandler()
 
         // Delete the subscribers
         status_subscribers.erase(*it);
+        waypoint_subscribers.erase(*it);
         encoder_subscribers.erase(*it);
         gps_subscribers.erase(*it);
         gps_nav_solution_subscribers.erase(*it);
@@ -748,9 +765,11 @@ void RoverGUIPlugin::pollRoversTimerEventHandler()
         
         // Shudown Publishers
         control_mode_publishers[*it].shutdown();
+        waypoint_cmd_publishers[*it].shutdown();
 
         // Delete Publishers
         control_mode_publishers.erase(*it);
+        waypoint_cmd_publishers.erase(*it);
     }
 
     // Wait for a rover to connect
@@ -836,9 +855,12 @@ void RoverGUIPlugin::pollRoversTimerEventHandler()
     {
         //Set up publishers
         control_mode_publishers[*i]=nh.advertise<std_msgs::UInt8>("/"+*i+"/mode", 10, true); // last argument sets latch to true
+        waypoint_cmd_publishers[*i]=nh.advertise<swarmie_msgs::Waypoint>("/"+*i+"/waypoints/cmd", 10, true);
+        
 
         //Set up subscribers
         status_subscribers[*i] = nh.subscribe("/"+*i+"/status", 10, &RoverGUIPlugin::statusEventHandler, this);
+        waypoint_subscribers[*i] = nh.subscribe("/"+*i+"/waypoints", 10, &RoverGUIPlugin::waypointEventHandler, this);
         obstacle_subscribers[*i] = nh.subscribe("/"+*i+"/obstacle", 10, &RoverGUIPlugin::obstacleEventHandler, this);
         encoder_subscribers[*i] = nh.subscribe("/"+*i+"/odom/filtered", 10, &RoverGUIPlugin::encoderEventHandler, this);
         ekf_subscribers[*i] = nh.subscribe("/"+*i+"/odom/ekf", 10, &RoverGUIPlugin::EKFEventHandler, this);
@@ -1335,11 +1357,11 @@ void RoverGUIPlugin::allAutonomousButtonEventHandler()
     ui.autonomous_control_radio_button->setChecked(true);
     ui.joystick_frame->setHidden(true);
     
-    //Disable all autonomous button
+    // Disable all autonomous button
     ui.all_autonomous_button->setEnabled(false);
     ui.all_autonomous_button->setStyleSheet("color: grey; border:2px solid grey;");
 
-    //Experiment Timer START
+    // Experiment Timer START
 
     // this catches the case when the /clock timer is not running
     // AKA: when we are not running a simulation
@@ -1438,7 +1460,8 @@ void RoverGUIPlugin::allAutonomousButtonEventHandler()
             ui.simulation_timer_combobox->setStyleSheet("color: grey; border:2px solid grey;");
         }
     }
-    //Experiment Timer END
+
+    // Experiment Timer END
 }
 
 double RoverGUIPlugin::getHours(double seconds) {
@@ -1579,7 +1602,7 @@ void RoverGUIPlugin::customWorldRadioButtonEventHandler(bool toggled)
 
     // Set the button color to reflect whether or not it is disabled
     // Clear the sim path if custom distribution it deselected
-    if( toggled )
+    if(toggled)
     {
         ui.custom_world_path_button->setStyleSheet("color: white; border:2px solid white;");
         ui.number_of_tags_label->setStyleSheet("color: grey;");
@@ -1594,6 +1617,7 @@ void RoverGUIPlugin::customWorldRadioButtonEventHandler(bool toggled)
         ui.number_of_tags_combobox->setStyleSheet("color: white; border:2px solid white; padding: 1px 0px 1px 3px");
     }
 }
+
 
 void RoverGUIPlugin::unboundedRadioButtonEventHandler(bool toggled)
 {
@@ -1859,65 +1883,65 @@ void RoverGUIPlugin::buildSimulationButtonEventHandler()
         return_msg = sim_mgr.addRover(rovers[i], rover_positions[i].x(), rover_positions[i].y(), 0, 0, 0, rover_yaw[i]);
         emit sendInfoLogMessage(return_msg);
 
-        emit sendInfoLogMessage("Starting rover node for "+rovers[i]+"...");
-        return_msg = sim_mgr.startRoverNode(rovers[i]);
-        emit sendInfoLogMessage(return_msg);
+            emit sendInfoLogMessage("Starting rover node for "+rovers[i]+"...");
+            return_msg = sim_mgr.startRoverNode(rovers[i]);
+            emit sendInfoLogMessage(return_msg);
 
-        progress_dialog.setValue((++n_rovers_created)*100.0f/n_rovers);
-        qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
-        
-        if(i == 0)
-        {
-          sleep(rover_load_delay); // Gives plugins enough time to finish loading
+            progress_dialog.setValue((++n_rovers_created)*100.0f/n_rovers);
+            qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
+
+            if(i == 0)
+            {
+              sleep(rover_load_delay); // Gives plugins enough time to finish loading
+            }
         }
       }
-    }
     else
     {
         emit sendInfoLogMessage("Not creating rovers...");
     }
 
-   if (ui.powerlaw_distribution_radio_button->isChecked())
-   {
+    if (ui.powerlaw_distribution_radio_button->isChecked())
+    {
        emit sendInfoLogMessage("Adding powerlaw distribution of targets...");
        return_msg = addPowerLawTargets();
        emit sendInfoLogMessage(return_msg);
-   }
-   else if (ui.uniform_distribution_radio_button->isChecked())
-   {
+    }
+    else if (ui.uniform_distribution_radio_button->isChecked())
+    {
        emit sendInfoLogMessage("Adding uniform distribution of targets...");
        return_msg = addUniformTargets();
        emit sendInfoLogMessage(return_msg);
-   }
-   else if (ui.clustered_distribution_radio_button->isChecked())
-   {
+    }
+    else if (ui.clustered_distribution_radio_button->isChecked())
+    {
        emit sendInfoLogMessage("Adding clustered distribution of targets...");
        return_msg = addClusteredTargets();
        emit sendInfoLogMessage(return_msg);
-   }
+    }
 
-   // add walls given nw corner (x,y) and height and width (in meters)
+    // add walls given nw corner (x,y) and height and width (in meters)
 
-   //addWalls(-arena_dim/2, -arena_dim/2, arena_dim, arena_dim);
+    //addWalls(-arena_dim/2, -arena_dim/2, arena_dim, arena_dim);
 
-   //   // Test rover movement
-   //   displayLogMessage("Moving aeneas");
-   //   return_msg = sim_mgr.moveRover("aeneas", 10, 0, 0);
-   //   displayLogMessage(return_msg);
+    //   // Test rover movement
+    //   displayLogMessage("Moving aeneas");
+    //   return_msg = sim_mgr.moveRover("aeneas", 10, 0, 0);
+    //   displayLogMessage(return_msg);
 
-   //displayLogMessage("Starting the gazebo client to visualize the simulation.");
-   //sim_mgr.startGazeboClient();
+    //displayLogMessage("Starting the gazebo client to visualize the simulation.");
+    //sim_mgr.startGazeboClient();
 
-   ui.visualize_simulation_button->setEnabled(true);
-   ui.clear_simulation_button->setEnabled(true);
+    ui.visualize_simulation_button->setEnabled(true);
+    ui.clear_simulation_button->setEnabled(true);
 
-   ui.visualize_simulation_button->setStyleSheet("color: white;border:1px solid white;");
-   ui.clear_simulation_button->setStyleSheet("color: white;border:1px solid white;");
+    ui.visualize_simulation_button->setStyleSheet("color: white;border:1px solid white;");
+    ui.clear_simulation_button->setStyleSheet("color: white;border:1px solid white;");
 
     ui.simulation_timer_combobox->setEnabled(true);
     ui.simulation_timer_combobox->setStyleSheet("color: white; border:1px solid white; padding: 1px 0px 1px 3px");
 
-   emit sendInfoLogMessage("Finished building simulation.");
+    emit sendInfoLogMessage("Finished building simulation.");
 
     if (ui.start_visualization_on_build_checkbox->isChecked())
     {
@@ -2009,6 +2033,13 @@ void RoverGUIPlugin::clearSimulationButtonEventHandler()
       }
     status_subscribers.clear();
 
+    for (map<string,ros::Subscriber>::iterator it=waypoint_subscribers.begin(); it!=waypoint_subscribers.end(); ++it) 
+      {
+	qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
+	it->second.shutdown();
+      }
+    waypoint_subscribers.clear();
+
     for (map<string,ros::Subscriber>::iterator it=obstacle_subscribers.begin(); it!=obstacle_subscribers.end(); ++it) 
       {
 	qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
@@ -2029,6 +2060,14 @@ void RoverGUIPlugin::clearSimulationButtonEventHandler()
       }
     control_mode_publishers.clear();
 
+    for (map<string,ros::Publisher>::iterator it=waypoint_cmd_publishers.begin(); it!=waypoint_cmd_publishers.end(); ++it)
+      {
+	qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
+	it->second.shutdown();
+      }
+    waypoint_cmd_publishers.clear();
+    
+    
     return_msg += sim_mgr.stopGazeboClient();
     qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
     return_msg += "<br>";
@@ -2152,8 +2191,6 @@ QString RoverGUIPlugin::addUniformTargets()
     float proposed_x;
     float proposed_y;
 
-    // 256 piles of 1 tag
-
     // d is the distance from the center of the arena to the boundary minus the barrier clearance, i.e. the region where tags can be placed
     // is d - U(0,2d) where U(a,b) is a uniform distribition bounded by a and b.
     // (before checking for collisions including the collection disk at the center)
@@ -2206,7 +2243,7 @@ QString RoverGUIPlugin::addClusteredTargets()
     progress_dialog.setValue(0.0);
     qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
 
-    // Four piles of 64
+    //(number_of_tags/64) piles of 64
     for (int i = 0; i < number_of_tags.toInt()/64; i++)
     {
         do
@@ -2217,6 +2254,7 @@ QString RoverGUIPlugin::addClusteredTargets()
         }
         while (sim_mgr.isLocationOccupied(proposed_x, proposed_y, target_cluster_size_64_clearance));
 
+             
         proposed_y2 = proposed_y - (target_cluster_size_1_clearance * 8);
 
         for(int j = 0; j < 8; j++) {
@@ -2871,6 +2909,19 @@ void RoverGUIPlugin::receiveDiagsDataUpdate(QString rover_name, QString text, QC
 void RoverGUIPlugin::refocusKeyboardEventHandler()
 {
     widget->setFocus();
+}
+
+// Publish the waypoint commands recieved from MapFrame to ROS
+void RoverGUIPlugin::receiveWaypointCmd(WaypointCmd cmd, int id, float x, float y)
+{
+  
+    swarmie_msgs::Waypoint msg;
+    msg.action = cmd;
+    msg.id = id;
+    msg.x = x;
+    msg.y = y;
+    
+    waypoint_cmd_publishers[selected_rover_name].publish(msg);
 }
 
 // Clean up memory when this object is deleted

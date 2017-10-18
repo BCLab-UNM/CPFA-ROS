@@ -3,7 +3,7 @@
 
 #include "Controller.h"
 #include "Point.h"
-#include "TagPoint.h"
+#include "Tag.h"
 #include "Result.h"
 
 #include <math.h> // hypot
