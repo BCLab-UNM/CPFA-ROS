@@ -486,7 +486,9 @@ border: 1px solid white;
        </rect>
       </property>
       <property name="styleSheet">
-       <string notr="true">color: rgb(255, 255, 255);</string>
+       <string notr="true">color: white;
+border: 1px solid white;
+padding: 1px;</string>
       </property>
       <property name="text">
        <string>Auto</string>
@@ -625,6 +627,11 @@ padding: 1px;</string>
         <height>111</height>
        </rect>
       </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
       <property name="styleSheet">
        <string notr="true">color: rgb(255, 255, 255);
 border-color: rgb(255, 255, 255);</string>
@@ -754,6 +761,11 @@ border: 1px solid white;
         <width>211</width>
         <height>131</height>
        </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
       </property>
       <property name="styleSheet">
        <string notr="true">color: rgb(255, 255, 255);
@@ -908,6 +920,11 @@ padding: 1px 0px 1px 3px; /*This makes text colour work*/
         <height>20</height>
        </rect>
       </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
       <property name="styleSheet">
        <string notr="true">color: rgb(255, 255, 255);</string>
       </property>
@@ -926,6 +943,11 @@ padding: 1px 0px 1px 3px; /*This makes text colour work*/
         <width>121</width>
         <height>27</height>
        </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
       </property>
       <property name="styleSheet">
        <string notr="true">color: rgb(255, 255, 255);
@@ -959,6 +981,11 @@ padding: 1px 0px 1px 3px; /*This makes text colour work*/
         <height>20</height>
        </rect>
       </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
       <property name="styleSheet">
        <string notr="true">color: white;
 border: 1px solid white;
@@ -979,6 +1006,11 @@ padding: 1px;</string>
         <width>181</width>
         <height>22</height>
        </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
       </property>
       <property name="styleSheet">
        <string notr="true">color: rgb(255, 255, 255);</string>
@@ -1001,6 +1033,11 @@ padding: 1px;</string>
         <width>61</width>
         <height>27</height>
        </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
       </property>
       <property name="styleSheet">
        <string notr="true">color: rgb(255, 255, 255);
@@ -1067,6 +1104,11 @@ padding: 1px 0px 1px 3px; /*This makes text colour work*/
         <height>27</height>
        </rect>
       </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
       <property name="styleSheet">
        <string notr="true">color: rgb(255, 255, 255);
 border-color: rgb(255, 255, 255);
@@ -1127,6 +1169,11 @@ padding: 1px 0px 1px 3px; /*This makes text colour work*/
         <height>20</height>
        </rect>
       </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
       <property name="styleSheet">
        <string notr="true">color: rgb(255, 255, 255);</string>
       </property>
@@ -1175,6 +1222,11 @@ p, li { white-space: pre-wrap; }
       </property>
       <property name="whatsThis">
        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When checked, a Gazebo world without rovers, walls, ground texture, or a collection zone will be created. The purpose of this option is to generate tag distributions using the Uniform, Clustered, or Power Law in a way that you can save the world file from Gazebo and re-use that same distribution later using the Custom world option. It will also load much faster as well when loading a pre-built distribution.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
       </property>
       <property name="styleSheet">
        <string notr="true">color: rgb(255, 255, 255);</string>
@@ -1432,7 +1484,7 @@ padding: 1px;</string>
        <string notr="true">color: rgb(255, 255, 255);</string>
       </property>
       <property name="text">
-       <string>val</string>
+       <string>Noise</string>
       </property>
      </widget>
      <widget class="QLabel" name="camera_width">
@@ -1512,6 +1564,11 @@ padding: 1px;</string>
         <pointsize>10</pointsize>
        </font>
       </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
       <property name="styleSheet">
        <string notr="true">color: rgb(255, 255, 255);</string>
       </property>
@@ -1527,6 +1584,11 @@ padding: 1px;</string>
         <width>60</width>
         <height>17</height>
        </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
       </property>
       <property name="font">
        <font>
@@ -1554,6 +1616,11 @@ padding: 1px;</string>
         <pointsize>10</pointsize>
        </font>
       </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
       <property name="styleSheet">
        <string notr="true">color: rgb(255, 255, 255);</string>
       </property>
@@ -1569,6 +1636,11 @@ padding: 1px;</string>
         <width>60</width>
         <height>17</height>
        </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
       </property>
       <property name="font">
        <font>
@@ -1771,6 +1843,11 @@ padding: 1px;</string>
         <pointsize>10</pointsize>
        </font>
       </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
       <property name="styleSheet">
        <string notr="true">color: rgb(255, 255, 255);</string>
       </property>
@@ -1838,7 +1915,7 @@ padding: 1px;</string>
        <string notr="true">color: rgb(255, 255, 255);</string>
       </property>
       <property name="text">
-       <string>val</string>
+       <string>Noise Mean</string>
       </property>
      </widget>
      <widget class="QLabel" name="sonar_min">
@@ -1880,7 +1957,7 @@ padding: 1px;</string>
        <string notr="true">color: rgb(255, 255, 255);</string>
       </property>
       <property name="text">
-       <string>val</string>
+       <string>Stdev</string>
       </property>
      </widget>
      <widget class="QLabel" name="label_65">
@@ -1922,7 +1999,7 @@ padding: 1px;</string>
        <string notr="true">color: rgb(255, 255, 255);</string>
       </property>
       <property name="text">
-       <string>val</string>
+       <string>Horz. Res</string>
       </property>
      </widget>
     </widget>
@@ -1975,6 +2052,11 @@ p, li { white-space: pre-wrap; }
       <property name="whatsThis">
        <string/>
       </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
       <property name="styleSheet">
        <string notr="true">color: rgb(255, 255, 255);</string>
       </property>
@@ -1993,6 +2075,11 @@ p, li { white-space: pre-wrap; }
         <width>91</width>
         <height>31</height>
        </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
       </property>
       <property name="styleSheet">
        <string notr="true">color: rgb(255, 255, 255);</string>
@@ -2019,6 +2106,11 @@ p, li { white-space: pre-wrap; }
         <height>27</height>
        </rect>
       </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
       <property name="styleSheet">
        <string notr="true">color: rgb(255, 255, 255);
 border-color: rgb(255, 255, 255);
@@ -2041,6 +2133,11 @@ border: 1px solid white;
         <height>27</height>
        </rect>
       </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
+      </property>
       <property name="styleSheet">
        <string notr="true">color: rgb(255, 255, 255);
 border-color: rgb(255, 255, 255);
@@ -2062,6 +2159,11 @@ border: 1px solid white;
         <width>161</width>
         <height>27</height>
        </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+       </font>
       </property>
       <property name="styleSheet">
        <string notr="true">color: rgb(255, 255, 255);
@@ -3528,6 +3630,9 @@ QTabBar::tab:only-one {
     <property name="text">
      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#ffffff;&quot;&gt;Number of Targets Collected:&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
     </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
    </widget>
    <widget class="QLabel" name="num_targets_collected_label">
     <property name="geometry">
@@ -3545,6 +3650,9 @@ QTabBar::tab:only-one {
     </property>
     <property name="text">
      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#ffffff;&quot;&gt;0&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
     </property>
    </widget>
   </widget>
@@ -3908,6 +4016,22 @@ border: 1px solid white;
     </property>
    </widget>
   </widget>
+  <zorder>joystick_disabled_frame</zorder>
+  <zorder>joystick_frame</zorder>
+  <zorder>tab_widget</zorder>
+  <zorder>control_frame</zorder>
+  <zorder>label</zorder>
+  <zorder>label_2</zorder>
+  <zorder>label_3</zorder>
+  <zorder>label_4</zorder>
+  <zorder>version_number_label</zorder>
+  <zorder>log_tab</zorder>
+  <zorder>Rover_frame</zorder>
+  <zorder>label_13</zorder>
+  <zorder>map_list_label</zorder>
+  <zorder>Simulation_Timer_Frame</zorder>
+  <zorder>simulation_timer_frame_label</zorder>
+  <zorder>status_frame</zorder>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>

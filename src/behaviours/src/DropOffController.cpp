@@ -240,25 +240,25 @@ void DropOffController::Reset() {
   isPrecisionDriving = false;
   finalInterrupt = false;
   precisionInterrupt = false;
-  target_held = false;
+  targetHeld = false;
   first_center = true;
 
 }
 
-void DropOffController::SetTargetData(vector<TagPoint> tags) {
+void DropOffController::SetTargetData(vector<Tag> tags) {
   countRight = 0;
   countLeft = 0;
 
-  if(target_held) {
+  if(targetHeld) {
     // if a target is detected and we are looking for center tags
     if (tags.size() > 0 /*&& !reachedCollectionPoint*/) {
 
       // this loop is to get the number of center tags
       for (int i = 0; i < tags.size(); i++) {
-        if (tags[i].id == 256) {
+        if (tags[i].getID() == 256) {
 
           // checks if tag is on the right or left side of the image
-          if (tags[i].x + cameraOffsetCorrection > 0) {
+          if (tags[i].getPositionX() + cameraOffsetCorrection > 0) {
             countRight++;
 
           } else {
@@ -293,7 +293,7 @@ bool DropOffController::HasWork() {
 
   bool has_work = false;
 
-  if (target_held)
+  if (targetHeld)
   {
     has_work = true;
   }
@@ -314,7 +314,7 @@ void DropOffController::SetCurrentLocation(Point current) {
 }
 
 void DropOffController::SetTargetPickedUp() {
-  target_held = true;
+  targetHeld = true;
 }
 
 void DropOffController::SetCurrentTimeInMilliSecs( long int time )

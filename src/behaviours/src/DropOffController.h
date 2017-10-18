@@ -3,7 +3,7 @@
 #define HEADERFILE_H
 
 #include "Controller.h"
-#include "TagPoint.h"
+#include "Tag.h"
 #include <math.h>
 #include <vector>
 
@@ -22,10 +22,20 @@ public:
   void SetCenterLocation(Point center);
   void SetCurrentLocation(Point current);
   void SetTargetPickedUp();
-  void SetTargetData(std::vector<TagPoint> tags);
-  bool HasTarget() {return target_held;}
 
-  void UpdateData(std::vector<TagPoint> tags);
+  
+ 
+
+  
+
+  void SetBlockBlockingUltrasound(bool blockBlock);
+  void SetTargetData(std::vector<Tag> tags);
+  bool HasTarget() {return targetHeld;}
+
+  float GetSpinner() {return spinner;}
+
+  void UpdateData(std::vector<Tag> tags);
+
 
   void SetCurrentTimeInMilliSecs( long int time );
 
@@ -43,7 +53,7 @@ private:
   const float initialSpinSize = 0.05; //in meters aka 10cm
   const float spinSizeIncrement = 0.50; //in meters
   const float searchVelocity = 0.15; //in meters per second
-  const float dropDelay = 0.4; //delay in seconds for dropOff
+  const float dropDelay = 0.5; //delay in seconds for dropOff
 
 
 
@@ -89,7 +99,12 @@ private:
      */
   
   //Flag indicating that a target has been picked up and is held
-  bool target_held;
+  bool targetHeld;
+  //Flag indicating that we're in the center
+  bool reachedCollectionPoint;
+
+  //Flag indicating that we're driving in a circle to find the nest
+  bool circularCenterSearching;
 
   //Flag for when we are entering the center circle
   bool centerApproach;
@@ -100,6 +115,9 @@ private:
   //Flag to indicate a switch to precision driving
   bool isPrecisionDriving;
 
+  //Flag to indicate that we're starting to follow waypoints
+  bool startWaypoint;
+
   Result result;
 
   long int current_time;
@@ -108,7 +126,6 @@ private:
   bool precisionInterrupt = false;
   bool finalInterrupt = false;
   bool first_center = true;
-  bool reachedCollectionPoint = false;
-
+  
 };
 #endif // end header define

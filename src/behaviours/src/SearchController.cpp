@@ -1,4 +1,5 @@
 #include "SearchController.h"
+#include <angles/angles.h>
 
 using namespace std;
 
@@ -46,7 +47,8 @@ Result SearchController::DoWork() {
     attemptCount++;
     return result;
   }
-  else if (attemptCount >= 5 || attemptCount == 0) {
+  else if (attemptCount >= 5 || attemptCount == 0) 
+  {
     attemptCount = 1;
 
 
@@ -73,14 +75,24 @@ Result SearchController::DoWork() {
 
     result.wpts.waypoints.clear();
     result.wpts.waypoints.insert(result.wpts.waypoints.begin(), searchLocation);
-
+    
     return result;
   }
 
 }
 
 void SearchController::SetCenterLocation(Point centerLocation) {
+  
+  float diffX = this->centerLocation.x - centerLocation.x;
+  float diffY = this->centerLocation.y - centerLocation.y;
   this->centerLocation = centerLocation;
+  
+  if (!result.wpts.waypoints.empty())
+  {
+  result.wpts.waypoints.back().x -= diffX;
+  result.wpts.waypoints.back().y -= diffY;
+  }
+  
 }
 
 void SearchController::SetCurrentLocation(Point currentLocation) {
