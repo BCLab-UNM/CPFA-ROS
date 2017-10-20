@@ -2,7 +2,7 @@
 
 using namespace std;
 
-MapData::MapData( )
+MapData::MapData()
 {
     display_global_offset = false;
 }
@@ -18,10 +18,13 @@ void MapData::addToGPSRoverPath(string rover, float x, float y)
     if (y < min_gps_seen_y[rover]) min_gps_seen_y[rover] = y;
 
     update_mutex.lock();
+
     float offset_x = rover_global_offsets[rover].first;
     float offset_y = rover_global_offsets[rover].second;
     global_offset_gps_rover_path[rover].push_back(pair<float,float>(x+offset_x,y-offset_y));
+
     gps_rover_path[rover].push_back(pair<float,float>(x,y));
+
     update_mutex.unlock();
 
 }
@@ -37,15 +40,18 @@ void MapData::addToEncoderRoverPath(string rover, float x, float y)
     if (y < min_encoder_seen_y[rover]) min_encoder_seen_y[rover] = y;
 
     update_mutex.lock();
+
     float offset_x = rover_global_offsets[rover].first;
     float offset_y = rover_global_offsets[rover].second;
     global_offset_encoder_rover_path[rover].push_back(pair<float,float>(x+offset_x,y-offset_y));
+
     encoder_rover_path[rover].push_back(pair<float,float>(x,y));
+
     update_mutex.unlock();
 
 }
 
-
+// Expects the input y to be flipped with respect to y the map coordinate system
 void MapData::addToEKFRoverPath(string rover, float x, float y)
 {
   // Negate the y direction to orient the map so up is north.
@@ -60,9 +66,44 @@ void MapData::addToEKFRoverPath(string rover, float x, float y)
     float offset_x = rover_global_offsets[rover].first;
     float offset_y = rover_global_offsets[rover].second;
     global_offset_ekf_rover_path[rover].push_back(pair<float,float>(x+offset_x,y-offset_y));
+
     ekf_rover_path[rover].push_back(pair<float,float>(x,y));
+
     update_mutex.unlock();
 
+}
+
+// Expects the input y to be consistent with the map coordinate system
+int MapData::addToWaypointPath(string rover, float x, float y)
+{
+
+  update_mutex.lock();
+  int this_id = waypoint_id_counter++; // Get the next waypoint id.
+  waypoint_path[rover][this_id]=make_tuple(x,y,false);
+  update_mutex.unlock();
+  return this_id;
+}
+
+void MapData::removeFromWaypointPath(std::string rover, int id)
+{
+  update_mutex.lock();
+  waypoint_path[rover].erase(id);
+  update_mutex.unlock();
+}
+
+void MapData::reachedWaypoint(int waypoint_id)
+{
+  update_mutex.lock();
+  for(auto &rover : waypoint_path)
+  {
+    map<int, std::tuple<float,float,bool>>::iterator found;
+    if ( (found = rover.second.find(waypoint_id))  != rover.second.end() )
+    {
+      get<2>(found->second) = true;
+    }
+  }
+   
+  update_mutex.unlock();
 }
 
 void MapData::addTargetLocation(string rover, float x, float y)
@@ -110,6 +151,7 @@ void MapData::clear()
     global_offset_gps_rover_path.clear();
     target_locations.clear();
     collection_points.clear();
+    waypoint_path.clear();
 
     update_mutex.unlock();
 }
@@ -171,6 +213,10 @@ std::vector< std::pair<float,float> >* MapData::getTargetLocations(std::string r
 std::vector< std::pair<float,float> >* MapData::getCollectionPoints(std::string rover_name)
 {
     return &collection_points[rover_name];
+}
+
+std::map<int, std::tuple<float,float,bool> >* MapData::getWaypointPath(std::string rover_name) {
+    return &waypoint_path[rover_name];
 }
 
 // These functions report the maximum and minimum map values seen. This is useful for the GUI when it is calculating the map coordinate system.
