@@ -1,16 +1,17 @@
 #include "DropOffController.h"
 
+using namespace std;
+
 DropOffController::DropOffController() {
 
   reachedCollectionPoint = false;
-
   result.type = behavior;
   result.b = wait;
-  result.wristAngle = 0.8;
+  result.wristAngle = 0.7;
   result.reset = false;
   interrupt = false;
 
-  circularCenterSearching = false;
+ // circularCenterSearching = false;
   spinner = 0;
   centerApproach = false;
   seenEnoughCenterTags = false;
@@ -22,7 +23,6 @@ DropOffController::DropOffController() {
   isPrecisionDriving = false;
   startWaypoint = false;
   timerTimeElapsed = -1;
-
 }
 
 DropOffController::~DropOffController() {
@@ -30,6 +30,8 @@ DropOffController::~DropOffController() {
 }
 
 Result DropOffController::DoWork() {
+
+  cout << "8" << endl;
 
   int count = countLeft + countRight;
 
@@ -43,16 +45,25 @@ Result DropOffController::DoWork() {
   //to resart our search.
   if(reachedCollectionPoint)
   {
-    if (timerTimeElapsed >= 4)
+    cout << "2 time is : "<< timerTimeElapsed << endl;
+    if (timerTimeElapsed >= 5)
     {
-      result.type = behavior;
-      result.b = nextProcess;
-      result.reset = true;
-      finalInterrupt = true;
-      return result;
+      if (finalInterrupt)
+      {
+        result.type = behavior;
+        result.b = nextProcess;
+        result.reset = true;
+        return result;
+      }
+      else
+      {
+        finalInterrupt = true;
+        cout << "1" << endl;
+      }
     }
     else if (timerTimeElapsed >= 0.1)
     {
+      cout << "11" << endl;
       isPrecisionDriving = true;
       result.type = precisionDriving;
 
@@ -110,7 +121,6 @@ Result DropOffController::DoWork() {
     timerTimeElapsed = 0;
 
   }
-
   bool left = (countLeft > 0);
   bool right = (countRight > 0);
   bool centerSeen = (right || left);
@@ -124,7 +134,19 @@ Result DropOffController::DoWork() {
 
   if (count > 0 || seenEnoughCenterTags || prevCount > 0) //if we have a target and the center is located drive towards it.
   {
+
+    cout << "9" << endl;
     centerSeen = true;
+
+    if (first_center && isPrecisionDriving)
+    {
+      first_center = false;
+      result.type = behavior;
+      result.reset = false;
+      result.b = nextProcess;
+      return result;
+    }
+    isPrecisionDriving = true;
 
     if (seenEnoughCenterTags) //if we have seen enough tags
     {
@@ -139,9 +161,11 @@ Result DropOffController::DoWork() {
     }
 
     float turnDirection = 1;
+    //float current_search_velocity = searchVelocity;
+    
     //reverse tag rejection when we have seen enough tags that we are on a
     //trajectory in to the square we dont want to follow an edge.
-    if (seenEnoughCenterTags) turnDirection = -1;
+    if (seenEnoughCenterTags) turnDirection = -3;
 
     result.type = precisionDriving;
 
@@ -197,6 +221,7 @@ Result DropOffController::DoWork() {
     float timeSinceSeeingEnoughCenterTags = elapsed/1e3; // Convert from milliseconds to seconds
     if (timeSinceSeeingEnoughCenterTags > lostCenterCutoff)
     {
+      cout << "4" << endl;
       //go back to drive to center base location instead of drop off attempt
       reachedCollectionPoint = false;
       seenEnoughCenterTags = false;
@@ -204,6 +229,11 @@ Result DropOffController::DoWork() {
 
       result.type = waypoint;
       result.wpts.waypoints.push_back(this->centerLocation);
+      if (isPrecisionDriving) {
+        result.type = behavior;
+        result.b = prevProcess;
+        result.reset = false;
+      }
       isPrecisionDriving = false;
       interrupt = false;
       precisionInterrupt = false;
@@ -234,7 +264,7 @@ void DropOffController::Reset() {
   result.pd.cmdVel = 0;
   result.pd.cmdAngularError = 0;
   result.fingerAngle = -1;
-  result.wristAngle = 0.8;
+  result.wristAngle = 0.7;
   result.reset = false;
   result.wpts.waypoints.clear();
   spinner = 0;
@@ -255,10 +285,12 @@ void DropOffController::Reset() {
   precisionInterrupt = false;
   targetHeld = false;
   startWaypoint = false;
+  first_center = true;
 
 }
 
-void DropOffController::SetTargetData(vector<TagPoint> tags) {
+
+void DropOffController::SetTargetData(vector<Tag> tags) {
   countRight = 0;
   countLeft = 0;
 
@@ -268,10 +300,10 @@ void DropOffController::SetTargetData(vector<TagPoint> tags) {
 
       // this loop is to get the number of center tags
       for (int i = 0; i < tags.size(); i++) {
-        if (tags[i].id == 256) {
+        if (tags[i].getID() == 256) {
 
           // checks if tag is on the right or left side of the image
-          if (tags[i].x + cameraOffsetCorrection > 0) {
+          if (tags[i].getPositionX() + cameraOffsetCorrection > 0) {
             countRight++;
 
           } else {

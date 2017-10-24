@@ -45,6 +45,11 @@ const float deltaTime = 0.1; //abridge's update interval
 int currentMode = 0;
 string publishedName;
 
+// Allowing messages to be sent to the arduino too fast causes a disconnect
+// This is the minimum time between messages to the arduino in microseconds.
+// Only used with the gripper commands to fix a manual control bug.
+unsigned int min_usb_send_delay = 100;
+
 float heartbeat_publish_interval = 2;
 
 
@@ -161,18 +166,35 @@ void driveCommandHandler(const geometry_msgs::Twist::ConstPtr& message) {
   float left = (message->linear.x); //target linear velocity in meters per second
   float right = (message->angular.z); //angular error in radians
 
-  if (currentMode == 1) //manual control
+  // Cap motor commands at 120. Experimentally determined that high values (tested 180 and 255) can cause 
+  // the hardware to fail when the robot moves itself too violently.
+  int max_motor_cmd = 120;
+
+  // Check that the resulting motor commands do not exceed the specified safe maximum value
+  if (left > max_motor_cmd)
   {
-	right *= 255;
-	left *= 255; //scale values between -255 and 255;
+    left = max_motor_cmd;
+  }
+  else if (left < -max_motor_cmd)
+  {
+    left = - max_motor_cmd;
+  }
+
+  if (right > max_motor_cmd)
+  {
+    right = max_motor_cmd;
+  }
+  else if (right < -max_motor_cmd)
+  {
+    right = -max_motor_cmd;
   }
 
   int leftInt = left;
   int rightInt = right;
     
-    sprintf(moveCmd, "v,%d,%d\n", leftInt, rightInt); //format data for arduino into c string
-    usb.sendData(moveCmd);                      //send movement command to arduino over usb
-    memset(&moveCmd, '\0', sizeof (moveCmd));   //clear the movement command string
+  sprintf(moveCmd, "v,%d,%d\n", leftInt, rightInt); //format data for arduino into c string
+  usb.sendData(moveCmd);                      //send movement command to arduino over usb
+  memset(&moveCmd, '\0', sizeof (moveCmd));   //clear the movement command string
 }
 
 
@@ -180,6 +202,10 @@ void driveCommandHandler(const geometry_msgs::Twist::ConstPtr& message) {
 // radians, write them to a string and send that to the arduino
 // for processing.
 void fingerAngleHandler(const std_msgs::Float32::ConstPtr& angle) {
+
+  // To throttle the message rate so we don't lose connection to the arduino
+  usleep(min_usb_send_delay);
+  
   char cmd[16]={'\0'};
 
   // Avoid dealing with negative exponents which confuse the conversion to string by checking if the angle is small
@@ -194,6 +220,9 @@ void fingerAngleHandler(const std_msgs::Float32::ConstPtr& angle) {
 }
 
 void wristAngleHandler(const std_msgs::Float32::ConstPtr& angle) {
+  // To throttle the message rate so we don't lose connection to the arduino
+  usleep(min_usb_send_delay);
+  
     char cmd[16]={'\0'};
 
     // Avoid dealing with negative exponents which confuse the conversion to string by checking if the angle is small

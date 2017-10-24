@@ -26,7 +26,9 @@ public:
   void SetCurrentLocation(Point currentLocation);
   void SetCenterLocation(Point centerLocation);
   void SetSuccesfullPickup();
-
+  //void SetCurrentTimeInMilliSecs( long int time );
+  void setSearchType(bool informed_search);
+  
 protected:
 
   void ProcessData();
@@ -43,8 +45,24 @@ private:
 
   // Search state
   // Flag to allow special behaviour for the first waypoint
+/*  bool succesfullPickup = false;
+  bool informed_search = false;
+  float search_step_size = 0.5;
+
+  long int current_time = 0;
+  long int informed_search_time = 0;
+
+  CPFAParameters CPFA_parameters;
+*/
+  bool informed_search = false;
+  float search_step_size = 0.5;
+
+  long int current_time = 0;
+  long int informed_search_time = 0;
+
   bool first_waypoint = true;
   bool succesfullPickup = false;
+
 };
 
 #endif /* SEARCH_CONTROLLER */

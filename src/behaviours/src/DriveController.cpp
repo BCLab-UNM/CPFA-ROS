@@ -1,5 +1,6 @@
 #include "DriveController.h"
 
+using namespace std;
 DriveController::DriveController() {
 
   fastVelPID.SetConfiguration(fastVelConfig());
@@ -61,7 +62,6 @@ Result DriveController::DoWork() {
     //Handles route planning and navigation as well as makeing sure all waypoints are valid.
   case STATE_MACHINE_WAYPOINTS: {
 
-
     bool tooClose = true;
     while (!waypoints.empty() && tooClose) {
       if (hypot(waypoints.back().x-currentLocation.x, waypoints.back().y-currentLocation.y) < waypointTolerance) {
@@ -89,14 +89,12 @@ Result DriveController::DoWork() {
     // Stay in this state until angle is minimized
   case STATE_MACHINE_ROTATE: {
 
-
     waypoints.back().theta = atan2(waypoints.back().y - currentLocation.y, waypoints.back().x - currentLocation.x);
     // Calculate the diffrence between current and desired heading in radians.
     float errorYaw = angles::shortest_angular_distance(currentLocation.theta, waypoints.back().theta);
 
     result.pd.setPointVel = 0.0;
     result.pd.setPointYaw = waypoints.back().theta;
-
     // If angle > rotateOnlyAngleTolerance radians rotate but dont drive forward.
     if (fabs(angles::shortest_angular_distance(currentLocation.theta, waypoints.back().theta)) > rotateOnlyAngleTolerance) {
       // rotate but dont drive.
@@ -114,7 +112,6 @@ Result DriveController::DoWork() {
     // Drive forward
     // Stay in this state until angle is at least PI/2
   case STATE_MACHINE_SKID_STEER: {
-
     // calculate the distance between current and desired heading in radians
     float errorYaw = angles::shortest_angular_distance(currentLocation.theta, waypoints.back().theta);
 
@@ -303,7 +300,7 @@ PIDConfig DriveController::fastVelConfig() {
 PIDConfig DriveController::fastYawConfig() {
   PIDConfig config;
 
-  config.Kp = 200;
+  config.Kp = 240;
   config.Ki = 25;
   config.Kd = 0.5;
   config.satUpper = 255;
@@ -312,7 +309,7 @@ PIDConfig DriveController::fastYawConfig() {
   config.errorHistLength = 4;
   config.alwaysIntegral = false;
   config.resetOnSetpoint = true;
-  config.feedForwardMultiplier = 0; //gives 127 pwm at 0.4 commandedspeed
+  config.feedForwardMultiplier = 0;
   config.integralDeadZone = 0.01;
   config.integralErrorHistoryLength = 10000;
   config.integralMax = config.satUpper/2;
@@ -356,7 +353,7 @@ PIDConfig DriveController::slowYawConfig() {
   config.errorHistLength = 4;
   config.alwaysIntegral = false;
   config.resetOnSetpoint = true;
-  config.feedForwardMultiplier = 0; //gives 127 pwm at 0.4 commandedspeed
+  config.feedForwardMultiplier = 0;
   config.integralDeadZone = 0.01;
   config.integralErrorHistoryLength = 10000;
   config.integralMax = config.satUpper/6;
@@ -400,7 +397,7 @@ PIDConfig DriveController::constYawConfig() {
   config.errorHistLength = 4;
   config.alwaysIntegral = true;
   config.resetOnSetpoint = true;
-  config.feedForwardMultiplier = 120; //gives 127 pwm at 0.4 commandedspeed
+  config.feedForwardMultiplier = 120;
   config.integralDeadZone = 0.01;
   config.integralErrorHistoryLength = 10000;
   config.integralMax = config.satUpper/2;

@@ -1,3 +1,5 @@
+#ifndef RESULT_H
+#define RESULT_H
 // Defines the Result type which used to standardize the information that
 // can be returned by a controller object.
 
@@ -46,9 +48,11 @@ enum ResultType {
 
 enum BehaviorTrigger {
   wait,
-  prevProcess,
+  prevProcess, // deprecated, will be removed later
   noChange,
-  nextProcess
+  nextProcess, // deprecated, will be removed later
+  COMPLETED,
+  FAILED
 };
 
 struct PrecisionDriving {
@@ -63,7 +67,7 @@ struct PrecisionDriving {
 };
 
 struct Waypoints {
-  vector<Point> waypoints;
+  std::vector<Point> waypoints;
 };
 
 struct Result {
@@ -79,3 +83,5 @@ struct Result {
 
   bool reset;
 };
+
+#endif

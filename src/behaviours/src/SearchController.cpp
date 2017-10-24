@@ -1,4 +1,7 @@
 #include "SearchController.h"
+#include <angles/angles.h>
+
+using namespace std;
 
 SearchController::SearchController() {
   rng = new random_numbers::RandomNumberGenerator();
@@ -10,10 +13,14 @@ SearchController::SearchController() {
   centerLocation.y = 0;
   centerLocation.theta = 0;
   result.PIDMode = FAST_PID;
+
+  result.fingerAngle = M_PI/2;
+  result.wristAngle = M_PI/4;
 }
 
 void SearchController::Reset() {
   result.reset = false;
+  attemptCount = 0;
 }
 
 /**
@@ -67,7 +74,17 @@ Result SearchController::DoWork() {
 }
 
 void SearchController::SetCenterLocation(Point centerLocation) {
+  
+  float diffX = this->centerLocation.x - centerLocation.x;
+  float diffY = this->centerLocation.y - centerLocation.y;
   this->centerLocation = centerLocation;
+  
+  if (!result.wpts.waypoints.empty())
+  {
+  result.wpts.waypoints.back().x -= diffX;
+  result.wpts.waypoints.back().y -= diffY;
+  }
+  
 }
 
 void SearchController::SetCurrentLocation(Point currentLocation) {
@@ -88,7 +105,33 @@ bool SearchController::HasWork() {
 }
 
 void SearchController::SetSuccesfullPickup() {
-  succesfullPickup = true;
+succesfullPickup = true;
+}
+void SearchController::setSearchType(bool informed_search) 
+{
+  this->informed_search = informed_search;
+
+  if(informed_search)
+  {
+    informed_search_time = current_time;
+  }
+}
+/*
+void SearchController::SetCurrentTimeInMilliSecs( long int time )
+{
+  current_time = time;
 }
 
+bool SearchController::giveUpSearching() 
+{
+  double random_num = rng->uniformReal(0, 1);
+  bool give_up = false;
 
+  if (CPFA_parameters.probability_of_returning_to_nest > random_num)  
+  {
+    give_up = true;
+  } 
+
+  return give_up;
+}
+*/

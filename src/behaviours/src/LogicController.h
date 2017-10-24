@@ -7,9 +7,15 @@
 #include "SearchController.h"
 #include "ObstacleController.h"
 #include "DriveController.h"
+#include "SiteFidelityController.h"
+#include "RandomDispersalController.h"
+#include "CPFAParameters.h"
+#include "RangeController.h"
+#include "ManualWaypointController.h"
 
 #include <vector>
 #include <queue>
+#include <stdlib.h>
 
 using namespace std;
 
@@ -36,7 +42,7 @@ public:
   bool ShouldInterrupt() override;
   bool HasWork() override;
 
-  void SetAprilTags(vector<TagPoint> tags);
+  void SetAprilTags(vector<Tag> tags);
   void SetSonarData(float left, float center, float right);
   void SetPositionData(Point currentLocation);
   void SetMapPositionData(Point currentLocationMap);
@@ -44,8 +50,23 @@ public:
   void SetMapVelocityData(float linearVelocity, float angularVelocity);
   void SetCenterLocationOdom(Point centerLocationOdom);
   void SetCenterLocationMap(Point centerLocationMap);
+  void AddManualWaypoint(Point wpt, int waypoint_id);
+  void RemoveManualWaypoint(int waypoint_id);
+  std::vector<int> GetClearedWaypoints();
+
+  void SetModeManual();
+  void SetModeAuto();
 
   void SetCurrentTimeInMilliSecs( long int time );
+
+  //void setTargetHeld();
+  // Tell the logic controller whether rovers should automatically
+  // resstrict their foraging range. If so provide the shape of the
+  // allowed range.
+  void setVirtualFenceOn( RangeShape* range );
+  void setVirtualFenceOff( );
+
+
 
 protected:
   void ProcessData();
@@ -62,7 +83,9 @@ private:
     _FIRST = 0,
     PROCCESS_STATE_SEARCHING = 0,
     PROCCESS_STATE_TARGET_PICKEDUP,
-    _LAST
+    PROCCESS_STATE_DROP_OFF,
+    _LAST,
+    PROCCESS_STATE_MANUAL
   };
 
   LogicState logicState;
@@ -73,13 +96,29 @@ private:
   SearchController searchController;
   ObstacleController obstacleController;
   DriveController driveController;
+  SiteFidelityController site_fidelity_controller;
+RandomDispersalController random_dispersal_controller;
+  RangeController range_controller;
+  ManualWaypointController manualWaypointController;
 
-  std::vector<PrioritizedController> prioritizedControllers;
+  vector<PrioritizedController> prioritizedControllers;
   priority_queue<PrioritizedController> control_queue;
 
   void controllerInterconnect();
 
   long int current_time = 0;
+  bool informed_search = false;
+  /* CPFA State Machine variables */
+  /*bool target_held = false;
+  bool target_dropped_off = true;
+  bool nest_has_been_reached = false;
+  bool num_pheromones = 0;
+  bool informed_search = false;
+  int local_resource_density = 0;
+
+  CPFAParameters CPFA_parameters;*/ //remove this block if the code works. 
+  /* End CPFA State variables */
+
 };
 
 #endif // LOGICCONTROLLER_H
