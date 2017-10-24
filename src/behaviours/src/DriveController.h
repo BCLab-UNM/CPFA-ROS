@@ -29,7 +29,7 @@ private:
 
   bool interupt = false;
 
-  float rotateOnlyAngleTolerance = 0.15;
+  float rotateOnlyAngleTolerance = 0.1;
   float finalRotationTolerance = 0.2;
   const float waypointTolerance = 0.15; //15 cm tolerance.
 

@@ -22,7 +22,6 @@
 #include <apriltags_ros/AprilTagDetectionArray.h>
 #include <std_msgs/Float32MultiArray.h>
 #include "swarmie_msgs/Waypoint.h"
-
 // Include Controllers
 #include "LogicController.h"
 #include <vector>
@@ -47,7 +46,6 @@ public:
   ROSAdapterRangeShapeInvalidTypeException(std::string msg) {
     this->msg = msg;
   }
-  
   virtual const char* what() const throw()
   {
     std::string message = "Invalid RangeShape type provided: " + msg;
@@ -79,7 +77,6 @@ void resultHandler();
 
 Point updateCenterLocation();
 void transformMapCentertoOdom();
-
 
 // Numeric Variables for rover positioning
 geometry_msgs::Pose2D currentLocation;
@@ -179,7 +176,6 @@ int main(int argc, char **argv) {
   
   gethostname(host, sizeof (host));
   string hostname(host);
-  
   if (argc >= 2) {
     publishedName = argv[1];
     cout << "Welcome to the world of tomorrow " << publishedName
@@ -188,14 +184,12 @@ int main(int argc, char **argv) {
     publishedName = hostname;
     cout << "No Name Selected. Default is: " << publishedName << endl;
   }
-  
   // NoSignalHandler so we can catch SIGINT ourselves and shutdown the node
   ros::init(argc, argv, (publishedName + "_BEHAVIOUR"), ros::init_options::NoSigintHandler);
   ros::NodeHandle mNH;
   
   // Register the SIGINT event handler so the node can shutdown properly
   signal(SIGINT, sigintEventHandler);
-  
   joySubscriber = mNH.subscribe((publishedName + "/joystick"), 10, joyCmdHandler);
   modeSubscriber = mNH.subscribe((publishedName + "/mode"), 1, modeHandler);
   targetSubscriber = mNH.subscribe((publishedName + "/targets"), 10, targetHandler);
@@ -225,12 +219,10 @@ int main(int argc, char **argv) {
   
   message_filters::Synchronizer<sonarSyncPolicy> sonarSync(sonarSyncPolicy(10), sonarLeftSubscriber, sonarCenterSubscriber, sonarRightSubscriber);
   sonarSync.registerCallback(boost::bind(&sonarHandler, _1, _2, _3));
-  
   tfListener = new tf::TransformListener();
   std_msgs::String msg;
   msg.data = "Log Started";
   infoLogPublisher.publish(msg);
-  
   stringstream ss;
   ss << "Rover start delay set to " << startDelayInSeconds << " seconds";
   msg.data = ss.str();
@@ -245,7 +237,6 @@ int main(int argc, char **argv) {
   timerStartTime = time(0);
   
   ros::spin();
-  
   return EXIT_SUCCESS;
 }
 
@@ -256,10 +247,8 @@ int main(int argc, char **argv) {
 // controllers in the abridge package.
 void behaviourStateMachine(const ros::TimerEvent&) {
   std_msgs::String stateMachineMsg;
-  
   // time since timerStartTime was set to current time
   timerTimeElapsed = time(0) - timerStartTime;
-  
   // init code goes here. (code that runs only once at start of
   // auto mode but wont work in main goes here)
   if (!initilized) {
@@ -307,30 +296,24 @@ void behaviourStateMachine(const ros::TimerEvent&) {
     result = logicController.DoWork();
     
     bool wait = false;
-    
     //if a wait behaviour is thrown sit and do nothing untill logicController is ready
     if (result.type == behavior) {
       if (result.b == wait) {
         wait = true;
       }
     }
-    
     //do this when wait behaviour happens
     if (wait) {
       sendDriveCommand(0.0,0.0);
       std_msgs::Float32 angle;
-      
       angle.data = prevFinger;
       fingerAnglePublish.publish(angle);
       angle.data = prevWrist;
       wristAnglePublish.publish(angle);
     }
-    
     //normally interpret logic controllers actuator commands and deceminate them over the appropriate ROS topics
     else {
-      
       sendDriveCommand(result.pd.left,result.pd.right);
-      
       std_msgs::Float32 angle;
       if (result.fingerAngle != -1) {
         angle.data = result.fingerAngle;
@@ -343,11 +326,8 @@ void behaviourStateMachine(const ros::TimerEvent&) {
         prevWrist = result.wristAngle;
       }
     }
-    
     //publishHandeling here
     //logicController.getPublishData(); suggested
-    
-    
     //adds a blank space between sets of debugging data to easly tell one tick from the next
     cout << endl;
     
@@ -385,7 +365,6 @@ void sendDriveCommand(double left, double right)
 {
   velocity.linear.x = left,
       velocity.angular.z = right;
-  
   // publish the drive commands
   driveControlPublish.publish(velocity);
 }
@@ -436,27 +415,21 @@ void modeHandler(const std_msgs::UInt8::ConstPtr& message) {
 }
 
 void sonarHandler(const sensor_msgs::Range::ConstPtr& sonarLeft, const sensor_msgs::Range::ConstPtr& sonarCenter, const sensor_msgs::Range::ConstPtr& sonarRight) {
-  
   logicController.SetSonarData(sonarLeft->range, sonarCenter->range, sonarRight->range);
-  
 }
 
 void odometryHandler(const nav_msgs::Odometry::ConstPtr& message) {
   //Get (x,y) location directly from pose
   currentLocation.x = message->pose.pose.position.x;
   currentLocation.y = message->pose.pose.position.y;
-  
   //Get theta rotation by converting quaternion orientation to pitch/roll/yaw
   tf::Quaternion q(message->pose.pose.orientation.x, message->pose.pose.orientation.y, message->pose.pose.orientation.z, message->pose.pose.orientation.w);
   tf::Matrix3x3 m(q);
   double roll, pitch, yaw;
   m.getRPY(roll, pitch, yaw);
   currentLocation.theta = yaw;
-  
   linearVelocity = message->twist.twist.linear.x;
   angularVelocity = message->twist.twist.angular.z;
-  
-  
   Point currentLoc;
   currentLoc.x = currentLocation.x;
   currentLoc.y = currentLocation.y;
@@ -516,14 +489,12 @@ void mapHandler(const nav_msgs::Odometry::ConstPtr& message) {
   //Get (x,y) location directly from pose
   currentLocationMap.x = message->pose.pose.position.x;
   currentLocationMap.y = message->pose.pose.position.y;
-  
   //Get theta rotation by converting quaternion orientation to pitch/roll/yaw
   tf::Quaternion q(message->pose.pose.orientation.x, message->pose.pose.orientation.y, message->pose.pose.orientation.z, message->pose.pose.orientation.w);
   tf::Matrix3x3 m(q);
   double roll, pitch, yaw;
   m.getRPY(roll, pitch, yaw);
   currentLocationMap.theta = yaw;
-  
   linearVelocity = message->twist.twist.linear.x;
   angularVelocity = message->twist.twist.angular.z;
   
@@ -599,7 +570,6 @@ long int getROSTimeInMilliSecs()
 {
   // Get the current time according to ROS (will be zero for simulated clock until the first time message is recieved).
   ros::Time t = ros::Time::now();
-  
   // Convert from seconds and nanoseconds to milliseconds.
   return t.sec*1e3 + t.nsec/1e6;
   

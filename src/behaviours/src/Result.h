@@ -32,6 +32,8 @@
 #include "Point.h"
 #include <iostream>
 
+using namespace std;
+
 enum PIDType {
   FAST_PID, //quickest turn reasponse time
   SLOW_PID, //slower turn reasponse time

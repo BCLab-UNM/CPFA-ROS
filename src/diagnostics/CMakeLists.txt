@@ -27,7 +27,7 @@ add_executable(
   src/driver.cpp
   src/Diagnostics.cpp
   src/WirelessDiags.cpp
-)
+  )
 
 add_dependencies(diagnostics ${catkin_EXPORTED_TARGETS})
 

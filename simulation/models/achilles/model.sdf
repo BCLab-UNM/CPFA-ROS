@@ -6,6 +6,7 @@
 
 		<link name='base_link'>
 			<inertial>
+
 				<mass>3</mass>
 				<inertia>
 					<ixx>0.006</ixx>
@@ -25,6 +26,7 @@
 				</geometry>
 			</collision>
 
+
 			<visual name='base_link_visual'>
 				<pose>0 0 -0.06 0 0 0</pose>
 				<geometry>
@@ -38,7 +40,6 @@
 					</script>
 				</material>
 			</visual>
-
 			<sensor type="ray" name="us_left_sensor">
 				<pose>0.15 0.07 0.053 0.0 0.0 0.43633</pose>
 				<visualize>false</visualize>
@@ -176,7 +177,6 @@
 					</script>
 				</material>
 			</visual>
-
 			<collision name='cow_catcher_front_left_collision'>
 				<pose>0.1675 0.06 -0.05 0 -0.4 0.3</pose>
 				<geometry>
@@ -203,7 +203,6 @@
 					</box>
 				</geometry>
 			</collision>
-      
 			<collision name='wheel_guard_front_right_collision'>
 				<pose>0.148 -0.13 -0.05 0 0 0</pose>
 				<geometry>
@@ -227,7 +226,6 @@
 					</script>
 				</material>
 			</visual>
-
 			<collision name='cow_catcher_back_lower_collision'>
 				<pose>-0.1305 0.0 -0.0665 1.57079 1.05 0.0</pose>
 				<geometry>
@@ -250,7 +248,6 @@
 					</script>
 				</material>
 			</visual>
-
 		</link>
 
 	<link name="gripper_wrist">
@@ -702,8 +699,8 @@
 
 			<!-- optional: set the default PID values for the wrist joint -->
 			<!-- values in order: Proportional gain, Integral gain, Derivative gain -->
-      <wristPID>1.0 0.0 0.0</wristPID>
 
+      <wristPID>1.0 0.0 0.0</wristPID>
 			<!-- optional: set the default PID values for the finger joints -->
 			<!-- values in order: Proportional gain, Integral gain, Derivative gain -->
 			<!-- it is always assumed that both fingers use the same PID values -->
@@ -712,7 +709,6 @@
 			<!-- optional: set the min/max force applicable to the wrist joint in Newtons -->
 			<!-- values in order: minimum force, maximum force -->
       <wristForceLimits>-0.5 0.5</wristForceLimits>
-
 			<!-- optional: set the min/max force applicable to the finger joints in Newtons -->
 			<!-- values in order: minimum force, maximum force -->
 			<!-- it is always assumed that both fingers use the same min/max force values -->

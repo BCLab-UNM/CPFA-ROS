@@ -10,6 +10,7 @@ PickUpController::PickUpController() {
   nTargetsSeen = 0;
   blockYawError = 0;
   blockDistance = 0;
+  //timeDifference = 0;
 
   targetFound = false;
 
@@ -114,7 +115,7 @@ void PickUpController::ProcessData() {
   if (blockDistanceFromCamera < 0.14 && Td < reverse_to_before_reaquire_begin) {
 
     result.type = behavior;
-    result.b = COMPLETED;
+    result.b = nextProcess;
     result.reset = true;
     targetHeld = true;
   }
@@ -202,7 +203,7 @@ Result PickUpController::DoWork() {
 
     float grasp_time_begin = 1.7;
     float raise_time_begin = 2.5;
-    //float reverse_to_before_reaquire_begin = 4.4; //is declared in header for class usage but refrence is left hear for clarity
+    float reverse_to_before_reaquire_begin = 3.9; //is declared in header for class usage but refrence is left hear for clarity
     float target_reaquire_begin= 5.0;
     float target_pickup_task_time_limit = 5.6;
     float done_center_begin_reversing = 1.0;
@@ -235,11 +236,9 @@ Result PickUpController::DoWork() {
     }
     else if (blockDistance > targetDistance && !lockTarget) //if a target is detected but not locked, and not too close.
     {
-      // this is a 3-line P controller, where Kp = 0.20
       float vel = blockDistance * 0.20;
       if (vel < 0.1) vel = 0.1;
       if (vel > 0.2) vel = 0.2;
-
       result.pd.cmdVel = vel;
       result.pd.cmdAngularError = -blockYawError;
       timeOut = false;
@@ -284,6 +283,7 @@ Result PickUpController::DoWork() {
 
 
     if (Td > target_pickup_task_time_limit && timeOut) //if no targets are found after too long a period go back to search pattern
+
     {
       Reset();
       interupted = true;
@@ -309,6 +309,7 @@ void PickUpController::Reset() {
   nTargetsSeen = 0;
   blockYawError = 0;
   blockDistance = 0;
+  //timeDifference = 0;
 
   targetFound = false;
   interupted = false;

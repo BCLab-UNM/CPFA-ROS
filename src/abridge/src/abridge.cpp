@@ -161,37 +161,32 @@ void driveCommandHandler(const geometry_msgs::Twist::ConstPtr& message) {
   float left = (message->linear.x); //target linear velocity in meters per second
   float right = (message->angular.z); //angular error in radians
 
-  // Cap motor commands at 120. Experimentally determined that high values (tested 180 and 255) can cause 
-  // the hardware to fail when the robot moves itself too violently.
-  int max_motor_cmd = 120;
+  if (currentMode == 1) //manual control
+  {
 
-  if (currentMode == 1)
-  {
-    // Assumes left and right are always between -1 and 1
-    float linear = left * max_motor_cmd; 
-    float angular = right * max_motor_cmd; 
+	float linear = left * 255;
+	float angular = right * 255; //scale values between -255 and 255;
 
-    left = linear - angular;
-    right = linear + angular;
-  }
+	left = linear - angular;
+	right = linear + angular;
 
-  // Check that the resulting motor commands do not exceed the specified safe maximum value
-  if (left > max_motor_cmd)
-  {
-    left = max_motor_cmd;
-  }
-  else if (left < -max_motor_cmd)
-  {
-    left = - max_motor_cmd;
-  }
+	if (left >255)
+	{
+	  left = 255;
+        }
+        else if (left < -255)
+        {
+          left = -255;
+ 	}
 
-  if (right > max_motor_cmd)
-  {
-    right = max_motor_cmd;
-  }
-  else if (right < -max_motor_cmd)
-  {
-    right = -max_motor_cmd;
+	if (right >255)
+	{
+	  right = 255;
+        }
+        else if (right < -255)
+        {
+          right = -255;
+ 	}
   }
 
   int leftInt = left;

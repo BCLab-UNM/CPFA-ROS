@@ -36,21 +36,6 @@ void ObstacleController::avoidObstacle() {
 // so avoid running over the collection zone and possibly pushing cubes out.
 void ObstacleController::avoidCollectionZone() {
   
-    result.type = precisionDriving;
-
-    result.pd.cmdVel = 0.0;
-
-    // Decide which side of the rover sees the most april tags and turn away
-    // from that side
-    if(count_left_collection_zone_tags < count_right_collection_zone_tags) {
-      result.pd.cmdAngular = K_angular;
-    } else {
-      result.pd.cmdAngular = -K_angular;
-    }
-
-    result.pd.setPointVel = 0.0;
-    result.pd.cmdVel = 0.0;
-    result.pd.setPointYaw = 0;
 }
 
 
@@ -117,7 +102,7 @@ void ObstacleController::ProcessData() {
   if(ignore_center_sonar){
     if(center > reactivate_center_sonar_threshold){
       ignore_center_sonar = false;
-    }
+  }
     else{
       center = 3;
     }
@@ -230,7 +215,7 @@ void ObstacleController::setIgnoreCenterSonar(){
   ignore_center_sonar = true; 
 }
 
-void ObstacleController::SetCurrentTimeInMilliSecs( long int time )
+void ObstacleController::setCurrentTimeInMilliSecs( long int time )
 {
   current_time = time;
 }

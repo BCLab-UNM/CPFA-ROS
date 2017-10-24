@@ -307,5 +307,3 @@ namespace rqt_rover_gui {
 } // end namespace
 
 #endif // ROVERGUIPLUGIN
-
-

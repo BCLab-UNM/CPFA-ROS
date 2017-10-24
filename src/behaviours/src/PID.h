@@ -4,6 +4,8 @@
 #include <vector>
 #include <ros/ros.h>
 
+using namespace std;
+
 struct PIDConfig {
   float Kp = 0;
   float Ki = 0;

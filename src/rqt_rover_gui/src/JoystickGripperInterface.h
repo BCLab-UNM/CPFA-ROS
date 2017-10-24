@@ -87,10 +87,10 @@ private:
     // The finger movements are symmetric so we just refer to one finger angle etc
     float fingerAngle, fingerAngleChangeRate, fingerAngleMax, fingerAngleMin, fingerJoystickVector;
 
-    int commandReapplyRate; // Rate at which to apply the joystick command in Hz
+    /*int commandReapplyRate; // Rate at which to apply the joystick command in Hz
 
     float stickCenterTolerance;
-
+    */
     std::string roverName;
 
     ros::NodeHandle nh;

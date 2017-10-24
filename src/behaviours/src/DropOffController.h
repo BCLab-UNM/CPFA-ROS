@@ -6,6 +6,8 @@
 #include "Tag.h"
 #include <math.h>
 #include <vector>
+#include <std_msgs/Float32.h>
+
 
 class DropOffController : virtual Controller
 {
@@ -23,11 +25,6 @@ public:
   void SetCurrentLocation(Point current);
   void SetTargetPickedUp();
 
-  
- 
-
-  
-
   void SetBlockBlockingUltrasound(bool blockBlock);
   void SetTargetData(std::vector<Tag> tags);
   bool HasTarget() {return targetHeld;}
@@ -35,7 +32,6 @@ public:
   float GetSpinner() {return spinner;}
 
   void UpdateData(std::vector<Tag> tags);
-
 
   void SetCurrentTimeInMilliSecs( long int time );
 
@@ -53,7 +49,7 @@ private:
   const float initialSpinSize = 0.05; //in meters aka 10cm
   const float spinSizeIncrement = 0.50; //in meters
   const float searchVelocity = 0.15; //in meters per second
-  const float dropDelay = 0.5; //delay in seconds for dropOff
+  const float dropDelay = 0.4; //delay in seconds for dropOff
 
 
 
@@ -126,6 +122,5 @@ private:
   bool precisionInterrupt = false;
   bool finalInterrupt = false;
   bool first_center = true;
-  
 };
 #endif // end header define

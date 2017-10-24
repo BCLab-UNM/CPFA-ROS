@@ -4,6 +4,7 @@ using namespace std;
 
 DropOffController::DropOffController() {
 
+  reachedCollectionPoint = false;
   result.type = behavior;
   result.b = wait;
   result.wristAngle = 0.7;
@@ -20,8 +21,8 @@ DropOffController::DropOffController() {
   countRight = 0;
 
   isPrecisionDriving = false;
-  timerTimeElapsed = 0;
-
+  startWaypoint = false;
+  timerTimeElapsed = -1;
 }
 
 DropOffController::~DropOffController() {
@@ -50,7 +51,7 @@ Result DropOffController::DoWork() {
       if (finalInterrupt)
       {
         result.type = behavior;
-        result.b = COMPLETED;
+        result.b = nextProcess;
         result.reset = true;
         return result;
       }
@@ -76,8 +77,50 @@ Result DropOffController::DoWork() {
     return result;
   }
 
+  double distanceToCenter = hypot(this->centerLocation.x - this->currentLocation.x, this->centerLocation.y - this->currentLocation.y);
 
+  //check to see if we are driving to the center location or if we need to drive in a circle and look.
+  if (distanceToCenter > collectionPointVisualDistance && !circularCenterSearching && (count == 0)) {
 
+    result.type = waypoint;
+    result.wpts.waypoints.clear();
+    result.wpts.waypoints.push_back(this->centerLocation);
+    startWaypoint = false;
+    isPrecisionDriving = false;
+
+    timerTimeElapsed = 0;
+
+    return result;
+
+  }
+  else if (timerTimeElapsed >= 2)//spin search for center
+  {
+    Point nextSpinPoint;
+
+    //sets a goal that is 60cm from the centerLocation and spinner
+    //radians counterclockwise from being purly along the x-axis.
+    nextSpinPoint.x = centerLocation.x + (initialSpinSize + spinSizeIncrease) * cos(spinner);
+    nextSpinPoint.y = centerLocation.y + (initialSpinSize + spinSizeIncrease) * sin(spinner);
+    nextSpinPoint.theta = atan2(nextSpinPoint.y - currentLocation.y, nextSpinPoint.x - currentLocation.x);
+
+    result.type = waypoint;
+    result.wpts.waypoints.clear();
+    result.wpts.waypoints.push_back(nextSpinPoint);
+
+    spinner += 45*(M_PI/180); //add 45 degrees in radians to spinner.
+    if (spinner > 2*M_PI) {
+      spinner -= 2*M_PI;
+    }
+    spinSizeIncrease += spinSizeIncrement/8;
+    circularCenterSearching = true;
+    //safety flag to prevent us trying to drive back to the
+    //center since we have a block with us and the above point is
+    //greater than collectionPointVisualDistance from the center.
+
+    returnTimer = current_time;
+    timerTimeElapsed = 0;
+
+  }
   bool left = (countLeft > 0);
   bool right = (countRight > 0);
   bool centerSeen = (right || left);
@@ -118,23 +161,17 @@ Result DropOffController::DoWork() {
     }
 
     float turnDirection = 1;
-    float current_search_velocity = searchVelocity;
+    //float current_search_velocity = searchVelocity;
     
     //reverse tag rejection when we have seen enough tags that we are on a
     //trajectory in to the square we dont want to follow an edge.
-    //increase turning power to more strongly turn inwards or on occasion outwards
-    //drive more slowly so turning radius is smaller
-    if (seenEnoughCenterTags) 
-    {
-      turnDirection = -4;
-      current_search_velocity = 0.05;
-    }
+    if (seenEnoughCenterTags) turnDirection = -3;
 
     result.type = precisionDriving;
 
     //otherwise turn till tags on both sides of image then drive straight
-    if (!(left ^ right)) {
-      result.pd.cmdVel = current_search_velocity;
+    if (left && right) {
+      result.pd.cmdVel = searchVelocity;
       result.pd.cmdAngularError = 0.0;
     }
     else if (right) {
@@ -144,6 +181,11 @@ Result DropOffController::DoWork() {
     else if (left){
       result.pd.cmdVel = -0.1 * turnDirection;
       result.pd.cmdAngularError = centeringTurnRate*turnDirection;
+    }
+    else
+    {
+      result.pd.cmdVel = searchVelocity;
+      result.pd.cmdAngularError = 0.0;
     }
 
     //must see greater than this many tags before assuming we are driving into the center and not along an edge.
@@ -181,7 +223,7 @@ Result DropOffController::DoWork() {
     {
       cout << "4" << endl;
       //go back to drive to center base location instead of drop off attempt
-      //reachedCollectionPoint = false;
+      reachedCollectionPoint = false;
       seenEnoughCenterTags = false;
       centerApproach = false;
 
@@ -228,7 +270,7 @@ void DropOffController::Reset() {
   spinner = 0;
   spinSizeIncrease = 0;
   prevCount = 0;
-  timerTimeElapsed = 0;
+  timerTimeElapsed = -1;
 
   countLeft = 0;
   countRight = 0;
@@ -237,13 +279,16 @@ void DropOffController::Reset() {
   //reset flags
   reachedCollectionPoint = false;
   seenEnoughCenterTags = false;
+  circularCenterSearching = false;
   isPrecisionDriving = false;
   finalInterrupt = false;
   precisionInterrupt = false;
   targetHeld = false;
+  startWaypoint = false;
   first_center = true;
 
 }
+
 
 void DropOffController::SetTargetData(vector<Tag> tags) {
   countRight = 0;
@@ -251,7 +296,7 @@ void DropOffController::SetTargetData(vector<Tag> tags) {
 
   if(targetHeld) {
     // if a target is detected and we are looking for center tags
-    if (tags.size() > 0 /*&& !reachedCollectionPoint*/) {
+    if (tags.size() > 0 && !reachedCollectionPoint) {
 
       // this loop is to get the number of center tags
       for (int i = 0; i < tags.size(); i++) {
@@ -274,13 +319,19 @@ void DropOffController::SetTargetData(vector<Tag> tags) {
 void DropOffController::ProcessData() {
   if((countLeft + countRight) > 0) {
     isPrecisionDriving = true;
+  } else {
+    startWaypoint = true;
   }
 }
 
 bool DropOffController::ShouldInterrupt() {
   ProcessData();
-
-  if (isPrecisionDriving && !precisionInterrupt) {
+  if (startWaypoint && !interrupt) {
+    interrupt = true;
+    precisionInterrupt = false;
+    return true;
+  }
+  else if (isPrecisionDriving && !precisionInterrupt) {
     precisionInterrupt = true;
     return true;
   }
@@ -291,14 +342,16 @@ bool DropOffController::ShouldInterrupt() {
 
 bool DropOffController::HasWork() {
 
-  bool has_work = false;
-
-  if (targetHeld)
-  {
-    has_work = true;
+  if(timerTimeElapsed > -1) {
+    long int elapsed = current_time - returnTimer;
+    timerTimeElapsed = elapsed/1e3; // Convert from milliseconds to seconds
   }
 
-  return has_work;
+  if (circularCenterSearching && timerTimeElapsed < 2 && !isPrecisionDriving) {
+    return false;
+  }
+
+  return ((startWaypoint || isPrecisionDriving));
 }
 
 bool DropOffController::IsChangingMode() {
@@ -315,6 +368,10 @@ void DropOffController::SetCurrentLocation(Point current) {
 
 void DropOffController::SetTargetPickedUp() {
   targetHeld = true;
+}
+
+void DropOffController::SetBlockBlockingUltrasound(bool blockBlock) {
+  targetHeld = targetHeld || blockBlock;
 }
 
 void DropOffController::SetCurrentTimeInMilliSecs( long int time )

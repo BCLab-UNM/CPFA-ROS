@@ -25,6 +25,7 @@ void LogicController::Reset() {
   
   ProcessData();
   
+
   control_queue = priority_queue<PrioritizedController>();
 }
 
@@ -66,7 +67,6 @@ Result LogicController::DoWork() {
         }
       }
     }
-    
     //if no controlers have work report this to ROS Adapter and do nothing.
     if(control_queue.empty()) {
       result.type = behavior;
@@ -91,7 +91,6 @@ Result LogicController::DoWork() {
         controllerInterconnect(); //allow controller to communicate state data before it is reset
         control_queue.top().controller->Reset();
       }
-      
       //ask for the procces state to change to the next state or loop around to the begining
       if(result.b == nextProcess) {
         if (processState == _LAST - 1) {
@@ -111,7 +110,7 @@ Result LogicController::DoWork() {
         }
       }
       //update the priorites of the controllers based upon the new process state.
-      if (result.b == nextProcess || result.b == prevProcess) {
+      if (result.b == COMPLETED || result.b == FAILED) {
         ProcessData();
         result.b = wait;
         driveController.Reset(); //it is assumed that the drive controller may be in a bad state if interrupted so reset it
@@ -132,19 +131,21 @@ Result LogicController::DoWork() {
     //they are handled in the LOGIC_STATE_WAITING switch case
     else if(result.type == waypoint) {
       
+
       logicState = LOGIC_STATE_WAITING;
       driveController.SetResultData(result);
       //fall through on purpose
     }
-    
+
   } //end of interupt case***************************************************************************************
-    
+
     //this case is primarly when logic controller is waiting for drive controller to reach its last waypoint
   case LOGIC_STATE_WAITING: {
+
     //ask drive controller how to drive
     //commands to be passed the ROS Adapter as left and right wheel PWM values in the result struct are returned
     result = driveController.DoWork();
-    
+
     //when out of waypoints drive controller will through an interrupt however unlike other controllers
     //drive controller is not on the priority queue so it must be checked here
     if (result.type == behavior) {
@@ -187,9 +188,8 @@ void LogicController::UpdateData()
 
 }
 
-void LogicController::ProcessData() 
-{
-
+void LogicController::ProcessData() {
+  
   //this controller priority is used when searching
   if (processState == PROCCESS_STATE_SEARCHING) 
   {
@@ -202,7 +202,7 @@ void LogicController::ProcessData()
       PrioritizedController{-1, (Controller*)(&manualWaypointController)}
     };
   }
-  
+
   //this priority is used when returning a target to the center collection zone
   else if (processState  == PROCCESS_STATE_TARGET_PICKEDUP) 
   {
@@ -220,7 +220,7 @@ void LogicController::ProcessData()
   {
     prioritizedControllers = {
       PrioritizedController{-1, (Controller*)(&searchController)},
-      PrioritizedController{3, (Controller*)(&obstacleController)},
+      PrioritizedController{-1, (Controller*)(&obstacleController)},
       PrioritizedController{-1, (Controller*)(&pickUpController)},
       PrioritizedController{10, (Controller*)(&range_controller)},
       PrioritizedController{1, (Controller*)(&dropOffController)},
@@ -239,55 +239,59 @@ void LogicController::ProcessData()
   }
 }
 
-bool LogicController::ShouldInterrupt() 
-{
+bool LogicController::ShouldInterrupt() {
   ProcessData();
-  
   return false;
 }
 
-bool LogicController::HasWork() 
-{
+bool LogicController::HasWork() {
   return false;
 }
 
+void LogicController::controllerInterconnect() {
 
-void LogicController::controllerInterconnect() 
-{
-
-  if (processState == PROCCESS_STATE_SEARCHING) 
-  {
+  if (processState == PROCCESS_STATE_SEARCHING) {
 
     //obstacle needs to know if the center ultrasound should be ignored
-    if(pickUpController.GetIgnoreCenter()) 
-    {
+    if(pickUpController.GetIgnoreCenter()) {
       obstacleController.setIgnoreCenterSonar();
     }
-    
+
     //pickup controller annouces it has pickedup a target
-    if(pickUpController.GetTargetHeld()) 
-    {
+    if(pickUpController.GetTargetHeld()) {
       dropOffController.SetTargetPickedUp();
       obstacleController.setTargetHeld();
       searchController.SetSuccesfullPickup();
-      //site_fidelity_controller.setTargetPickedUp();
-      //targetHeld = true; remove these when the code works
+      site_fidelity_controller.setTargetPickedUp();
+      //targetHeld = true;
     }
   }
-  
+
   //ask if drop off has released the target from the claws yet
-  if (!dropOffController.HasTarget()) 
-  {
+  if (!dropOffController.HasTarget()) {
     obstacleController.setTargetHeldClear();
   }
-  
+
   //obstacle controller is running driveController needs to clear its waypoints
-  if(obstacleController.getShouldClearWaypoints()) 
-  {
+  if(obstacleController.getShouldClearWaypoints()) {
     driveController.Reset();
   }
+  
+  // Let search controller know whether it should use an
+  // informed search or an uninformed search
+  if (informed_search)
+  {
+    searchController.setSearchType(informed_search);
+    informed_search = false;
+  }
+  
+  /*if (targetHeld)
+  {
+    informed_search = false;
+    searchController.setSearchType(informed_search);
+  }*/
+  
 }
-
 // Recieves position in the world inertial frame (should rename to SetOdomPositionData)
 void LogicController::SetPositionData(Point currentLocation) 
 {
@@ -296,7 +300,11 @@ void LogicController::SetPositionData(Point currentLocation)
   obstacleController.setCurrentLocation(currentLocation);
   driveController.SetCurrentLocation(currentLocation);
   manualWaypointController.SetCurrentLocation(currentLocation);
+  site_fidelity_controller.setCurrentLocation(currentLocation);
+  //return_to_nest_controller.SetCurrentLocation(currentLocation);
+  random_dispersal_controller.setCurrentLocation(currentLocation);
 }
+
 
 // Recieves position in the world frame with global data (GPS)
 void LogicController::SetMapPositionData(Point currentLocation) 
@@ -362,8 +370,12 @@ void LogicController::setVirtualFenceOff()
   range_controller.setEnabled(false);
 }
 
-void LogicController::SetCenterLocationMap(Point centerLocationMap) 
-{
+
+
+
+
+
+void LogicController::SetCenterLocationMap(Point centerLocationMap) {
 
 }
 
@@ -372,7 +384,7 @@ void LogicController::SetCurrentTimeInMilliSecs( long int time )
   current_time = time;
   dropOffController.SetCurrentTimeInMilliSecs( time );
   pickUpController.SetCurrentTimeInMilliSecs( time );
-  obstacleController.SetCurrentTimeInMilliSecs( time );
+  obstacleController.setCurrentTimeInMilliSecs( time );
   //random_dispersal_controller.setCurrentTime( time );
 }
 /*
@@ -391,7 +403,7 @@ double LogicController::PoissonCDF(double lambda)
 
 void LogicController::setTargetHeld() 
 {
-  targetHeld = true;
+  target_held = true;
 }
 */
 void LogicController::SetModeAuto() {

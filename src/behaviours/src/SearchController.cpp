@@ -28,54 +28,46 @@ void SearchController::Reset() {
  */
 Result SearchController::DoWork() {
 
-  if (giveUpSearching()) 
-  {
-    informed_search = false;
-    result.type = behavior;
-    result.b = COMPLETED;
-    result.reset = true;
-    return result;
-  }
-
   if (!result.wpts.waypoints.empty()) {
-    if (hypot(result.wpts.waypoints[0].x-currentLocation.x, result.wpts.waypoints[0].y-currentLocation.y) < 0.15) {
+    if (hypot(result.wpts.waypoints[0].x-currentLocation.x, result.wpts.waypoints[0].y-currentLocation.y) < 0.10) {
       attemptCount = 0;
     }
   }
 
   if (attemptCount > 0 && attemptCount < 5) {
     attemptCount++;
+    if (succesfullPickup) {
+      succesfullPickup = false;
+      attemptCount = 1;
+    }
     return result;
   }
-  else if (attemptCount >= 5 || attemptCount == 0) 
-  {
+  else if (attemptCount >= 5 || attemptCount == 0) {
     attemptCount = 1;
 
 
     result.type = waypoint;
     Point  searchLocation;
 
-    float correlation = CPFA_parameters.uninformed_search_variation;
-
-    if (informed_search)
+    //select new position 50 cm from current location
+    if (first_waypoint)
     {
-      cout << "Informed Search" << endl;
-      float exponential = exp(-CPFA_parameters.rate_of_informed_search_decay * informed_search_time);
-      exponential *= (4 * M_PI - CPFA_parameters.uninformed_search_variation);
-      correlation += exponential;
+      first_waypoint = false;
+      searchLocation.theta = currentLocation.theta + M_PI;
+      searchLocation.x = currentLocation.x + (0.5 * cos(searchLocation.theta));
+      searchLocation.y = currentLocation.y + (0.5 * sin(searchLocation.theta));
     }
-    else 
+    else
     {
-      cout << "Uninformed Search" << endl;
+      //select new heading from Gaussian distribution around current heading
+      searchLocation.theta = rng->gaussian(currentLocation.theta, 0.25);
+      searchLocation.x = currentLocation.x + (0.5 * cos(searchLocation.theta));
+      searchLocation.y = currentLocation.y + (0.5 * sin(searchLocation.theta));
     }
-
-    searchLocation.theta = rng->gaussian(currentLocation.theta, correlation); 
-    searchLocation.x = currentLocation.x + search_step_size*cos(searchLocation.theta);
-    searchLocation.y = currentLocation.y + search_step_size*sin(searchLocation.theta);
 
     result.wpts.waypoints.clear();
     result.wpts.waypoints.insert(result.wpts.waypoints.begin(), searchLocation);
-    
+
     return result;
   }
 
@@ -113,9 +105,8 @@ bool SearchController::HasWork() {
 }
 
 void SearchController::SetSuccesfullPickup() {
-  Reset();
+succesfullPickup = true;
 }
-
 void SearchController::setSearchType(bool informed_search) 
 {
   this->informed_search = informed_search;
@@ -125,7 +116,7 @@ void SearchController::setSearchType(bool informed_search)
     informed_search_time = current_time;
   }
 }
-
+/*
 void SearchController::SetCurrentTimeInMilliSecs( long int time )
 {
   current_time = time;
@@ -143,3 +134,4 @@ bool SearchController::giveUpSearching()
 
   return give_up;
 }
+*/

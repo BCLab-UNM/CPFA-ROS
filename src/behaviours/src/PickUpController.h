@@ -20,6 +20,7 @@ public:
 
   float getDistance() {return blockDistance;}
   bool GetLockTarget() {return lockTarget;}
+  //float GetTD() {return timeDifference;}
   void SetUltraSoundData(bool blockBlock);
 
   bool GetIgnoreCenter() {return ignoreCenterSonar;}

@@ -42,7 +42,7 @@ public:
   bool ShouldInterrupt() override;
   bool HasWork() override;
 
-  void SetAprilTags(std::vector<Tag> tags);
+  void SetAprilTags(vector<Tag> tags);
   void SetSonarData(float left, float center, float right);
   void SetPositionData(Point currentLocation);
   void SetMapPositionData(Point currentLocationMap);
@@ -65,6 +65,8 @@ public:
   // allowed range.
   void setVirtualFenceOn( RangeShape* range );
   void setVirtualFenceOff( );
+
+
 
 protected:
   void ProcessData();
@@ -94,16 +96,18 @@ private:
   SearchController searchController;
   ObstacleController obstacleController;
   DriveController driveController;
+  SiteFidelityController site_fidelity_controller;
+RandomDispersalController random_dispersal_controller;
   RangeController range_controller;
   ManualWaypointController manualWaypointController;
 
-  std::vector<PrioritizedController> prioritizedControllers;
-  std::priority_queue<PrioritizedController> control_queue;
+  vector<PrioritizedController> prioritizedControllers;
+  priority_queue<PrioritizedController> control_queue;
 
   void controllerInterconnect();
 
   long int current_time = 0;
-
+  bool informed_search = false;
   /* CPFA State Machine variables */
   /*bool target_held = false;
   bool target_dropped_off = true;

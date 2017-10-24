@@ -46,7 +46,6 @@ public:
     std::vector< std::pair<float,float> >* getTargetLocations(std::string rover_name);
     std::vector< std::pair<float,float> >* getCollectionPoints(std::string rover_name);
     std::map< int, std::tuple<float,float,bool> >* getWaypointPath(std::string rover_name);
-
     // These functions provide a fast way to get the min and max coords
     float getMaxGPSX(std::string rover_name);
     float getMaxGPSY(std::string rover_name);

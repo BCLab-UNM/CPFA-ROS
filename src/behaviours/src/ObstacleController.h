@@ -19,7 +19,7 @@ public:
   bool ShouldInterrupt() override;
   bool HasWork() override;
   void setIgnoreCenterSonar();
-  void SetCurrentTimeInMilliSecs( long int time );
+  void setCurrentTimeInMilliSecs( long int time );
   void setTargetHeld ();
   void setTargetHeldClear() {if (targetHeld) {Reset(); targetHeld = false; previousTargetState = false;}}
   bool getShouldClearWaypoints() {bool tmp = clearWaypoints; clearWaypoints = false; return tmp;}

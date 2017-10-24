@@ -1,7 +1,6 @@
 #include "DriveController.h"
 
 using namespace std;
-
 DriveController::DriveController() {
 
   fastVelPID.SetConfiguration(fastVelConfig());
@@ -39,7 +38,6 @@ Result DriveController::DoWork() {
 
     }
   } else if(result.type == precisionDriving) {
-
     //interpret input result as a precision driving command
     stateMachineState = STATE_MACHINE_PRECISION_DRIVING;
 
@@ -194,7 +192,6 @@ void DriveController::ProcessData()
     }
   }
   else if (result.type == precisionDriving) {
-
     if (result.PIDMode == FAST_PID){
       float vel = result.pd.cmdVel -linearVelocity;
       float setVel = result.pd.cmdVel;
@@ -303,9 +300,9 @@ PIDConfig DriveController::fastVelConfig() {
 PIDConfig DriveController::fastYawConfig() {
   PIDConfig config;
 
-  config.Kp = 100;
-  config.Ki = 10;
-  config.Kd = 14;
+  config.Kp = 240;
+  config.Ki = 25;
+  config.Kd = 0.5;
   config.satUpper = 255;
   config.satLower = -255;
   config.antiWindup = config.satUpper/2;
@@ -347,9 +344,9 @@ PIDConfig DriveController::slowVelConfig() {
 PIDConfig DriveController::slowYawConfig() {
   PIDConfig config;
 
-  config.Kp = 70;
-  config.Ki = 16;
-  config.Kd = 10;
+  config.Kp = 80;
+  config.Ki = 15;
+  config.Kd = 1.7;
   config.satUpper = 255;
   config.satLower = -255;
   config.antiWindup = config.satUpper/4;

@@ -3,7 +3,6 @@
 
 #include <random_numbers/random_numbers.h>
 #include "Controller.h"
-#include "CPFAParameters.h"
 
 /**
  * This class implements the search control algorithm for the rovers. The code
@@ -22,20 +21,19 @@ public:
   bool ShouldInterrupt() override;
   bool HasWork() override;
 
+  // sets the value of the current location
+  //void UpdateData(geometry_msgs::Pose2D currentLocation, geometry_msgs::Pose2D centerLocation);
   void SetCurrentLocation(Point currentLocation);
   void SetCenterLocation(Point centerLocation);
   void SetSuccesfullPickup();
-  void SetCurrentTimeInMilliSecs( long int time );
-
+  //void SetCurrentTimeInMilliSecs( long int time );
   void setSearchType(bool informed_search);
-
+  
 protected:
 
   void ProcessData();
 
 private:
-
-  bool giveUpSearching();
 
   random_numbers::RandomNumberGenerator* rng;
   Point currentLocation;
@@ -47,7 +45,7 @@ private:
 
   // Search state
   // Flag to allow special behaviour for the first waypoint
-  bool succesfullPickup = false;
+/*  bool succesfullPickup = false;
   bool informed_search = false;
   float search_step_size = 0.5;
 
@@ -55,6 +53,16 @@ private:
   long int informed_search_time = 0;
 
   CPFAParameters CPFA_parameters;
+*/
+  bool informed_search = false;
+  float search_step_size = 0.5;
+
+  long int current_time = 0;
+  long int informed_search_time = 0;
+
+  bool first_waypoint = true;
+  bool succesfullPickup = false;
+
 };
 
 #endif /* SEARCH_CONTROLLER */

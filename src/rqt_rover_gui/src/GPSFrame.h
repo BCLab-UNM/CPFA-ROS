@@ -30,7 +30,6 @@ namespace rqt_rover_gui
 
     public:
       GPSFrame(QWidget *parent, Qt::WindowFlags = 0);
-
     signals:
       void delayedUpdate();
       

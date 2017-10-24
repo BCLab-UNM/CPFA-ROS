@@ -1756,62 +1756,6 @@ void RoverGUIPlugin::buildSimulationButtonEventHandler()
                                    /* chocolate     */ QColor(210, 105,  30),
                                    /* indigo        */ QColor( 75,   0, 130) };
 
-    /**
-     * The distance to the rover from a corner position is calculated differently
-     * than the distance to a cardinal position.
-     *
-     * The cardinal direction rovers are a straightforward calculation where:
-     *     a = the distance to the edge of the collection zone
-     *         i.e., 1/2 of the collection zone square side length
-     *     b = the 50cm distance required by the rules for placing the rover
-     *     c = offset for the simulation for the center of the rover (30cm)
-     *         i.e., the rover position is at the center of its body
-     *
-     * The corner rovers use trigonometry to calculate the distance where each
-     * value of d, e, and f, are the legs to an isosceles right triangle. In
-     * other words, we are calculating and summing X and Y offsets to position
-     * the rover.
-     *     d = a
-     *     e = xy offset to move the rover 50cm from the corner of the collection zone
-     *     f = xy offset to move the rover 30cm to account for its position being
-     *         calculated at the center of its body
-     *
-     *                       *  *          d = 0.508m
-     *                     *      *        e = 0.354m
-     *                   *          *    + f = 0.212m
-     *                 *     /*     *    ------------
-     *                 *    / | f *            1.072m
-     *                   * /--| *
-     *                    /* *
-     *                   / | e
-     *                  /--|
-     *     *************
-     *     *          /|
-     *     *         / |
-     *     *        /  | d                 a = 0.508m
-     *     *       /   |     *********     b = 0.500m
-     *     *      /    |     *       *   + c = 0.300m
-     *     *     *-----|-----*---*   *   ------------
-     *     *        a  *  b  * c     *         1.308m
-     *     *           *     *********
-     *     *           *
-     *     *           *
-     *     *           *
-     *     *************
-     */
-   //     QPointF rover_positions[8] =
-   // {
-      /* cardinal rovers: North, East, South, West */
-     // QPointF(-1.308,  0.000), // 1.308 = distance_from_center_to_edge_of_collection_zone
-     // QPointF( 0.000, -1.308), //             + 50 cm distance to rover
-     // QPointF( 1.308,  0.000), //             + 30 cm distance_from_center_of_rover_to_edge_of_rover
-     // QPointF( 0.000,  1.308), // 1.308m = 0.508m + 0.5m + 0.3m
-
-      /* corner rovers: Northeast, Southwest */
-     // QPointF( 1.072,  1.072), // 1.072 = diagonal_distance_from_center_to_edge_of_collection_zone
-     // QPointF(-1.072, -1.072), //             + diagonal_distance_to_move_50cm
-                                   //             + diagonal_distance_to_move_30cm
-                                   // 1.072m = 0.508 + 0.354 + 0.212
 
 	QPointF rover_positions[16] =
         {
@@ -1953,6 +1897,7 @@ void RoverGUIPlugin::buildSimulationButtonEventHandler()
     {
         display_sim_visualization = false;
     }
+
 }
 
 void RoverGUIPlugin::clearSimulationButtonEventHandler()
@@ -2203,10 +2148,9 @@ QString RoverGUIPlugin::addUniformTargets()
     {
         do
         {
+            emit sendInfoLogMessage("Tried to place target "+QString::number(0)+" at " + QString::number(proposed_x) + " " + QString::number(proposed_y) + "...");
             proposed_x = d - ((float) rand()) / RAND_MAX*2*d;
             proposed_y = d - ((float) rand()) / RAND_MAX*2*d;
-            emit sendInfoLogMessage("Tried to place target "+QString::number(0)+" at " + QString::number(proposed_x) + " " + QString::number(proposed_y) + "...");
-            
         }
         while (sim_mgr.isLocationOccupied(proposed_x, proposed_y, target_cluster_size_1_clearance));
 
@@ -2254,7 +2198,6 @@ QString RoverGUIPlugin::addClusteredTargets()
         }
         while (sim_mgr.isLocationOccupied(proposed_x, proposed_y, target_cluster_size_64_clearance));
 
-             
         proposed_y2 = proposed_y - (target_cluster_size_1_clearance * 8);
 
         for(int j = 0; j < 8; j++) {
