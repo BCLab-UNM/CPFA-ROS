@@ -17,10 +17,6 @@ JoystickGripperInterface::JoystickGripperInterface(const JoystickGripperInterfac
     this->gripperWristAnglePublisher        = source.gripperWristAnglePublisher;
     this->gripperFingerAnglePublisher       = source.gripperFingerAnglePublisher;
 
-    // QTimer state
-    this->joystickGripperWristControlTimer  = source.joystickGripperWristControlTimer;
-    this->joystickGripperFingerControlTimer = source.joystickGripperFingerControlTimer;
-
     // Wrist state
     this->wristAngle                        = source.wristAngle;
     this->wristAngleChangeRate              = source.wristAngleChangeRate;
@@ -116,7 +112,7 @@ void JoystickGripperInterface::moveWrist(float vec) {
 
     std_msgs::Float32 angleMsg;
     angleMsg.data = wristAngle;
-gripperWristAnglePublisher.publish(angleMsg);
+    gripperWristAnglePublisher.publish(angleMsg);
 
 }
 
@@ -142,41 +138,8 @@ void JoystickGripperInterface::moveFingers(float vec){
     // Publish the finger angle commands
     std_msgs::Float32 angleMsg;
     angleMsg.data = fingerAngle;
-gripperFingerAnglePublisher.publish(angleMsg);
-    // Check whether the stick is near the center deadzone - if so stop issuing movement commands
-    // if not apply the movement indicated by vec
-/*    if (fabs(fingerJoystickVector) < stickCenterTolerance) {
-        emit sendJoystickGripperFingerControlTimerStop();
-    } else {
-        // The event handler calculates the new angle for the wrist and sends it to the gripper wrist control topic
-        emit sendJoystickGripperFingerControlTimerStart(commandReapplyRate);
-
-    }*/
-
-
+    gripperFingerAnglePublisher.publish(angleMsg);
 }
-
-// Update and broadcast gripper wrist commands
-// Called by event timer so the commands continue to be generated even when the joystick
-// is not moving
-/*void JoystickGripperInterface::joystickGripperWristControlTimerEventHandler(){
-
-    // Calculate the new wrist angle to request
-    wristAngle += wristJoystickVector*wristAngleChangeRate;
-
-    // Don't exceed the min and max angles
-    if (wristAngle > wristAngleMax) wristAngle = wristAngleMax;
-    else if (wristAngle < wristAngleMin) wristAngle = wristAngleMin;
-
-    // If the wrist angle is small enough to use negative exponents set to zero
-    // negative exponents confuse the downstream conversion to string
-    if (fabs(wristAngle) < 0.001) wristAngle = 0.0f;
-
-    std_msgs::Float32 angleMsg;
-    angleMsg.data = wristAngle;
-    gripperWristAnglePublisher.publish(angleMsg);
-
-}*/
 
 void JoystickGripperInterface::changeRovers(string roverName)
 {
