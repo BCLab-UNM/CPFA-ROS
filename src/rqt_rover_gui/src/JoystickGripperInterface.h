@@ -67,19 +67,11 @@ signals:
 
 private slots:
 
-    // These timed events calculate and broadcast the new gripper angles on the gripper control topics
-    void joystickGripperWristControlTimerEventHandler();
-    void joystickGripperFingerControlTimerEventHandler();
-
-
 private:
 
     // Publishers for sending gripper commands to the ROS topics
     ros::Publisher gripperWristAnglePublisher;
     ros::Publisher gripperFingerAnglePublisher;
-
-    QTimer* joystickGripperWristControlTimer; // Timer to trigger the wrist angle command
-    QTimer* joystickGripperFingerControlTimer; // Timer to trigger the finger angle command
 
     // Joystick gripper controller state
     float wristAngle, wristAngleChangeRate, wristAngleMax, wristAngleMin, wristJoystickVector;
