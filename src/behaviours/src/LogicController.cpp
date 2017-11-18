@@ -110,7 +110,7 @@ Result LogicController::DoWork() {
         }
       }
       //update the priorites of the controllers based upon the new process state.
-      if (result.b == COMPLETED || result.b == FAILED) {
+      if (result.b == nextProcess || result.b == prevProcess) {
         ProcessData();
         result.b = wait;
         driveController.Reset(); //it is assumed that the drive controller may be in a bad state if interrupted so reset it
@@ -194,10 +194,11 @@ void LogicController::ProcessData() {
   if (processState == PROCCESS_STATE_SEARCHING) 
   {
     prioritizedControllers = {
-      PrioritizedController{0, (Controller*)(&searchController)},
+          PrioritizedController{15, (Controller*)(&pickUpController)},
       PrioritizedController{10, (Controller*)(&obstacleController)},
-      PrioritizedController{15, (Controller*)(&pickUpController)},
-      PrioritizedController{5, (Controller*)(&range_controller)},
+            PrioritizedController{5, (Controller*)(&range_controller)},
+
+      PrioritizedController{0, (Controller*)(&searchController)},
       PrioritizedController{-1, (Controller*)(&dropOffController)},
       PrioritizedController{-1, (Controller*)(&manualWaypointController)}
     };
@@ -207,11 +208,11 @@ void LogicController::ProcessData() {
   else if (processState  == PROCCESS_STATE_TARGET_PICKEDUP) 
   {
     prioritizedControllers = {
-    PrioritizedController{-1, (Controller*)(&searchController)},
-    PrioritizedController{15, (Controller*)(&obstacleController)},
-    PrioritizedController{-1, (Controller*)(&pickUpController)},
+        PrioritizedController{15, (Controller*)(&obstacleController)},
     PrioritizedController{10, (Controller*)(&range_controller)},
     PrioritizedController{1, (Controller*)(&dropOffController)},
+    PrioritizedController{-1, (Controller*)(&searchController)},
+    PrioritizedController{-1, (Controller*)(&pickUpController)},
     PrioritizedController{-1, (Controller*)(&manualWaypointController)}
     };
   }
@@ -219,22 +220,23 @@ void LogicController::ProcessData() {
   else if (processState  == PROCCESS_STATE_DROP_OFF)
   {
     prioritizedControllers = {
+      PrioritizedController{10, (Controller*)(&range_controller)},
+            PrioritizedController{1, (Controller*)(&dropOffController)},
+
       PrioritizedController{-1, (Controller*)(&searchController)},
       PrioritizedController{-1, (Controller*)(&obstacleController)},
       PrioritizedController{-1, (Controller*)(&pickUpController)},
-      PrioritizedController{10, (Controller*)(&range_controller)},
-      PrioritizedController{1, (Controller*)(&dropOffController)},
       PrioritizedController{-1, (Controller*)(&manualWaypointController)}
     };
   }
   else if (processState == PROCCESS_STATE_MANUAL) {
     prioritizedControllers = {
+      PrioritizedController{5,  (Controller*)(&manualWaypointController)},
       PrioritizedController{-1, (Controller*)(&searchController)},
       PrioritizedController{-1, (Controller*)(&obstacleController)},
       PrioritizedController{-1, (Controller*)(&pickUpController)},
       PrioritizedController{-1, (Controller*)(&range_controller)},
       PrioritizedController{-1, (Controller*)(&dropOffController)},
-      PrioritizedController{5,  (Controller*)(&manualWaypointController)}
     };     
   }
 }
