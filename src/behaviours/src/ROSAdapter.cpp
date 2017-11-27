@@ -25,6 +25,7 @@
 // Include Controllers
 #include "LogicController.h"
 #include <vector>
+#include <map>
 
 #include "Point.h"
 #include "Tag.h"
@@ -231,6 +232,7 @@ int main(int argc, char **argv) {
   if(currentMode != 2 && currentMode != 3)
   {
     // ensure the logic controller starts in the correct mode.
+    ss<<"Set the logic controller in manual mode"<<endl;
     logicController.SetModeManual();
   }
 
@@ -374,6 +376,12 @@ void sendDriveCommand(double left, double right)
  *************************/
 
 void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& message) {
+  CPFAState cpfa_state = logicController.GetCPFAState();
+  cout << "targetHandler: cpfa_state="<<cpfa_state<<endl;
+  
+  bool ignored_tag = false;
+  // Number of resource tags
+  int num_tags = 0;
   
   if (message->detections.size() > 0) {
     vector<Tag> tags;
@@ -384,6 +392,9 @@ void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& messag
       Tag loc;
       loc.setID( message->detections[i].id );
 
+      if (loc.getID() == 0) {
+        num_tags++;
+      }
       // Pass the position of the AprilTag
       geometry_msgs::PoseStamped tagPose = message->detections[i].pose;
       loc.setPosition( make_tuple( tagPose.pose.position.x,
@@ -395,18 +406,55 @@ void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& messag
 							    tagPose.pose.orientation.y,
 							    tagPose.pose.orientation.z,
 							    tagPose.pose.orientation.w ) );
+      // While in a travel state ignore resource tags
+     /* switch(cpfa_state) {
+
+        case return_to_nest:
+        case travel_to_search_site:
+        case set_target_location:
+        case start_state:
+          {
+            if(loc.getID() == 0 && !ignored_tag)
+            {
+              ignored_tag = true;
+              cout << "ROSAdapter: targetHandler -> ignored a 0 tag!" << endl << endl;
+            }
+
+            if (loc.getID() == 0)
+            {
+              break;
+            }
+          }
+
+        default:
+          {*/
       tags.push_back(loc);
     }
-    
+
+      //}
+      //if ((cpfa_state == return_to_nest || cpfa_state == travel_to_search_site || cpfa_state == set_target_location || cpfa_state == start_state) && loc.id == 0 ) {
+
+        //if(!ignored_tag) {
+          //ignored_tag = true;
+          //cout << "ROSAdapter: targetHandler -> ignored a 0 tag!" << endl << endl;
+        //}
+
+        //continue;
+      //} else {
+        //tags.push_back(loc);
+      //}
+    //}
     logicController.SetAprilTags(tags);
-  }
+   /* if(cpfa_state == sense_local_resource_density) {
+      logicController.senseLocalResourceDensity(num_tags);
+  }*/
   
 }
-
+}
 void modeHandler(const std_msgs::UInt8::ConstPtr& message) {
   currentMode = message->data;
   if(currentMode == 2 || currentMode == 3) {
-    logicController.SetModeAuto();
+	logicController.SetModeAuto();
   }
   else {
     logicController.SetModeManual();

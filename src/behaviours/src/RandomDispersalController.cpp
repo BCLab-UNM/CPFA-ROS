@@ -10,9 +10,11 @@ RandomDispersalController::RandomDispersalController()
 RandomDispersalController::~RandomDispersalController() {}
 
 void RandomDispersalController::Reset() {}
-
+	
+	
 Result RandomDispersalController::DoWork()
 {
+	cout<<"RandomDispersalController::DoWork()"<<endl;
   Result result;
   has_control = true;
 
@@ -94,6 +96,17 @@ void RandomDispersalController::ProcessData()
     }
   }
 }
+
+CPFAState RandomDispersalController::GetCPFAState() 
+{
+  return cpfa_state;
+}
+
+void RandomDispersalController::SetCPFAState(CPFAState state) {
+  cpfa_state = state;
+  result.cpfa_state = state;
+}
+
 
 bool RandomDispersalController::ShouldInterrupt()
 {

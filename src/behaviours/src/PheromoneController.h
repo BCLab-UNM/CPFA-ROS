@@ -26,10 +26,13 @@ public:
   void setCurrentLocation (Point location) { currnet_location = location; }
 
   void setTargetDate (std::vector<Tag> tags);
-
-
+  void SetCPFAState(CPFAState state) override;
+  CPFAState GetCPFAState() override;
+  
 private:
 
+  void ProcessData();
+  CPFAState cpfa_state = start_state;
   Result result;
 
   std::vector<Pheromone> pheromones;

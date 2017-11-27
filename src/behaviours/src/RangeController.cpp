@@ -76,7 +76,7 @@ void RangeController::Reset()
 
 Result RangeController::DoWork() 
 {
- 
+ cout<<"RangeController::DoWork()"<<endl;
   Result result;
 
   // Move the rover a parameterised distance towards the origin 
@@ -99,6 +99,7 @@ Result RangeController::DoWork()
 
 bool RangeController::ShouldInterrupt() 
 {
+	cout<<"range controller should interrupt...";
   // Cause an interrupt if the rover leaves the specified foraging range
   // Note use of shortcircuiting "and"
   bool should_interrupt = false;
@@ -111,8 +112,19 @@ bool RangeController::ShouldInterrupt()
       requested_return_to_valid_range = true;
       should_interrupt = true;
     }
-  
+  cout<<should_interrupt<<endl;
+    
   return should_interrupt;    
+}
+
+CPFAState RangeController::GetCPFAState() 
+{
+  return cpfa_state;
+}
+
+void RangeController::SetCPFAState(CPFAState state) {
+  cpfa_state = state;
+  result.cpfa_state = state;
 }
 
 bool RangeController::HasWork() 

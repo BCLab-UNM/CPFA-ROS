@@ -29,14 +29,28 @@ DropOffController::~DropOffController() {
 
 }
 
+double DropOffController::getPoissonCDF(const double lambda)
+{
+  double sumAccumulator       = 1.0;
+  double factorialAccumulator = 1.0;
+   cout <<"lambda="<<lambda<<endl;
+   cout <<"get Poisson CDF: local_resource_density="<<local_resource_density<<endl;
+  for (size_t i = 1; i <= local_resource_density; i++) {
+    factorialAccumulator *= i;
+    sumAccumulator += pow(lambda, i) / factorialAccumulator;
+  }
+
+  return (exp(-lambda) * sumAccumulator);
+}
+
 Result DropOffController::DoWork() {
 
-  cout << "8" << endl;
+  cout << "DropOffController::DoWork() " << endl;
 
   int count = countLeft + countRight;
 
   if(timerTimeElapsed > -1) {
-
+    cout<<"time elapsed > -1..."<<endl;
     long int elapsed = current_time - returnTimer;
     timerTimeElapsed = elapsed/1e3; // Convert from milliseconds to seconds
   }
@@ -51,19 +65,19 @@ Result DropOffController::DoWork() {
       if (finalInterrupt)
       {
         result.type = behavior;
-        result.b = nextProcess;
+        result.b = nextProcess;		    
         result.reset = true;
-        return result;
+        return result;       
       }
       else
       {
         finalInterrupt = true;
-        cout << "1" << endl;
+        cout << "finalInterrupt, true" << endl;
       }
     }
     else if (timerTimeElapsed >= 0.1)
     {
-      cout << "11" << endl;
+      cout << "gt 0.1" << endl;
       isPrecisionDriving = true;
       result.type = precisionDriving;
 
@@ -81,9 +95,10 @@ Result DropOffController::DoWork() {
 
   //check to see if we are driving to the center location or if we need to drive in a circle and look.
   if (distanceToCenter > collectionPointVisualDistance && !circularCenterSearching && (count == 0)) {
-
+    cout<<"distanceToCenter="<<distanceToCenter<<endl;
     result.type = waypoint;
     result.wpts.waypoints.clear();
+    cout<<"wpts.waypoints insert"<<endl;
     result.wpts.waypoints.push_back(this->centerLocation);
     startWaypoint = false;
     isPrecisionDriving = false;
@@ -96,7 +111,7 @@ Result DropOffController::DoWork() {
   else if (timerTimeElapsed >= 2)//spin search for center
   {
     Point nextSpinPoint;
-
+    cout<<"spin search for center...wpts.waypoint"<<endl;
     //sets a goal that is 60cm from the centerLocation and spinner
     //radians counterclockwise from being purly along the x-axis.
     nextSpinPoint.x = centerLocation.x + (initialSpinSize + spinSizeIncrease) * cos(spinner);
@@ -135,7 +150,7 @@ Result DropOffController::DoWork() {
   if (count > 0 || seenEnoughCenterTags || prevCount > 0) //if we have a target and the center is located drive towards it.
   {
 
-    cout << "9" << endl;
+    cout << "drive to center" << endl;
     centerSeen = true;
 
     if (first_center && isPrecisionDriving)
@@ -216,18 +231,19 @@ Result DropOffController::DoWork() {
   //was on approach to center and did not seenEnoughCenterTags
   //for lostCenterCutoff seconds so reset.
   else if (centerApproach) {
-
+    cout<<"was on approach to center and did not seenEnoughCenterTags"<<endl;
     long int elapsed = current_time - lastCenterTagThresholdTime;
     float timeSinceSeeingEnoughCenterTags = elapsed/1e3; // Convert from milliseconds to seconds
     if (timeSinceSeeingEnoughCenterTags > lostCenterCutoff)
     {
-      cout << "4" << endl;
+      cout << "back to drive to center base location..." << endl;
       //go back to drive to center base location instead of drop off attempt
       reachedCollectionPoint = false;
       seenEnoughCenterTags = false;
       centerApproach = false;
 
       result.type = waypoint;
+      cout<<"wpts.waypoint to center"<<endl;
       result.wpts.waypoints.push_back(this->centerLocation);
       if (isPrecisionDriving) {
         result.type = behavior;
@@ -250,6 +266,7 @@ Result DropOffController::DoWork() {
 
   if (!centerSeen && seenEnoughCenterTags)
   {
+   cout<<"not seen center and seen enough tags"<<endl;
     reachedCollectionPoint = true;
     centerApproach = false;
     returnTimer = current_time;
@@ -259,6 +276,7 @@ Result DropOffController::DoWork() {
 }
 
 void DropOffController::Reset() {
+	cout<<"DropOffController::Reset()"<<endl;
   result.type = behavior;
   result.b = wait;
   result.pd.cmdVel = 0;
@@ -289,6 +307,14 @@ void DropOffController::Reset() {
 
 }
 
+void DropOffController::senseLocalResourceDensity(int num_tags)
+{
+  //if(num_tags > local_resource_density){
+    local_resource_density = num_tags;
+  //}
+
+  cout << "Dropoff: local_resource_density: " << local_resource_density << endl;
+}
 
 void DropOffController::SetTargetData(vector<Tag> tags) {
   countRight = 0;
@@ -325,19 +351,26 @@ void DropOffController::ProcessData() {
 }
 
 bool DropOffController::ShouldInterrupt() {
+	cout<<"dropoff controller should interrupt...";
   ProcessData();
   if (startWaypoint && !interrupt) {
     interrupt = true;
     precisionInterrupt = false;
+    cout<<"D: true d1"<<endl;
     return true;
+    
   }
   else if (isPrecisionDriving && !precisionInterrupt) {
     precisionInterrupt = true;
+    cout<<"D: true d2"<<endl;
     return true;
+    
   }
   if (finalInterrupt) {
+	  cout<<"D: true d3"<<endl;
     return true;
   }
+  //cout<<"false"<<endl; //do not cout there. this will affact the behavior of robots
 }
 
 bool DropOffController::HasWork() {
@@ -378,3 +411,13 @@ void DropOffController::SetCurrentTimeInMilliSecs( long int time )
 {
   current_time = time;
 }
+CPFAState DropOffController::GetCPFAState() 
+{
+  return cpfa_state;
+}
+
+void DropOffController::SetCPFAState(CPFAState state) {
+  cpfa_state = state;
+  result.cpfa_state = state;
+}
+

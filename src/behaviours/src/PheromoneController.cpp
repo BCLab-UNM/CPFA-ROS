@@ -6,13 +6,34 @@ PheromoneController::PheromoneController()
 {
 }
 
+PheromoneController::~PheromoneController()
+{
+}
+
 void PheromoneController::Reset()
 {
   
 }
 
+void PheromoneController::ProcessData() 
+{
+}
+
+
+CPFAState PheromoneController::GetCPFAState() 
+{
+  return cpfa_state;
+}
+
+void PheromoneController::SetCPFAState(CPFAState state) {
+  cpfa_state = state;
+  result.cpfa_state = state;
+}
+
+
 Result PheromoneController::DoWork()
 {
+	cout<<"PheromoneController::DoWork()"<<endl;
   
   if (targetHeld)
   {
@@ -49,7 +70,7 @@ Result PheromoneController::DoWork()
 
 bool PheromoneController::ShouldInterrupt()
 {
-  
+  cout<<"pheromone controller should interrupt..."<<endl;
 }
 
 bool PheromoneController::HasWork()

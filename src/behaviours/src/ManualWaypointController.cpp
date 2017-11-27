@@ -10,22 +10,25 @@ ManualWaypointController::~ManualWaypointController() {}
 void ManualWaypointController::Reset() {
   waypoints.clear();
 }
-
+	
 bool ManualWaypointController::HasWork() {
   return !waypoints.empty();
 }
 
 bool ManualWaypointController::ShouldInterrupt() {
+	cout<<"manualwaypoint controller should interrupt...";
   bool interrupt = false;
   // If the size of the manual waypoint list has changed, then interrupt.
   if(num_waypoints != waypoints.size() && !waypoints.empty()) {
     interrupt = true;
     num_waypoints = waypoints.size();
   }
+  cout<<interrupt<<endl;
   return interrupt;
 }
 
 Result ManualWaypointController::DoWork() {
+	cout<<"ManualWaypointController::DoWork()"<<endl;
   Result result;
   result.type = waypoint;
   result.wpts.waypoints.push_back(waypoints.begin()->second);
@@ -49,6 +52,16 @@ void ManualWaypointController::SetCurrentLocation(Point currentLocation)
 
 void ManualWaypointController::ProcessData()
 {   
+}
+
+CPFAState ManualWaypointController::GetCPFAState() 
+{
+  return cpfa_state;
+}
+
+void ManualWaypointController::SetCPFAState(CPFAState state) {
+  cpfa_state = state;
+  result.cpfa_state = state;
 }
 
 void ManualWaypointController::AddManualWaypoint(Point wpt, int id)

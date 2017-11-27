@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   random_numbers
   tf
   apriltags_ros
+  swarmie_msgs
 )
 
 catkin_package(

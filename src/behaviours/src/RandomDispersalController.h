@@ -25,11 +25,16 @@ public:
 
   void setCurrentLocation(Point current_location) {this->current_location = current_location;}
   void setCurrentTime(long int time) {current_time = time;}
-
+  void SetCPFAState(CPFAState state) override;
+  CPFAState GetCPFAState() override;
 private:
 
+  CPFAState cpfa_state = start_state;
+  //struct for returning data to the ROS adapter
+  Result result;
+  
   void ProcessData();
-
+  
   Point current_location;
   Point goal_location;
 

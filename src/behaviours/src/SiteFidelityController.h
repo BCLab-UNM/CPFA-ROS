@@ -24,12 +24,16 @@ public:
   // location for site fidelity
   void setTargetPickedUp(); 
 
+  CPFAState cpfa_state = start_state;
+  //struct for returning data to the ROS adapter
+  Result result;
   void setCurrentLocation(Point current_location);
-
+  void SetCPFAState(CPFAState state) override;
+  CPFAState GetCPFAState() override;
 private:
 
     void ProcessData();
-
+  
     bool target_picked_up = false;
     Point site_fidelity_location;
     Point current_location;

@@ -15,15 +15,17 @@ public:
   Result DoWork() override;
   void setSonarData(float left, float center, float right);
   void setCurrentLocation(Point currentLocation);
-  void setTagData(std::vector<Tag> tags);
+  void setTagData(vector<Tag> tags);
   bool ShouldInterrupt() override;
   bool HasWork() override;
   void setIgnoreCenterSonar();
   void setCurrentTimeInMilliSecs( long int time );
-  void setTargetHeld ();
+  void setTargetHeld();
   void setTargetHeldClear() {if (targetHeld) {Reset(); targetHeld = false; previousTargetState = false;}}
   bool getShouldClearWaypoints() {bool tmp = clearWaypoints; clearWaypoints = false; return tmp;}
-
+  void SetCPFAState(CPFAState state) override;
+  CPFAState GetCPFAState() override;
+  
 protected:
 
   void ProcessData();
@@ -38,7 +40,7 @@ private:
 
   // Are there AprilTags in the camera view that mark the collection zone
   // and are those AprilTags oriented towards or away from the camera.
-  bool checkForCollectionZoneTags(std::vector<Tag> );
+  bool checkForCollectionZoneTags(vector<Tag> );
   
   const float K_angular = 1.0; //radians a second
   const float reactivate_center_sonar_threshold = 0.8;
@@ -49,7 +51,6 @@ private:
   /*
      * Member variables
      */
-
 
   bool obstacleInterrupt;
   bool obstacleDetected;
@@ -80,6 +81,7 @@ private:
   
   bool set_waypoint = false;
   bool can_set_waypoint = false;
+  CPFAState cpfa_state = start_state;
 
   float camera_offset_correction = 0.020; //meters;
 };

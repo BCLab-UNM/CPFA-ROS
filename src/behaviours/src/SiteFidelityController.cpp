@@ -19,27 +19,51 @@ void SiteFidelityController::Reset()
 
 Result SiteFidelityController::DoWork() 
 {
-  
+	cout<<"CPFAStatus: SiteFidelityController::DoWork()"<<endl;
   Result result;
+  cout <<"SF: site_fidelity_location="<<site_fidelity_location.x<<", "<<site_fidelity_location.y<<endl;
+  cout <<"SF: current_location="<<current_location.x<<", "<<current_location.y<<endl;
 
   if (hypot(site_fidelity_location.x - current_location.x, site_fidelity_location.y - current_location.y) < 0.15) 
   {
+	  cout <<"CPFAStatus: SF: Reached site fidelity"<<endl;
     result.type = behavior;
     result.b = COMPLETED;
+    cout <<"result.wpts.waypoints size="<<result.wpts.waypoints.size()<<endl;
+    for(int i=0; i<result.wpts.waypoints.size(); i++){
+		cout<<i<<".x= "<<result.wpts.waypoints[i].x<<endl;
+		}
+    
   } 
 
   else 
   {
+	  cout <<"CPFAStatus: SF: travel to site fidelity, wpts.waypoint="<<site_fidelity_location.x<<endl;
     result.type = waypoint;
     result.PIDMode = FAST_PID;
     result.wpts.waypoints.insert(result.wpts.waypoints.begin(), site_fidelity_location);
+    cout <<"result.wpts.waypoints size="<<result.wpts.waypoints.size()<<endl;
+    for(int i=0; i<result.wpts.waypoints.size(); i++){
+		cout<<i<<".x= "<<result.wpts.waypoints[i].x<<endl;
+		}
   }
 
   return result;
 }
 
+CPFAState SiteFidelityController::GetCPFAState() 
+{
+  return cpfa_state;
+}
+
+void SiteFidelityController::SetCPFAState(CPFAState state) {
+  cpfa_state = state;
+  result.cpfa_state = state;
+}
+
 bool SiteFidelityController::ShouldInterrupt()
 {
+  cout<<"site fidelity controller should interrupt..."<<endl;	
   ProcessData();
 
   return false;
@@ -53,7 +77,7 @@ bool SiteFidelityController::HasWork()
 void SiteFidelityController::setTargetPickedUp()
 {
   target_picked_up = true;
-  ProcessData();
+  ProcessData();//commented in previous version
 }
 
 void SiteFidelityController::setCurrentLocation(Point current_location)
@@ -65,6 +89,7 @@ void SiteFidelityController::ProcessData()
 {
   if (target_picked_up)
   {
+	  cout<<"Create site fidelity..."<<endl;
     site_fidelity_location = current_location;
     target_picked_up = false;
   }
