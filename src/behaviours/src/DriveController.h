@@ -19,17 +19,19 @@ public:
   void SetResultData(Result result) {this->result = result;}
   void SetVelocityData(float linearVelocity,float angularVelocity);
   void SetCurrentLocation(Point currentLocation) {this->currentLocation = currentLocation;}
-
+  
+  void SetCPFAState(CPFAState state) override;
+  CPFAState GetCPFAState() override;
 private:
 
   Result result;
-
+  
   float left;
   float right;
 
   bool interupt = false;
 
-  float rotateOnlyAngleTolerance = 0.1;
+  float rotateOnlyAngleTolerance = 0.15;
   float finalRotationTolerance = 0.2;
   const float waypointTolerance = 0.15; //15 cm tolerance.
 
@@ -47,7 +49,7 @@ private:
   Point centerLocationMap;
   Point centerLocationOdom;
 
-  std::vector<Point> waypoints;
+  vector<Point> waypoints;
 
   //PID configs************************
   PIDConfig fastVelConfig();
@@ -86,6 +88,7 @@ private:
 
   void ProcessData();
 
+  CPFAState cpfa_state = start_state;
 };
 
 #endif // DRIVECONTROLLER_H

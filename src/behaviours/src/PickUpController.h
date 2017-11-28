@@ -12,7 +12,7 @@ public:
 
   void Reset() override;
   Result DoWork() override;
-  void SetTagData(std::vector<Tag> tags);
+  void SetTagData(vector<Tag> tags);
   bool ShouldInterrupt() override;
   bool HasWork() override;
 
@@ -27,12 +27,15 @@ public:
   bool GetTargetHeld() {return targetHeld;}
 
   void SetCurrentTimeInMilliSecs( long int time );
-
+  
+  void SetCPFAState(CPFAState state) override;
+  CPFAState GetCPFAState() override;
 protected:
 
   void ProcessData();
 
 private:
+
   //Set true when the target block is less than targetDist so we continue attempting to pick it up rather than
   //switching to another block that is in view. In other words, the robot focuses on one particular target so
   //it doesn't get confused by having a whole bunch of targets in its view.
@@ -72,13 +75,15 @@ private:
   //before doing its work
   bool interupted = false;
 
+  CPFAState cpfa_state = start_state;
   //interupt in order to release control; i.e., this controller has finished interupting
   bool release_control = false;
 
   //this controller has control~
   bool has_control = false;
   
-  //float reverse_to_before_reaquire_begin = 4.4;
+  //float reverse_to_before_reaquire_begin;
+
 };
 
 #endif // end header define

@@ -8,6 +8,7 @@
 #include "ObstacleController.h"
 #include "DriveController.h"
 #include "SiteFidelityController.h"
+#include "PheromoneController.h"
 #include "RandomDispersalController.h"
 #include "CPFAParameters.h"
 #include "RangeController.h"
@@ -16,6 +17,7 @@
 #include <vector>
 #include <queue>
 #include <stdlib.h>
+#include <random_numbers/random_numbers.h>
 
 using namespace std;
 
@@ -58,6 +60,8 @@ public:
   void SetModeAuto();
 
   void SetCurrentTimeInMilliSecs( long int time );
+  void SetCPFAState(CPFAState state) override;
+  CPFAState GetCPFAState() override;
 
   //void setTargetHeld();
   // Tell the logic controller whether rovers should automatically
@@ -65,8 +69,9 @@ public:
   // allowed range.
   void setVirtualFenceOn( RangeShape* range );
   void setVirtualFenceOff( );
-
-
+  void senseLocalResourceDensity(int num_tags);
+  void printCPFAState();
+  void printCPFASearchType();
 
 protected:
   void ProcessData();
@@ -84,10 +89,16 @@ private:
     PROCCESS_STATE_SEARCHING = 0,
     PROCCESS_STATE_TARGET_PICKEDUP,
     PROCCESS_STATE_DROP_OFF,
+    PROCESS_STATE_SITE_FIDELITY,
+    PROCESS_STATE_PHEROMONE,
     _LAST,
     PROCCESS_STATE_MANUAL
-  };
+  }; 
 
+  CPFAState cpfa_state = start_state;
+  CPFASearchType cpfa_search_type = random_search;
+  
+  
   LogicState logicState;
   ProcessState processState;
 
@@ -96,18 +107,35 @@ private:
   SearchController searchController;
   ObstacleController obstacleController;
   DriveController driveController;
-  SiteFidelityController site_fidelity_controller;
-RandomDispersalController random_dispersal_controller;
-  RangeController range_controller;
+  SiteFidelityController siteFidelityController;
+  
+  PheromoneController pheromoneController;  
+  RandomDispersalController randomDispersalController;  
+  RangeController rangeController;  
   ManualWaypointController manualWaypointController;
-
   vector<PrioritizedController> prioritizedControllers;
   priority_queue<PrioritizedController> control_queue;
 
   void controllerInterconnect();
-
+  double getPoissonCDF(const double lambda);
+  
+  
   long int current_time = 0;
   bool informed_search = false;
+    int local_resource_density = 0;
+
+// CPFA Parameters
+  double probability_of_switching_to_searching = 0.015;
+  double probability_of_returning_to_nest=0.001;
+  double uninformed_search_variation= 0.4;
+  double rate_of_informed_search_decay =0.1666;
+  double rate_of_site_fidelity = 0.3;
+  double rate_of_laying_pheromone =5;
+  double rate_of_pheromone_decay = 0.025;
+  bool first_waypoint = true;
+  
+  random_numbers::RandomNumberGenerator* rng;
+  
   /* CPFA State Machine variables */
   /*bool target_held = false;
   bool target_dropped_off = true;

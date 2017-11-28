@@ -110,6 +110,7 @@ class RangeControllerInvalidParameterException : public std::exception {
 class RangeController : virtual Controller {
 
  public:
+  
   // Constructors
   RangeController();
   RangeController( float backtrack_distance );
@@ -130,6 +131,9 @@ class RangeController : virtual Controller {
   // Destructor
   ~RangeController();
 
+void SetCPFAState(CPFAState state) override;
+  CPFAState GetCPFAState() override;
+  
  private:
 
   // Required by controller interface
@@ -138,12 +142,13 @@ class RangeController : virtual Controller {
   Point distAlongLineSegment(Point start, Point end, float dist);
 
   RangeShape* range = NULL;
-  
+  //struct for returning data to the ROS adapter
+  Result result;
   // Distance in meters to move towards the center
   // when a rover leaves the allowed range.
   float backtrack_distance = 1.0; // Defeult to 1.0m 
   Point current_location;
-  
+  CPFAState cpfa_state = start_state;
   // Whether the range restriction is enabled or not
   bool enabled;
 

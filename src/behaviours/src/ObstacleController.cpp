@@ -16,7 +16,7 @@ void ObstacleController::Reset() {
   obstacleInterrupt = false;
   delay = current_time;
 }
-
+	
 // Avoid crashing into objects detected by the ultraound
 void ObstacleController::avoidObstacle() {
   
@@ -36,11 +36,26 @@ void ObstacleController::avoidObstacle() {
 // so avoid running over the collection zone and possibly pushing cubes out.
 void ObstacleController::avoidCollectionZone() {
   
+    result.type = precisionDriving;
+
+    result.pd.cmdVel = 0.0;
+
+    // Decide which side of the rover sees the most april tags and turn away
+    // from that side
+    if(count_left_collection_zone_tags < count_right_collection_zone_tags) {
+      result.pd.cmdAngular = K_angular;
+    } else {
+      result.pd.cmdAngular = -K_angular;
+    }
+
+    result.pd.setPointVel = 0.0;
+    result.pd.cmdVel = 0.0;
+    result.pd.setPointYaw = 0;
 }
 
 
 Result ObstacleController::DoWork() {
-
+  cout<<"ObstacleController::DoWork()..."<<endl;
   clearWaypoints = true;
   set_waypoint = true;
   result.PIDMode = CONST_PID;
@@ -183,10 +198,12 @@ bool ObstacleController::checkForCollectionZoneTags( vector<Tag> tags ) {
 
 bool ObstacleController::ShouldInterrupt() {
 
-
+  cout<<"obstacle controller should interrupt..."<<endl;
   if(obstacleDetected && !obstacleInterrupt)
   {
     obstacleInterrupt = true;
+    cout<<"true"<<endl;
+    
     return true;
   }
   else
@@ -194,9 +211,11 @@ bool ObstacleController::ShouldInterrupt() {
     if(obstacleAvoided && obstacleDetected)
     {
       Reset();
-      return true;
+      cout<<"true"<<endl;
+    return true;
     } else {
-      return false;
+      cout<<"false"<<endl;
+    return false;
     }
   }
 }
@@ -231,3 +250,13 @@ void ObstacleController::setTargetHeld() {
     previousTargetState = true;
   }
 }
+CPFAState ObstacleController::GetCPFAState() 
+{
+  return cpfa_state;
+}
+
+void ObstacleController::SetCPFAState(CPFAState state) {
+  cpfa_state = state;
+  result.cpfa_state = state;
+}
+
