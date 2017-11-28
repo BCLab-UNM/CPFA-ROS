@@ -83,6 +83,7 @@ private:
   bool has_control = false;
   
   //float reverse_to_before_reaquire_begin;
+
 };
 
 #endif // end header define
