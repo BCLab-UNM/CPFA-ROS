@@ -124,27 +124,30 @@ Result LogicController::DoWork() {
         }
       }
       //update the priorites of the controllers based upon the new process state.
-      if (result.b == nextProcess || result.b == prevProcess) {
+      if (result.b == nextProcess || result.b == prevProcess) 
+      {
 		  cout<<"result.b == next or prev"<<endl;
-		  
-		  /*if(processState = PROCESS_STATE_SITE_FIDELITY){
-              double followSiteFidelityRate = getPoissonCDF(rate_of_laying_pheromone);
-              cout <<"followSiteFidelityRate="<<followSiteFidelityRate<<endl;
-              double r1 = rng->uniformReal(0, 1);
-              cout<<"r1 = "<< r1<<endl;
-              if(r1 > followSiteFidelityRate){//informed search with pheromone waypoints
-		        //result.type = behavior;
-                //result.b = nextProcess;		    
-                processState = (ProcessState)((int)processState + 1); 
-                cout <<"processState ="<<processState<<"  pheromome"<<endl; 
-              }
-          }*/
-        ProcessData();
-        result.b = wait;
-        driveController.Reset(); //it is assumed that the drive controller may be in a bad state if interrupted so reset it
+		  if(processState == PROCESS_STATE_SITE_FIDELITY)
+		  {
+		       double followSiteFidelityRate = getPoissonCDF(rate_of_laying_pheromone);
+               cout <<"CPFAStatus: followSiteFidelityRate="<<followSiteFidelityRate<<endl;
+               double r1 = rng->uniformReal(0, 1);
+               cout<<"CPFAStatus: r1 = "<< r1<<endl;
+               if(r1 > followSiteFidelityRate)//informed search with pheromone waypoints
+               {
+		           //result.type = behavior;
+                   //result.b = nextProcess;		    
+                   processState = (ProcessState)((int)processState + 1); 
+                   cout <<"CPFAStatus: processState ="<<processState<<"  pheromome"<<endl;
+               }
+           }
+	     
+         ProcessData();
+         result.b = wait;
+         driveController.Reset(); //it is assumed that the drive controller may be in a bad state if interrupted so reset it
       }
       else if(result.b == COMPLETED || result.b == FAILED){
-		  cout <<"Completed..."<<endl;
+		  cout <<"CPFAStatus: Completed..."<<endl;
 		  informed_search = true;
           processState = PROCCESS_STATE_SEARCHING;
           ProcessData();
@@ -231,8 +234,9 @@ double LogicController::getPoissonCDF(const double lambda)
 {
   double sumAccumulator       = 1.0;
   double factorialAccumulator = 1.0;
-   cout <<"lambda="<<lambda<<endl;
-   cout <<"get Poisson CDF: local_resource_density="<<local_resource_density<<endl;
+   cout <<"CPFAStatus: lambda="<<lambda<<endl;
+   local_resource_density =8;//should be removed. Just for testing
+   cout <<"CPFAStatus: get Poisson CDF: local_resource_density="<<local_resource_density<<endl;
   for (size_t i = 1; i <= local_resource_density; i++) {
     factorialAccumulator *= i;
     sumAccumulator += pow(lambda, i) / factorialAccumulator;
@@ -568,6 +572,7 @@ void LogicController::SetModeAuto() {
     // only do something if we are in manual mode
     cout<<"do something if we are in manual mode..."<<endl;
     this->Reset();
+    manualWaypointController.Reset();
   }
 }
 void LogicController::SetModeManual()
@@ -580,3 +585,4 @@ void LogicController::SetModeManual()
     driveController.Reset();
   }
 }
+

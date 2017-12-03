@@ -86,7 +86,8 @@ private:
   //Center and current locations as of the last call to setLocationData
   Point centerLocation;
   Point currentLocation;
-
+  //Point site_fidelity_location; //11/2017
+  
   //Time since modeTimer was started, in seconds
   float timerTimeElapsed;
 
@@ -117,6 +118,8 @@ private:
   //Flag to indicate that we're starting to follow waypoints
   bool startWaypoint;
 
+  bool informed_search = false;
+  
   Result result;
 
   long int current_time;
@@ -131,3 +134,4 @@ private:
   double rate_of_laying_pheromone =5;
 };
 #endif // end header define
+

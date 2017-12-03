@@ -23,7 +23,7 @@ Result SiteFidelityController::DoWork()
   Result result;
   cout <<"SF: site_fidelity_location="<<site_fidelity_location.x<<", "<<site_fidelity_location.y<<endl;
   cout <<"SF: current_location="<<current_location.x<<", "<<current_location.y<<endl;
-
+          
   if (hypot(site_fidelity_location.x - current_location.x, site_fidelity_location.y - current_location.y) < 0.15) 
   {
 	  cout <<"CPFAStatus: SF: Reached site fidelity"<<endl;
@@ -89,8 +89,10 @@ void SiteFidelityController::ProcessData()
 {
   if (target_picked_up)
   {
-	  cout<<"Create site fidelity..."<<endl;
+	  cout<<"Create site fidelity..."<<current_location.x<<endl;
     site_fidelity_location = current_location;
+    
     target_picked_up = false;
   }
 }
+
