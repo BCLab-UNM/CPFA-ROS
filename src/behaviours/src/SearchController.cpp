@@ -31,7 +31,7 @@ void SearchController::Reset() {
  * This code implements a basic random walk search.
  */
 Result SearchController::DoWork() {
-  cout<<"CPFAStatus: SearchController::DoWork(), size="<<result.wpts.waypoints.size()<<endl;
+  cout<<"SF: CPFAStatus: SearchController::DoWork(), size="<<result.wpts.waypoints.size()<<endl;
   //cout<<"search 1. result.wpts.waypoints size ="<<result.wpts.waypoints.size()<<endl;
   if (!result.wpts.waypoints.empty()) {
 	  cout<<"CPFAStatus: result.wpts.waypoints="<<result.wpts.waypoints[0].x<<"  "<<result.wpts.waypoints.size()<<endl;
@@ -335,3 +335,4 @@ bool SearchController::OutOfArena(Point location){
     }
 	return false;
 	}
+

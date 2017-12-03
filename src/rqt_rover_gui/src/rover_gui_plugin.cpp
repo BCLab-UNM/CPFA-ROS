@@ -1,6 +1,6 @@
 // Author: Matthew Fricke
 // E-mail: matthew@fricke.co.uk
-// Date: 9-16-205
+// Date: 9-16-2015
 // Purpose: implementation of a simple graphical front end for the UNM-NASA Swarmathon rovers.
 // License: GPL3
 
@@ -208,7 +208,8 @@ namespace rqt_rover_gui
     ui.number_of_tags_combobox->setEnabled(false);
     ui.number_of_tags_combobox->setStyleSheet("color: grey; border:1px solid grey;");
 
-    ui.tab_widget->setCurrentIndex(1);
+    ui.tab_widget->setCurrentIndex(1); //0: show sensor display tab; 1: show simulation parameters tab 
+    ui.log_tab->setCurrentIndex(1);
     ui.texture_combobox->setItemData(0, QColor(Qt::white), Qt::TextColorRole);
 
     ui.visualize_simulation_button->setEnabled(false);
@@ -252,6 +253,12 @@ void RoverGUIPlugin::restoreSettings(const qt_gui_cpp::Settings& plugin_settings
 // Receives messages from the ROS joystick driver and used them to articulate the gripper and drive the rover.
 void RoverGUIPlugin::joyEventHandler(const sensor_msgs::Joy::ConstPtr& joy_msg)
 {
+  // Are we in autonomous mode? If so do not process manual drive and gripper controls.
+  if ( rover_control_state.count(selected_rover_name) == 2 )
+  {
+    return;
+  }
+  
      // Give the array values some helpful names:
     int left_stick_x_axis = 0; // Gripper fingers close and open
     int left_stick_y_axis = 1; // Gripper wrist up and down
@@ -361,7 +368,7 @@ void RoverGUIPlugin::joyEventHandler(const sensor_msgs::Joy::ConstPtr& joy_msg)
 
 
         joystick_publisher.publish(joy_msg);
-    }
+     }
 }
 
 void RoverGUIPlugin::EKFEventHandler(const ros::MessageEvent<const nav_msgs::Odometry> &event)
@@ -711,6 +718,12 @@ void RoverGUIPlugin::currentRoverChangedEventHandler(QListWidgetItem *current, Q
 
 void RoverGUIPlugin::pollRoversTimerEventHandler()
 {
+    //If there are no rovers connected to the GUI, reset the obstacle call count to 0
+    if(ui.rover_list->count() == 0)
+    {
+        obstacle_call_count = 0;
+    }
+
     // Returns rovers that have created a status topic
     set<string>new_rover_names = findConnectedRovers();
 
@@ -770,6 +783,8 @@ void RoverGUIPlugin::pollRoversTimerEventHandler()
         // Delete Publishers
         control_mode_publishers.erase(*it);
         waypoint_cmd_publishers.erase(*it);
+
+        ui.map_frame->resetWaypointPathForSelectedRover(*it);
     }
 
     // Wait for a rover to connect
@@ -896,7 +911,6 @@ void RoverGUIPlugin::pollRoversTimerEventHandler()
 
         ui.rover_diags_list->addItem(new_diags_item);
 
-
         // Add the map selection checkbox for this rover
         QListWidgetItem* new_map_selection_item = new QListWidgetItem("");
 
@@ -928,14 +942,13 @@ void RoverGUIPlugin::pollRoversTimerEventHandler()
         RoverStatus rover_status = rover_statuses[ui_rover_name];
         if (ros::Time::now() - rover_status.timestamp < disconnect_threshold)
         {
-            rover_item->setForeground(Qt::green);
+          rover_item->setForeground(Qt::green);
         }
         else
         {
-            rover_item->setForeground(Qt::red);
-	    diags_item->setForeground(Qt::red);
-
-	    diags_item->setText("disconnected");
+          rover_item->setForeground(Qt::red);
+          diags_item->setForeground(Qt::red);
+          diags_item->setText("disconnected");
         }
     }
 }
@@ -1277,6 +1290,9 @@ void RoverGUIPlugin::autonomousRadioButtonEventHandler(bool marked)
 
     //Hide joystick frame
     ui.joystick_frame->setHidden(true);
+
+    // disable waypoint input in map frame
+    ui.map_frame->disableWaypoints(selected_rover_name);
 }
 
 void RoverGUIPlugin::joystickRadioButtonEventHandler(bool marked)
@@ -1320,6 +1336,9 @@ void RoverGUIPlugin::joystickRadioButtonEventHandler(bool marked)
     
     //Show joystick frame
     ui.joystick_frame->setHidden(false);
+
+    // enable wayoint input in the map frame
+    ui.map_frame->enableWaypoints(selected_rover_name);
 }
 
 void RoverGUIPlugin::allAutonomousButtonEventHandler()
@@ -2029,6 +2048,9 @@ void RoverGUIPlugin::clearSimulationButtonEventHandler()
     ui.build_simulation_button->setStyleSheet("color: white; border:1px solid white;");
     ui.visualize_simulation_button->setStyleSheet("color: grey; border:2px solid grey;");
     ui.clear_simulation_button->setStyleSheet("color: grey; border:2px solid grey;");
+
+    // reset waypoints
+    ui.map_frame->resetAllWaypointPaths();
 
     // Clear the task status values
     obstacle_call_count = 0;
@@ -2857,7 +2879,14 @@ void RoverGUIPlugin::refocusKeyboardEventHandler()
 // Publish the waypoint commands recieved from MapFrame to ROS
 void RoverGUIPlugin::receiveWaypointCmd(WaypointCmd cmd, int id, float x, float y)
 {
-  
+    std::set<std::string>::iterator it = rover_names.find(selected_rover_name);
+
+    if(it == rover_names.end())
+    {
+      emit sendInfoLogMessage("Waypoints Error: a valid rover is not selected!");
+      return;
+    }
+
     swarmie_msgs::Waypoint msg;
     msg.action = cmd;
     msg.id = id;
@@ -2879,4 +2908,5 @@ RoverGUIPlugin::~RoverGUIPlugin()
 
 
 PLUGINLIB_EXPORT_CLASS(rqt_rover_gui::RoverGUIPlugin, rqt_gui_cpp::Plugin)
+
 

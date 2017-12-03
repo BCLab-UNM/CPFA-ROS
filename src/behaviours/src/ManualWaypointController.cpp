@@ -9,6 +9,8 @@ ManualWaypointController::~ManualWaypointController() {}
 
 void ManualWaypointController::Reset() {
   waypoints.clear();
+  num_waypoints = 0;
+  cleared_waypoints.clear();
 }
 	
 bool ManualWaypointController::HasWork() {
@@ -79,3 +81,4 @@ std::vector<int> ManualWaypointController::ReachedWaypoints() {
   cleared_waypoints.clear();
   return cleared;
 }
+

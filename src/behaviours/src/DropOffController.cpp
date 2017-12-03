@@ -23,6 +23,15 @@ DropOffController::DropOffController() {
   isPrecisionDriving = false;
   startWaypoint = false;
   timerTimeElapsed = -1;
+  
+  //qilu 11/2017
+  //site_fidelity_location.x = 0;
+  //site_fidelity_location.y = 0;
+  //site_fidelity_location.theta = 0;
+ 
+  currentLocation.x = 0;
+  currentLocation.y = 0;
+  currentLocation.theta = 0; 
 }
 
 DropOffController::~DropOffController() {
@@ -66,7 +75,13 @@ Result DropOffController::DoWork() {
       {
         result.type = behavior;
         result.b = nextProcess;		    
+        //result.b = COMPLETED;
         result.reset = true;
+        //informed_search = true;
+        //result.wpts.waypoints.clear();
+        //cout<<"Set site fidelity to be the waypoint..."<<endl;
+        //result.wpts.waypoints.insert(result.wpts.waypoints.begin(), site_fidelity_location);
+    
         return result;       
       }
       else
@@ -401,6 +416,7 @@ void DropOffController::SetCurrentLocation(Point current) {
 
 void DropOffController::SetTargetPickedUp() {
   targetHeld = true;
+  //site_fidelity_location = currentLocation;//qilu 11/2017
 }
 
 void DropOffController::SetBlockBlockingUltrasound(bool blockBlock) {
@@ -420,4 +436,5 @@ void DropOffController::SetCPFAState(CPFAState state) {
   cpfa_state = state;
   result.cpfa_state = state;
 }
+
 
