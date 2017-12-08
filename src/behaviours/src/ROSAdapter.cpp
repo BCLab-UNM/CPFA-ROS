@@ -22,6 +22,7 @@
 #include <apriltags_ros/AprilTagDetectionArray.h>
 #include <std_msgs/Float32MultiArray.h>
 #include "swarmie_msgs/Waypoint.h"
+#include "swarmie_msgs/PheromoneTrail.h" //qilu 12/2017
 // Include Controllers
 #include "LogicController.h"
 #include <vector>
@@ -79,6 +80,7 @@ void resultHandler();
 Point updateCenterLocation();
 void transformMapCentertoOdom();
 
+float distanceToCenter(); //qilu 12/2017
 // Numeric Variables for rover positioning
 geometry_msgs::Pose2D currentLocation;
 geometry_msgs::Pose2D currentLocationMap;
@@ -94,6 +96,9 @@ const float behaviourLoopTimeStep = 0.1; // time between the behaviour loop call
 const float status_publish_interval = 1;
 const float heartbeat_publish_interval = 2;
 const float waypointTolerance = 0.1; //10 cm tolerance.
+
+// Center location has been updated
+bool centerUpdated = false; //qilu 12/2017 no reference, should be removed.
 
 // used for calling code once but not in main
 bool initilized = false;
@@ -128,6 +133,7 @@ ros::Publisher infoLogPublisher;
 ros::Publisher driveControlPublish;
 ros::Publisher heartbeatPublisher;
 ros::Publisher waypointFeedbackPublisher;
+ros::Publisher pheromoneTrailPublish;//qilu 12/2017
 
 // Subscribers
 ros::Subscriber joySubscriber;
@@ -135,6 +141,7 @@ ros::Subscriber modeSubscriber;
 ros::Subscriber targetSubscriber;
 ros::Subscriber odometrySubscriber;
 ros::Subscriber mapSubscriber;
+ros::Subscriber pheromoneTrailSubscriber;//qilu 12/2017
 ros::Subscriber virtualFenceSubscriber;
 ros::Subscriber manualWaypointSubscriber;
 
@@ -164,6 +171,7 @@ void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& tagInf
 void odometryHandler(const nav_msgs::Odometry::ConstPtr& message);
 void mapHandler(const nav_msgs::Odometry::ConstPtr& message);
 void virtualFenceHandler(const std_msgs::Float32MultiArray& message);
+void pheromoneTrailHandler(const swarmie_msgs::PheromoneTrail& message); //qilu 12/2017
 void manualWaypointHandler(const swarmie_msgs::Waypoint& message);
 void behaviourStateMachine(const ros::TimerEvent&);
 void publishStatusTimerEventHandler(const ros::TimerEvent& event);
@@ -196,6 +204,7 @@ int main(int argc, char **argv) {
   targetSubscriber = mNH.subscribe((publishedName + "/targets"), 10, targetHandler);
   odometrySubscriber = mNH.subscribe((publishedName + "/odom/filtered"), 10, odometryHandler);
   mapSubscriber = mNH.subscribe((publishedName + "/odom/ekf"), 10, mapHandler);
+  pheromoneTrailSubscriber = mNH.subscribe("/pheromones", 10, pheromoneTrailHandler);//qilu 12/2017
   virtualFenceSubscriber = mNH.subscribe(("/virtualFence"), 10, virtualFenceHandler);
   manualWaypointSubscriber = mNH.subscribe((publishedName + "/waypoints/cmd"), 10, manualWaypointHandler);
   message_filters::Subscriber<sensor_msgs::Range> sonarLeftSubscriber(mNH, (publishedName + "/sonarLeft"), 10);
@@ -209,6 +218,7 @@ int main(int argc, char **argv) {
   infoLogPublisher = mNH.advertise<std_msgs::String>("/infoLog", 1, true);
   driveControlPublish = mNH.advertise<geometry_msgs::Twist>((publishedName + "/driveControl"), 10);
   heartbeatPublisher = mNH.advertise<std_msgs::String>((publishedName + "/behaviour/heartbeat"), 1, true);
+  pheromoneTrailPublish = mNH.advertise<swarmie_msgs::PheromoneTrail>("/pheromones", 10, true);
   waypointFeedbackPublisher = mNH.advertise<swarmie_msgs::Waypoint>((publishedName + "/waypoints"), 1, true);
 
   publish_status_timer = mNH.createTimer(ros::Duration(status_publish_interval), publishStatusTimerEventHandler);
@@ -249,7 +259,7 @@ int main(int argc, char **argv) {
 // controllers in the abridge package.
 void behaviourStateMachine(const ros::TimerEvent&)
 {
-
+  cout<<"behaviourStateMachine..."<<endl;
   std_msgs::String stateMachineMsg;
   // time since timerStartTime was set to current time
   timerTimeElapsed = time(0) - timerStartTime;
@@ -257,11 +267,12 @@ void behaviourStateMachine(const ros::TimerEvent&)
   // auto mode but wont work in main goes here)
   if (!initilized)
   {
-
+     cout<<"not initialized..."<<endl;
     if (timerTimeElapsed > startDelayInSeconds)
     {
 
       // initialization has run
+      cout<<"initialization has run..."<<endl;
       initilized = true;
       //TODO: this just sets center to 0 over and over and needs to change
       Point centerOdom;
@@ -295,8 +306,35 @@ void behaviourStateMachine(const ros::TimerEvent&)
   // Robot is in automode
   if (currentMode == 2 || currentMode == 3)
   {
-    
+    cout<<"currentMode ..."<<endl;
     humanTime();
+    
+	if(distanceToCenter() > 0.75) {
+      centerUpdated = false; //qilu 12/2017 no reference, should be removed.
+    }
+
+    if (logicController.layPheromone()) {
+      swarmie_msgs::PheromoneTrail trail;
+      //Point pheromone_location_point = logicController.getTargetLocation();
+      Point pheromone_location_point = logicController.GetCurrentLocation();//qilu 12/2017
+      
+      geometry_msgs::Pose2D pheromone_location;
+      pheromone_location.x = pheromone_location_point.x - centerLocation.x;
+      pheromone_location.y = pheromone_location_point.y - centerLocation.y;
+      
+      
+      //cout << "*****logicController.GetCenterIdx() = "<<logicController.GetCenterIdx()<<endl;
+      cout << "*****current location = "<<currentLocation<<endl;
+      cout << "*****pheromone_location = "<<pheromone_location<<endl;
+      trail.waypoints.push_back(pheromone_location);
+      //trail.centerIdx = logicController.GetCenterIdx();//this is for MPFA
+      pheromoneTrailPublish.publish(trail);
+
+      
+      cout << "================================================================" << endl;
+      // Return to allow pheromone trail handler to receive the pheromone location
+      return;
+    }
     
     //update the time used by all the controllers
     logicController.SetCurrentTimeInMilliSecs( getROSTimeInMilliSecs() );
@@ -457,7 +495,7 @@ void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& messag
           {*/
       tags.push_back(loc);
     }
-
+     cout<<"number of tags="<<num_tags<<endl;
       //}
       //if ((cpfa_state == return_to_nest || cpfa_state == travel_to_search_site || cpfa_state == set_target_location || cpfa_state == start_state) && loc.id == 0 ) {
 
@@ -608,6 +646,31 @@ void joyCmdHandler(const sensor_msgs::Joy::ConstPtr& message) {
   }
 }
 
+void pheromoneTrailHandler(const swarmie_msgs::PheromoneTrail& message) {
+    // Framework implemented for pheromone waypoints, but we are only using
+    // the first index of the trail momentarily for the pheromone location
+    swarmie_msgs::PheromoneTrail trail = message;
+    cout<<"trail.waypoints.size="<<trail.waypoints.size()<<endl;
+    cout <<"trail.waypoints[0]="<<trail.waypoints[0].x<<", "<<trail.waypoints[0].y<<endl;
+    // Adjust pheromone location to account for center location
+    //trail.waypoints[0].x += centerLocation.x;
+    //trail.waypoints[0].y += centerLocation.y;
+    //cout <<"after****trail.waypoints[0]="<<trail.waypoints[0].x<<", "<<trail.waypoints[0].y<<endl;
+    
+    vector<Point> pheromone_trail;
+    cout<<"trail.waypoints.size()="<<trail.waypoints.size()<<endl;
+    //int centerId = trail.centerIdx;
+    
+    for(int i = 0; i < trail.waypoints.size(); i++) {
+      Point waypoint(trail.waypoints[i].x, trail.waypoints[i].y, trail.waypoints[i].theta);
+      pheromone_trail.push_back(waypoint);
+    }
+      
+    cout<<"Pheromone trail handler... "<<endl;
+    //logicController.insertPheromone(centerId, pheromone_trail);
+    logicController.insertPheromone(pheromone_trail);
+    return;
+}
 
 void publishStatusTimerEventHandler(const ros::TimerEvent&) {
   std_msgs::String msg;
@@ -741,3 +804,7 @@ void humanTime() {
   //cout << "System has been Running for :: " << hoursTime << " : hours " << minutesTime << " : minutes " << timeDiff << "." << frac << " : seconds" << endl; //you can remove or comment this out it just gives indication something is happening to the log file
 }
 
+float distanceToCenter() {
+    // Returns the distance of the rover to the nest
+    return hypot(centerLocation.x - currentLocation.x, centerLocation.y - currentLocation.y);
+}

@@ -22,7 +22,7 @@ public:
   // Let site fidelity controller know that target 
   // has been picked up, so that we can save that current
   // location for site fidelity
-  void setTargetPickedUp(); 
+  void SetTargetPickedUp(); 
 
   CPFAState cpfa_state = start_state;
   //struct for returning data to the ROS adapter

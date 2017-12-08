@@ -90,6 +90,9 @@ Result LogicController::DoWork() {
     result = control_queue.top().controller->DoWork();
     
     cout<<"get the result..."<<endl;
+    // This tells ROS Adapter whether to lay a pheromone
+    lay_pheromone = result.lay_pheromone;
+	
     //anaylyze the result that was returned and do state changes accordingly
     //behavior types are used to indicate behavior changes of some form
     cout<<"result.type="<<result.type<<endl;
@@ -138,7 +141,7 @@ Result LogicController::DoWork() {
 		           //result.type = behavior;
                    //result.b = nextProcess;		    
                    processState = (ProcessState)((int)processState + 1); 
-                   cout <<"CPFAStatus: processState ="<<processState<<"  pheromome"<<endl;
+                   cout <<"CPFAStatus: processState ="<<processState<<"  pheromome..."<<endl;
                }
            }
 	     
@@ -162,7 +165,8 @@ Result LogicController::DoWork() {
     else if(result.type == precisionDriving) {
       cout<<"result type == precisionDriving..."<<endl;
       logicState = LOGIC_STATE_PRECISION_COMMAND;
-      break;
+      cout<<"logicState="<<logicState<<endl;
+      break; 
 
     }
 
@@ -171,7 +175,7 @@ Result LogicController::DoWork() {
     else if(result.type == waypoint) {
       cout<<"result type == waypoint"<<endl;
       logicState = LOGIC_STATE_WAITING;
-      cout<<"logicState = waiting/1"<<endl;
+      cout<<"logicState ="<<logicState<<endl;
       driveController.SetResultData(result);
       //fall through on purpose
     }
@@ -180,7 +184,8 @@ Result LogicController::DoWork() {
 
     //this case is primarly when logic controller is waiting for drive controller to reach its last waypoint
   case LOGIC_STATE_WAITING: {
-     cout <<"logic state waiting..."<<endl;
+     cout <<"logic state waiting..."<<LOGIC_STATE_WAITING<<endl;
+     cout<<"logicState="<<logicState<<endl; 
     //ask drive controller how to drive
     //commands to be passed the ROS Adapter as left and right wheel PWM values in the result struct are returned
     result = driveController.DoWork();
@@ -235,7 +240,7 @@ double LogicController::getPoissonCDF(const double lambda)
   double sumAccumulator       = 1.0;
   double factorialAccumulator = 1.0;
    cout <<"CPFAStatus: lambda="<<lambda<<endl;
-   local_resource_density =8;//should be removed. Just for testing
+   local_resource_density =4;//should be removed. Just for testing
    cout <<"CPFAStatus: get Poisson CDF: local_resource_density="<<local_resource_density<<endl;
   for (size_t i = 1; i <= local_resource_density; i++) {
     factorialAccumulator *= i;
@@ -251,22 +256,61 @@ void LogicController::ProcessData() {
   //this controller priority is used when searching
   if (processState == PROCCESS_STATE_SEARCHING) 
   {
-	  cout<<"searching ..."<<endl;
+	  cout<<"PROCCESS_STATE_SEARCHING ..."<<endl;
 	prioritizedControllers = {
 	PrioritizedController{15, (Controller*)(&pickUpController)},
 	PrioritizedController{10, (Controller*)(&obstacleController)},
 	PrioritizedController{5, (Controller*)(&rangeController)},
-	PrioritizedController{0, (Controller*)(&searchController)},
+	PrioritizedController{1, (Controller*)(&searchController)},
 	PrioritizedController{-1, (Controller*)(&dropOffController)},
 	PrioritizedController{-1, (Controller*)(&manualWaypointController)}
     };
   }
+  //this priority is used when returning a target to the center collection zone
+  else if (processState  == PROCCESS_STATE_TARGET_PICKEDUP) 
+  {
+	  cout<<"PROCCESS_STATE_TARGET_PICKEDUP ..."<<endl;
+    prioritizedControllers = {
+    PrioritizedController{10, (Controller*)(&obstacleController)},
+    PrioritizedController{5, (Controller*)(&rangeController)},
+    PrioritizedController{1, (Controller*)(&pheromoneController)},
+    PrioritizedController{-1, (Controller*)(&searchController)},
+    PrioritizedController{-1, (Controller*)(&pickUpController)},
+    PrioritizedController{-1, (Controller*)(&manualWaypointController)}
+    };
+  }
+  else if(processState == PROCESS_STATE_SENSE_DENSITY)
+  {
+	  cout<<"PROCESS_STATE_SENSE_DENSITY..."<<endl;
+	  prioritizedControllers = {
+    PrioritizedController{10, (Controller*)(&obstacleController)},
+    PrioritizedController{5, (Controller*)(&rangeController)},
+    PrioritizedController{1, (Controller*)(&dropOffController)},
+    PrioritizedController{-1, (Controller*)(&searchController)},
+    PrioritizedController{-1, (Controller*)(&pickUpController)},
+    PrioritizedController{-1, (Controller*)(&manualWaypointController)}
+    };
+   }
+   //this priority is used when returning a target to the center collection zone
+  else if (processState  == PROCCESS_STATE_DROP_OFF)
+  {
+	  cout<<"PROCCESS_STATE_DROP_OFF..."<<endl;
+      prioritizedControllers = {
+	  PrioritizedController{5, (Controller*)(&rangeController)},
+      PrioritizedController{1, (Controller*)(&dropOffController)},
+      PrioritizedController{-1, (Controller*)(&obstacleController)},
+      PrioritizedController{-1, (Controller*)(&searchController)},
+      PrioritizedController{-1, (Controller*)(&pickUpController)},
+      PrioritizedController{-1, (Controller*)(&dropOffController)}
+    };
+  }
   else if (processState == PROCESS_STATE_SITE_FIDELITY)
   {
-  	  cout<<"SF: site fidelity ..."<<endl;
+  	  cout<<"PROCESS_STATE_SITE_FIDELITY..."<<endl;
     prioritizedControllers = {
-      PrioritizedController{1, (Controller*)(&obstacleController)},
-      PrioritizedController{0, (Controller*)(&siteFidelityController)},
+      PrioritizedController{10, (Controller*)(&obstacleController)},
+      PrioritizedController{5, (Controller*)(&rangeController)},
+      PrioritizedController{1, (Controller*)(&siteFidelityController)},
       PrioritizedController{-1, (Controller*)(&searchController)},
       PrioritizedController{-1, (Controller*)(&pickUpController)},
       PrioritizedController{-1, (Controller*)(&dropOffController)}
@@ -274,39 +318,14 @@ void LogicController::ProcessData() {
   }
   else if (processState == PROCESS_STATE_PHEROMONE)
   {
-     cout<<"pheromone ..."<<endl;
+     cout<<"PROCESS_STATE_PHEROMONE..."<<endl;
     prioritizedControllers = {
-      PrioritizedController{1, (Controller*)(&obstacleController)},
-      PrioritizedController{0, (Controller*)(&pheromoneController)},
+      PrioritizedController{10, (Controller*)(&obstacleController)},
+      PrioritizedController{5, (Controller*)(&rangeController)},
+      PrioritizedController{1, (Controller*)(&pheromoneController)},
       PrioritizedController{-1, (Controller*)(&searchController)},
       PrioritizedController{-1, (Controller*)(&pickUpController)},
       PrioritizedController{-1, (Controller*)(&dropOffController)}
-    };
-  }
-  //this priority is used when returning a target to the center collection zone
-  else if (processState  == PROCCESS_STATE_TARGET_PICKEDUP) 
-  {
-	  cout<<"target pick up ..."<<endl;
-    prioritizedControllers = {
-    PrioritizedController{15, (Controller*)(&obstacleController)},
-    PrioritizedController{10, (Controller*)(&rangeController)},
-    PrioritizedController{1, (Controller*)(&dropOffController)},
-    PrioritizedController{-1, (Controller*)(&searchController)},
-    PrioritizedController{-1, (Controller*)(&pickUpController)},
-    PrioritizedController{-1, (Controller*)(&manualWaypointController)}
-    };
-  }
-  //this priority is used when returning a target to the center collection zone
-  else if (processState  == PROCCESS_STATE_DROP_OFF)
-  {
-	  cout<<"target drop off ..."<<endl;
-      prioritizedControllers = {
-	  PrioritizedController{10, (Controller*)(&rangeController)},
-	  PrioritizedController{1, (Controller*)(&dropOffController)},
-      PrioritizedController{-1, (Controller*)(&searchController)},
-      PrioritizedController{-1, (Controller*)(&obstacleController)},
-      PrioritizedController{-1, (Controller*)(&pickUpController)},
-      PrioritizedController{-1, (Controller*)(&manualWaypointController)}
     };
   }
   else if (processState == PROCCESS_STATE_MANUAL) {
@@ -330,6 +349,7 @@ bool LogicController::ShouldInterrupt()
 
 bool LogicController::HasWork()
 {
+	cout<<"Logic has work... false"<<endl;
   return false;
 }
 
@@ -352,13 +372,16 @@ void LogicController::controllerInterconnect()
     {
 		cout<<"get target held..."<<endl;
       dropOffController.SetTargetPickedUp();
-      obstacleController.setTargetHeld();
+      obstacleController.SetTargetHeld();
       searchController.SetSuccesfullPickup();
-      siteFidelityController.setTargetPickedUp();
+      siteFidelityController.SetTargetPickedUp();
       //targetHeld = true;
     }
   }
-
+  if(processState == PROCESS_STATE_PHEROMONE)
+  {
+	  pheromoneController.DriveToPheromoneTrail();
+	  }
   //ask if drop off has released the target from the claws yet
   if (!dropOffController.HasTarget()) 
   {
@@ -398,6 +421,7 @@ void LogicController::SetPositionData(Point currentLocation)
   driveController.SetCurrentLocation(currentLocation);
   manualWaypointController.SetCurrentLocation(currentLocation);
   siteFidelityController.setCurrentLocation(currentLocation);
+  pheromoneController.setCurrentLocation(currentLocation);//qilu 12/2017
   //return_to_nest_controller.SetCurrentLocation(currentLocation);
   randomDispersalController.setCurrentLocation(currentLocation);
 }
@@ -422,7 +446,7 @@ void LogicController::SetMapVelocityData(float linearVelocity, float angularVelo
 void LogicController::SetAprilTags(vector<Tag> tags) 
 {
   pickUpController.SetTagData(tags);
-  obstacleController.setTagData(tags);
+  obstacleController.SetTagData(tags);
   dropOffController.SetTargetData(tags);
   //return_to_nest_controller.SetTargetData(tags);
 }
@@ -446,6 +470,10 @@ void LogicController::AddManualWaypoint(Point manualWaypoint, int waypoint_id)
   manualWaypointController.AddManualWaypoint(manualWaypoint, waypoint_id);
 }
 
+/*int LogicController::GetCenterIdx(){
+	return searchController.GetCenterIdx();
+	}
+*/
 void LogicController::RemoveManualWaypoint(int waypoint_id)
 {
   manualWaypointController.RemoveManualWaypoint(waypoint_id);
@@ -469,7 +497,9 @@ void LogicController::setVirtualFenceOff()
 
 
 
-
+void LogicController::insertPheromone(const vector<Point> &pheromone_trail) {
+  searchController.insertPheromone(pheromone_trail);
+}
 
 
 void LogicController::SetCenterLocationMap(Point centerLocationMap) 
@@ -479,10 +509,12 @@ void LogicController::SetCenterLocationMap(Point centerLocationMap)
 
 void LogicController::SetCurrentTimeInMilliSecs( long int time )
 {
+	cout<<"Logic: time="<<time<<endl;
   current_time = time;
   dropOffController.SetCurrentTimeInMilliSecs( time );
   pickUpController.SetCurrentTimeInMilliSecs( time );
-  obstacleController.setCurrentTimeInMilliSecs( time );
+  obstacleController.SetCurrentTimeInMilliSecs( time );
+  pheromoneController.SetCurrentTimeInMilliSecs(time);//qilu 12/2017
   //searchController.SetCurrentTimeInMilliSecs( time);
   //random_dispersal_controller.setCurrentTime( time );
 }
@@ -504,7 +536,7 @@ void LogicController::SetCurrentTimeInMilliSecs( long int time )
 }
 */
 
-/*void LogicController::setTargetHeld() 
+/*void LogicController::SetTargetHeld() 
 {
   target_held = true;
 }*/
@@ -548,6 +580,23 @@ void LogicController::printCPFASearchType() {
       cout << "WTF" << endl;
 }
 
+bool LogicController::layPheromone() {
+
+  if(lay_pheromone) {
+    lay_pheromone = false;
+    return searchController.layPheromone();
+  }
+
+  return false;
+}
+
+/*Point LogicController::getTargetLocation() {
+  return searchController.getTargetLocation();
+}
+*/
+Point LogicController::GetCurrentLocation() {
+  return searchController.GetCurrentLocation();
+}
 
 void LogicController::SetCPFAState(CPFAState state) {
   if(state != cpfa_state) {

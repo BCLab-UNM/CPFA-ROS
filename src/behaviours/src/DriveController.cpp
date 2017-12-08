@@ -232,7 +232,8 @@ bool DriveController::ShouldInterrupt()
   }
 }
 
-bool DriveController::HasWork() {   }
+bool DriveController::HasWork() { 
+	cout<<"Drive has work..."<<endl;  }
 
 
 
@@ -263,13 +264,14 @@ void DriveController::ProcessData()
   else if (result.type == precisionDriving)
   {
     if (result.PIDMode == FAST_PID)
-    {
+    {cout<<"FAST_PID"<<endl;
       float vel = result.pd.cmdVel -linearVelocity;
       float setVel = result.pd.cmdVel;
       fastPID(vel,result.pd.cmdAngularError, setVel, result.pd.setPointYaw);
     }
     else if (result.PIDMode == SLOW_PID)
     {
+		cout<<"SLOW_PID"<<endl;
       //will take longer to reach the setPoint but has less chanse of an overshoot
       float vel = result.pd.cmdVel -linearVelocity;
       float setVel = result.pd.cmdVel;
@@ -277,6 +279,9 @@ void DriveController::ProcessData()
     }
     else if (result.PIDMode == CONST_PID)
     {
+		cout<<"CONST_PID"<<endl;
+		cout<<"result.pd.cmdVel="<<result.pd.cmdVel<<endl;
+		cout<<"linearVelocity="<<linearVelocity<<endl;
       float vel = result.pd.cmdVel - linearVelocity;
       float angular = result.pd.cmdAngular - angularVelocity;
 
@@ -337,7 +342,7 @@ void DriveController::slowPID(float errorVel,float errorYaw, float setPointVel, 
 void DriveController::constPID(float erroVel,float constAngularError, float setPointVel, float setPointYaw)
 {
 
-  //cout << "PID CONST" << endl;
+  cout << "PID CONST" << endl;
 
   float velOut = constVelPID.PIDOut(erroVel, setPointVel);
   float yawOut = constYawPID.PIDOut(constAngularError, setPointYaw);
@@ -350,7 +355,8 @@ void DriveController::constPID(float erroVel,float constAngularError, float setP
   if (left  < -sat) {left  = -sat;}
   if (right >  sat) {right =  sat;}
   if (right < -sat) {right = -sat;}
-
+  cout<<"left="<<left<<endl;
+  cout<<"right="<<right<<endl;
   this->left = left;
   this->right = right;
 }

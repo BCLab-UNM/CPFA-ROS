@@ -15,12 +15,12 @@ public:
   Result DoWork() override;
   void setSonarData(float left, float center, float right);
   void setCurrentLocation(Point currentLocation);
-  void setTagData(vector<Tag> tags);
+  void SetTagData(vector<Tag> tags);
   bool ShouldInterrupt() override;
   bool HasWork() override;
   void setIgnoreCenterSonar();
-  void setCurrentTimeInMilliSecs( long int time );
-  void setTargetHeld();
+  void SetCurrentTimeInMilliSecs( long int time );
+  void SetTargetHeld();
 
   // Checks if a target is held and if so resets the state of the obestacle controller otherwise does nothing
   void setTargetHeldClear();

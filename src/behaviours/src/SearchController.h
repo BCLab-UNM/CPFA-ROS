@@ -29,6 +29,7 @@ public:
   //void UpdateData(geometry_msgs::Pose2D currentLocation, geometry_msgs::Pose2D centerLocation);
   void senseLocalResourceDensity(int num_tags);
   bool layPheromone();
+  //Point getTargetLocation();
   /*
    * Mobility passes in pheromone to CPFASearchController after resource is picked up.
    */
@@ -36,10 +37,13 @@ public:
   void insertPheromone(const std::vector<Point>& pheromone_trail);
   CPFAState GetCPFAState() override;
   void SetCPFAState(CPFAState state) override;
+  //int GetCenterIdx();
   bool OutOfArena(Point location);
   //CPFASearchType GetCPFASearchType() override;
   //void SetCPFASearchType(CPFASearchType type) override;
   void SetCurrentLocation(Point currentLocation);
+  Point GetCurrentLocation(); //qilu 12/2017
+  
   void SetCenterLocation(Point centerLocation);
   void setObstacleAvoidance(bool turn_direction);
   void SetSuccesfullPickup();

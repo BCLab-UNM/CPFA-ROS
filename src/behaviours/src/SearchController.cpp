@@ -143,14 +143,17 @@ bool SearchController::layPheromone()
 {
   double poisson = getPoissonCDF(rate_of_laying_pheromone);
   double random_num = rng->uniformReal(0, 1);
-
-  if(poisson > random_num) {
+  cout<<"poisson="<<poisson<<endl;
+  cout<<"random_num="<<random_num<<endl;
+  
+  /*if(poisson > random_num) {
     cout << "Laying a pheromone..." << endl;
     cout << endl;
     return true;
   } else {
     return false;
-  }
+  }*/
+  return true;//for testing
 
 }
 
@@ -194,7 +197,16 @@ void SearchController::SetCPFAState(CPFAState state) {
   result.cpfa_state = state;
 }
 
-
+/*Point SearchController::getTargetLocation()
+{
+  return target_location;
+}
+*/
+/*
+int SearchController::GetCenterIdx(){
+	return center_idx;
+	}
+*/
 void SearchController::SetCenterLocation(Point centerLocation) {
   
   float diffX = this->centerLocation.x - centerLocation.x;
@@ -240,11 +252,16 @@ double SearchController::getPoissonCDF(const double lambda)
   return (exp(-lambda) * sumAccumulator);
 }
 
+Point SearchController::GetCurrentLocation(){
+	return this->currentLocation;
+	}
 
 
 void SearchController::SetCurrentLocation(Point currentLocation) {
   this->currentLocation = currentLocation;
-}void SearchController::ProcessData() {
+}
+
+void SearchController::ProcessData() {
 }
 void SearchController::updatePheromoneList()
 {

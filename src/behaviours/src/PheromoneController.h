@@ -20,14 +20,17 @@ public:
   Result DoWork() override;
   bool ShouldInterrupt() override;
   bool HasWork() override;
+  bool Sensing();
 
-  void setCurrentTimeInMilliSecs( long int time ) { current_time = time; }
+  void SetCurrentTimeInMilliSecs( long int time ) { current_time = time; }
   void setTargetPickedUp () { targetHeld = true; }
-  void setCurrentLocation (Point location) { currnet_location = location; }
+  void setCurrentLocation (Point location) { current_location = location; }
 
+  void DriveToPheromoneTrail();
   void setTargetDate (std::vector<Tag> tags);
   void SetCPFAState(CPFAState state) override;
   CPFAState GetCPFAState() override;
+  
   
 private:
 
@@ -39,10 +42,12 @@ private:
 
   long int current_time;
 
-  Point currnet_location;
-
-  bool targetHeld = false;
-  bool sense_local_density = false;
+  Point current_location;
+  Point selected_pheromone;
+  //bool targetHeld = false;
+  bool targetHeld = true;//qilu 12/2017
+  bool sense_local_density_completed = false;
+  bool drive_to_pheromone = false;
 
   long int time_searching;
   int target_search_time = 8;

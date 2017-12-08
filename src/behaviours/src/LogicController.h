@@ -51,6 +51,7 @@ public:
   void SetVelocityData(float linearVelocity, float angularVelocity);
   void SetMapVelocityData(float linearVelocity, float angularVelocity);
   void SetCenterLocationOdom(Point centerLocationOdom);
+   //int GetCenterIdx();
   void SetCenterLocationMap(Point centerLocationMap);
   void AddManualWaypoint(Point wpt, int waypoint_id);
   void RemoveManualWaypoint(int waypoint_id);
@@ -60,10 +61,11 @@ public:
   void SetModeAuto();
 
   void SetCurrentTimeInMilliSecs( long int time );
+  void insertPheromone(const std::vector<Point>& pheromone_trail); //qilu 12/2017
   void SetCPFAState(CPFAState state) override;
   CPFAState GetCPFAState() override;
 
-  //void setTargetHeld();
+  //void SetTargetHeld();
   // Tell the logic controller whether rovers should automatically
   // resstrict their foraging range. If so provide the shape of the
   // allowed range.
@@ -72,7 +74,11 @@ public:
   void senseLocalResourceDensity(int num_tags);
   void printCPFAState();
   void printCPFASearchType();
-
+  
+  bool layPheromone(); //qilu 12/2017
+  //Point getTargetLocation(); //qilu 12/2017
+  Point GetCurrentLocation(); //qilu 12/2017
+  
 protected:
   void ProcessData();
 
@@ -88,12 +94,14 @@ private:
     _FIRST = 0,
     PROCCESS_STATE_SEARCHING = 0,
     PROCCESS_STATE_TARGET_PICKEDUP,
+    PROCESS_STATE_SENSE_DENSITY,
     PROCCESS_STATE_DROP_OFF,
     PROCESS_STATE_SITE_FIDELITY,
     PROCESS_STATE_PHEROMONE,
     _LAST,
     PROCCESS_STATE_MANUAL
-  }; 
+  };//PROCESS_STATE_SENSE_DENSITY,
+     
 
   CPFAState cpfa_state = start_state;
   CPFASearchType cpfa_search_type = random_search;
@@ -121,7 +129,8 @@ private:
   
   long int current_time = 0;
   bool informed_search = false;
-    int local_resource_density = 0;
+  int local_resource_density = 0;
+  bool lay_pheromone = false;
 
 // CPFA Parameters
   double probability_of_switching_to_searching = 0.015;

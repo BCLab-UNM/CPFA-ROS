@@ -61,7 +61,7 @@ void PickUpController::SetTagData(vector<Tag> tags)
 
         if(tags[i].getID() == 256)
         {
-			cout <<"see collection disk..."<<endl;
+			cout <<"CPFAStatus: see collection disk..."<<endl;
           Reset();
 
           if (has_control)
@@ -157,6 +157,7 @@ void PickUpController::ProcessData()
     result.b = nextProcess;
     result.reset = true;
     targetHeld = true;
+  
   }
   //Lower wrist and open fingures if no locked targt
   else if (!lockTarget)
@@ -389,6 +390,7 @@ Result PickUpController::DoWork()
 
 bool PickUpController::HasWork()
 {
+	cout<<"Pickup has work..."<<targetFound<<endl;
   return targetFound;
 }
 
