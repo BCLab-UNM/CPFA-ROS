@@ -74,7 +74,7 @@ bool SiteFidelityController::HasWork()
   return true;
 }
 
-void SiteFidelityController::setTargetPickedUp()
+void SiteFidelityController::SetTargetPickedUp()
 {
   target_picked_up = true;
   ProcessData();//commented in previous version

@@ -14,6 +14,7 @@ void ManualWaypointController::Reset() {
 }
 	
 bool ManualWaypointController::HasWork() {
+	cout<<"Manual waypoint has work..."<<!waypoints.empty()<<endl;
   return !waypoints.empty();
 }
 

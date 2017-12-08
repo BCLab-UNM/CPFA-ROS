@@ -155,7 +155,7 @@ void ObstacleController::ProcessData() {
 // Added relative pose information so we know whether the
 // top of the AprilTag is pointing towards the rover or away.
 // If the top of the tags are away from the rover then treat them as obstacles. 
-void ObstacleController::setTagData(vector<Tag> tags){
+void ObstacleController::SetTagData(vector<Tag> tags){
   collection_zone_seen = false;
   count_left_collection_zone_tags = 0;
   count_right_collection_zone_tags = 0;
@@ -221,6 +221,7 @@ bool ObstacleController::ShouldInterrupt() {
 }
 
 bool ObstacleController::HasWork() {
+	cout<<"Obstacle has work..."<<endl;
   if (can_set_waypoint && set_waypoint)
   {
     return true;
@@ -234,12 +235,12 @@ void ObstacleController::setIgnoreCenterSonar(){
   ignore_center_sonar = true; 
 }
 
-void ObstacleController::setCurrentTimeInMilliSecs( long int time )
+void ObstacleController::SetCurrentTimeInMilliSecs( long int time )
 {
   current_time = time;
 }
 
-void ObstacleController::setTargetHeld() {
+void ObstacleController::SetTargetHeld() {
   targetHeld = true;
 
 

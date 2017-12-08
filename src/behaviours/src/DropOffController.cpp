@@ -73,6 +73,7 @@ Result DropOffController::DoWork() {
     {
       if (finalInterrupt)
       {
+	    result.lay_pheromone = true; 
         result.type = behavior;
         result.b = nextProcess;		    
         //result.b = COMPLETED;
@@ -165,7 +166,7 @@ Result DropOffController::DoWork() {
   if (count > 0 || seenEnoughCenterTags || prevCount > 0) //if we have a target and the center is located drive towards it.
   {
 
-    cout << "drive to center" << endl;
+    cout << "CPFAStatus: drive to center" << endl;
     centerSeen = true;
 
     if (first_center && isPrecisionDriving)
@@ -299,6 +300,7 @@ void DropOffController::Reset() {
   result.fingerAngle = -1;
   result.wristAngle = 0.7;
   result.reset = false;
+  result.lay_pheromone = false;
   result.wpts.waypoints.clear();
   spinner = 0;
   spinSizeIncrease = 0;
@@ -389,7 +391,7 @@ bool DropOffController::ShouldInterrupt() {
 }
 
 bool DropOffController::HasWork() {
-
+  
   if(timerTimeElapsed > -1) {
     long int elapsed = current_time - returnTimer;
     timerTimeElapsed = elapsed/1e3; // Convert from milliseconds to seconds
@@ -398,7 +400,7 @@ bool DropOffController::HasWork() {
   if (circularCenterSearching && timerTimeElapsed < 2 && !isPrecisionDriving) {
     return false;
   }
-
+   cout <<"Dropoff has work..."<<(startWaypoint || isPrecisionDriving)<<endl;
   return ((startWaypoint || isPrecisionDriving));
 }
 
