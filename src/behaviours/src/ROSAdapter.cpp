@@ -259,20 +259,22 @@ int main(int argc, char **argv) {
 // controllers in the abridge package.
 void behaviourStateMachine(const ros::TimerEvent&)
 {
-  cout<<"behaviourStateMachine..."<<endl;
+  cout<<"Pheromone: behaviourStateMachine..."<<endl;
   std_msgs::String stateMachineMsg;
   // time since timerStartTime was set to current time
   timerTimeElapsed = time(0) - timerStartTime;
+  cout<<"Pheromone: timerTimeElapsed="<<timerTimeElapsed<<endl;
+  //cout<<"Pheromone: time in milliSecs="<<getROSTimeInMilliSecs()<<endl;
   // init code goes here. (code that runs only once at start of
   // auto mode but wont work in main goes here)
   if (!initilized)
   {
-     cout<<"not initialized..."<<endl;
+     //cout<<"not initialized..."<<endl;
     if (timerTimeElapsed > startDelayInSeconds)
     {
 
       // initialization has run
-      cout<<"initialization has run..."<<endl;
+      //cout<<"initialization has run..."<<endl;
       initilized = true;
       //TODO: this just sets center to 0 over and over and needs to change
       Point centerOdom;
@@ -324,8 +326,8 @@ void behaviourStateMachine(const ros::TimerEvent&)
       
       
       //cout << "*****logicController.GetCenterIdx() = "<<logicController.GetCenterIdx()<<endl;
-      cout << "*****current location = "<<currentLocation<<endl;
-      cout << "*****pheromone_location = "<<pheromone_location<<endl;
+      //cout << "*****current location = "<<currentLocation<<endl;
+      //cout << "*****pheromone_location = "<<pheromone_location<<endl;
       trail.waypoints.push_back(pheromone_location);
       //trail.centerIdx = logicController.GetCenterIdx();//this is for MPFA
       pheromoneTrailPublish.publish(trail);
@@ -441,8 +443,8 @@ void sendDriveCommand(double left, double right)
  *************************/
 
 void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& message) {
-  CPFAState cpfa_state = logicController.GetCPFAState();
-  cout << "targetHandler: cpfa_state="<<cpfa_state<<endl;
+  //CPFAState cpfa_state = logicController.GetCPFAState();
+  cout << "DensityStatus: targetHandler: time="<<getROSTimeInMilliSecs()/1e3<<endl;
   
   bool ignored_tag = false;
   // Number of resource tags
@@ -462,10 +464,11 @@ void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& messag
       }
       // Pass the position of the AprilTag
       geometry_msgs::PoseStamped tagPose = message->detections[i].pose;
+      //cout<<"tagPose.pose.position=("<<tagPose.pose.position.x << ","<<tagPose.pose.position.y<< ","<<tagPose.pose.position.z<<")"<<endl;
       loc.setPosition( make_tuple( tagPose.pose.position.x,
 				   tagPose.pose.position.y,
 				   tagPose.pose.position.z ) );
-
+      cout <<"DensityStatus: tag location={"<<tagPose.pose.position.x<<","<<tagPose.pose.position.y<<","<< tagPose.pose.position.z<<"}"<<endl;
       // Pass the orientation of the AprilTag
       loc.setOrientation( ::boost::math::quaternion<float>( tagPose.pose.orientation.x,
 							    tagPose.pose.orientation.y,
@@ -495,7 +498,8 @@ void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& messag
           {*/
       tags.push_back(loc);
     }
-     cout<<"number of tags="<<num_tags<<endl;
+     cout<<"DensityStatus: number of tags="<<num_tags<<endl;
+     cout<<"DensityStatus: tags size = "<<tags.size()<<endl;
       //}
       //if ((cpfa_state == return_to_nest || cpfa_state == travel_to_search_site || cpfa_state == set_target_location || cpfa_state == start_state) && loc.id == 0 ) {
 
@@ -514,6 +518,11 @@ void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& messag
       logicController.senseLocalResourceDensity(num_tags);
   }*/
   
+ 
+}
+else{
+ cout<<"DensityStatus: No tag is detected.."<<endl;
+ cout<<"DensityStatus: number of tags="<<num_tags<<endl;
 }
 }
 void modeHandler(const std_msgs::UInt8::ConstPtr& message) {
