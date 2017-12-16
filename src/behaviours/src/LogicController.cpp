@@ -133,7 +133,7 @@ Result LogicController::DoWork() {
 		  if(processState == PROCESS_STATE_SITE_FIDELITY)
 		  {
 		       double followSiteFidelityRate = getPoissonCDF(rate_of_laying_pheromone);
-               cout <<"CPFAStatus: followSiteFidelityRate="<<followSiteFidelityRate<<endl;
+               cout <<"LayStatus: followSiteFidelityRate="<<followSiteFidelityRate<<endl;
                double r1 = rng->uniformReal(0, 1);
                cout<<"CPFAStatus: r1 = "<< r1<<endl;
                if(r1 > followSiteFidelityRate)//informed search with pheromone waypoints
@@ -141,7 +141,7 @@ Result LogicController::DoWork() {
 		           //result.type = behavior;
                    //result.b = nextProcess;		    
                    processState = (ProcessState)((int)processState + 1); 
-                   cout <<"CPFAStatus: processState ="<<processState<<"  pheromome..."<<endl;
+                   cout <<"LayStatus: processState ="<<processState<<"  pheromome..."<<endl;
                }
            }
 	     
@@ -240,8 +240,8 @@ double LogicController::getPoissonCDF(const double lambda)
   double sumAccumulator       = 1.0;
   double factorialAccumulator = 1.0;
    cout <<"CPFAStatus: lambda="<<lambda<<endl;
-   local_resource_density =4;//should be removed. Just for testing
-   cout <<"CPFAStatus: get Poisson CDF: local_resource_density="<<local_resource_density<<endl;
+   //local_resource_density =4;//should be removed. Just for testing
+   cout <<"LayStatus: get Poisson CDF: local_resource_density="<<local_resource_density<<endl;
   for (size_t i = 1; i <= local_resource_density; i++) {
     factorialAccumulator *= i;
     sumAccumulator += pow(lambda, i) / factorialAccumulator;
@@ -271,12 +271,12 @@ void LogicController::ProcessData() {
   {
 	  cout<<"PROCCESS_STATE_TARGET_PICKEDUP ..."<<endl;
     prioritizedControllers = {
-    PrioritizedController{10, (Controller*)(&obstacleController)},
     PrioritizedController{5, (Controller*)(&rangeController)},
     PrioritizedController{1, (Controller*)(&pheromoneController)},
     PrioritizedController{-1, (Controller*)(&searchController)},
     PrioritizedController{-1, (Controller*)(&pickUpController)},
-    PrioritizedController{-1, (Controller*)(&manualWaypointController)}
+    PrioritizedController{-1, (Controller*)(&manualWaypointController)},
+    PrioritizedController{-1, (Controller*)(&obstacleController)}  
     };
   }
   else if(processState == PROCESS_STATE_SENSE_DENSITY)
@@ -375,9 +375,17 @@ void LogicController::controllerInterconnect()
       obstacleController.SetTargetHeld();
       searchController.SetSuccesfullPickup();
       siteFidelityController.SetTargetPickedUp();
+      pheromoneController.SetTargetPickedUp();//qilu 12/2017
       //targetHeld = true;
     }
   }
+  
+  if(pheromoneController.SenseCompleted())
+  {
+	  local_resource_density = pheromoneController.GetResourceDensity();
+	  cout<<"LayStatus: LogicalControoller local_resource_density="<<local_resource_density<<endl;
+	  }
+  
   if(processState == PROCESS_STATE_PHEROMONE)
   {
 	  pheromoneController.DriveToPheromoneTrail();
@@ -447,8 +455,15 @@ void LogicController::SetAprilTags(vector<Tag> tags)
 {
   pickUpController.SetTagData(tags);
   obstacleController.SetTagData(tags);
-  dropOffController.SetTargetData(tags);
-  //return_to_nest_controller.SetTargetData(tags);
+  dropOffController.SetTagData(tags);
+  //return_to_nest_controller.SetTagData(tags);
+  
+  //cout<<"DensityStatus: Sensing = "<<pheromoneController.SensingLocalDensity()<<endl;
+  if(pheromoneController.SensingLocalDensity())
+  {
+	  //cout<<"DensityStatus: call SetTagData..."<<endl;
+	  pheromoneController.SetTagData(tags);
+  }
 }
 
 void LogicController::SetSonarData(float left, float center, float right) 
@@ -542,12 +557,12 @@ void LogicController::SetCurrentTimeInMilliSecs( long int time )
 }*/
 void LogicController::senseLocalResourceDensity(int num_tags) {
 	local_resource_density = num_tags;
-  if(cpfa_state == sense_local_resource_density) {
-    searchController.senseLocalResourceDensity(num_tags); //should be removed? qilu 11/2017
-     dropOffController.senseLocalResourceDensity(num_tags);
-    cout << "CPFAState: sense_local_resource_density" << endl;
-    printCPFASearchType();
-  }
+  //if(cpfa_state == sense_local_resource_density) {
+    //searchController.senseLocalResourceDensity(num_tags); //should be removed? qilu 11/2017
+     //dropOffController.senseLocalResourceDensity(num_tags);
+    //cout << "CPFAState: sense_local_resource_density" << endl;
+    //printCPFASearchType();
+  //}
 }
 
 void LogicController::printCPFAState() {

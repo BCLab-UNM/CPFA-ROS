@@ -26,7 +26,7 @@ public:
   void SetTargetPickedUp();
 
   void SetBlockBlockingUltrasound(bool blockBlock);
-  void SetTargetData(std::vector<Tag> tags);
+  void SetTagData(std::vector<Tag> tags);
   bool HasTarget() {return targetHeld;}
 
   float GetSpinner() {return spinner;}
@@ -37,7 +37,7 @@ public:
   
   void SetCPFAState(CPFAState state) override;
   CPFAState GetCPFAState() override;
-  void senseLocalResourceDensity(int num_tags);
+  //void senseLocalResourceDensity(int num_tags);
 private:
 
   void ProcessData();

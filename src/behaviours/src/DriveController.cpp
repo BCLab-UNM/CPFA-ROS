@@ -53,7 +53,7 @@ Result DriveController::DoWork()
   else if(result.type == precisionDriving)
   {
     //interpret input result as a precision driving command
-    cout<<"precision driving 1..."<<endl;
+    //cout<<"precision driving 1..."<<endl;
     stateMachineState = STATE_MACHINE_PRECISION_DRIVING;
 
   }
@@ -73,7 +73,7 @@ Result DriveController::DoWork()
   //Then only call INTERUPT if bool switches to true.
   case STATE_MACHINE_PRECISION_DRIVING:
   {
-    cout<<"precision driving 2..."<<endl;
+    //cout<<"precision driving 2..."<<endl;
     ProcessData();
     break;
   }
@@ -137,9 +137,9 @@ Result DriveController::DoWork()
     float abs_error = fabs(angles::shortest_angular_distance(currentLocation.theta, waypoints.back().theta));
 
     // If angle > rotateOnlyAngleTolerance radians rotate but dont drive forward.
-    cout <<"currentLocation.theta="<<currentLocation.theta<<endl;
-    cout<<"waypoints.back().theta="<<waypoints.back().theta<<endl;
-    cout<<"rotateOnlyAngleTolerance="<<rotateOnlyAngleTolerance<<endl;
+    //cout <<"currentLocation.theta="<<currentLocation.theta<<endl;
+    //cout<<"waypoints.back().theta="<<waypoints.back().theta<<endl;
+    //cout<<"rotateOnlyAngleTolerance="<<rotateOnlyAngleTolerance<<endl;
     if (abs_error > rotateOnlyAngleTolerance)
     {
       // rotate but dont drive.

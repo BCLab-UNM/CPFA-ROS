@@ -324,16 +324,16 @@ void DropOffController::Reset() {
 
 }
 
-void DropOffController::senseLocalResourceDensity(int num_tags)
+/*void DropOffController::senseLocalResourceDensity(int num_tags)
 {
   //if(num_tags > local_resource_density){
     local_resource_density = num_tags;
   //}
 
   cout << "Dropoff: local_resource_density: " << local_resource_density << endl;
-}
+}*/
 
-void DropOffController::SetTargetData(vector<Tag> tags) {
+void DropOffController::SetTagData(vector<Tag> tags) {
   countRight = 0;
   countLeft = 0;
 
@@ -373,18 +373,18 @@ bool DropOffController::ShouldInterrupt() {
   if (startWaypoint && !interrupt) {
     interrupt = true;
     precisionInterrupt = false;
-    cout<<"D: true d1"<<endl;
+    //cout<<"D: true d1"<<endl;
     return true;
     
   }
   else if (isPrecisionDriving && !precisionInterrupt) {
     precisionInterrupt = true;
-    cout<<"D: true d2"<<endl;
+    //cout<<"D: true d2"<<endl;
     return true;
     
   }
   if (finalInterrupt) {
-	  cout<<"D: true d3"<<endl;
+	  //cout<<"D: true d3"<<endl;
     return true;
   }
   //cout<<"false"<<endl; //do not cout there. this will affact the behavior of robots
