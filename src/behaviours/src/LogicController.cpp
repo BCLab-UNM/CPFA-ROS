@@ -132,17 +132,26 @@ Result LogicController::DoWork() {
 		  cout<<"result.b == next or prev"<<endl;
 		  if(processState == PROCESS_STATE_SITE_FIDELITY)
 		  {
-		       double followSiteFidelityRate = getPoissonCDF(rate_of_laying_pheromone);
+		       //double followSiteFidelityRate = getPoissonCDF(rate_of_following_site_fidelity);
+		       double followSiteFidelityRate = 0.1;
                cout <<"LayStatus: followSiteFidelityRate="<<followSiteFidelityRate<<endl;
                double r1 = rng->uniformReal(0, 1);
                cout<<"CPFAStatus: r1 = "<< r1<<endl;
-               if(r1 > followSiteFidelityRate)//informed search with pheromone waypoints
+               if(r1 > followSiteFidelityRate)//informed search with pheromone waypoints or uninformed search
                {
-		           //result.type = behavior;
-                   //result.b = nextProcess;		    
-                   processState = (ProcessState)((int)processState + 1); 
-                   cout <<"LayStatus: processState ="<<processState<<"  pheromome..."<<endl;
-               }
+				   if(pheromoneController.SelectPheromone())
+				   {
+		             //result.type = behavior;
+                     //result.b = nextProcess;		    
+                     processState = PROCESS_STATE_PHEROMONE; 
+                     cout <<"LayStatus: processState ="<<processState<<"  pheromome..."<<endl;
+                   }
+                   else
+                   {
+				     processState = PROCCESS_STATE_SEARCHING; 
+                     cout <<"LayStatus: processState ="<<processState<<"  uninformed search..."<<endl;
+				   }
+			   }
            }
 	     
          ProcessData();
@@ -220,8 +229,8 @@ Result LogicController::DoWork() {
 
   }//end of precision case****************************************************************************************
   }//end switch statment******************************************************************************************
-
-
+   //cout<<"PheromoneStatus: current_time="<<current_time<<endl;
+   updatePheromoneList();
   //now using proccess logic allow the controller to communicate data between eachother
   controllerInterconnect();
 
@@ -239,9 +248,8 @@ double LogicController::getPoissonCDF(const double lambda)
 {
   double sumAccumulator       = 1.0;
   double factorialAccumulator = 1.0;
-   cout <<"CPFAStatus: lambda="<<lambda<<endl;
-   //local_resource_density =4;//should be removed. Just for testing
-   cout <<"LayStatus: get Poisson CDF: local_resource_density="<<local_resource_density<<endl;
+   //cout <<"CPFAStatus: lambda="<<lambda<<endl;
+   //cout <<"LayStatus: get Poisson CDF: local_resource_density="<<local_resource_density<<endl;
   for (size_t i = 1; i <= local_resource_density; i++) {
     factorialAccumulator *= i;
     sumAccumulator += pow(lambda, i) / factorialAccumulator;
@@ -458,10 +466,8 @@ void LogicController::SetAprilTags(vector<Tag> tags)
   dropOffController.SetTagData(tags);
   //return_to_nest_controller.SetTagData(tags);
   
-  //cout<<"DensityStatus: Sensing = "<<pheromoneController.SensingLocalDensity()<<endl;
   if(pheromoneController.SensingLocalDensity())
   {
-	  //cout<<"DensityStatus: call SetTagData..."<<endl;
 	  pheromoneController.SetTagData(tags);
   }
 }
@@ -511,9 +517,16 @@ void LogicController::setVirtualFenceOff()
 }
 
 
+void LogicController::updatePheromoneList()
+{
+	pheromoneController.updatePheromoneList();
+	
+}
 
-void LogicController::insertPheromone(const vector<Point> &pheromone_trail) {
-  searchController.insertPheromone(pheromone_trail);
+void LogicController::insertPheromone(const vector<Point> &pheromone_trail) 
+{
+  //searchController.insertPheromone(pheromone_trail);
+  pheromoneController.insertPheromone(pheromone_trail, rate_of_pheromone_decay);
 }
 
 
@@ -599,9 +612,23 @@ bool LogicController::layPheromone() {
 
   if(lay_pheromone) {
     lay_pheromone = false;
-    return searchController.layPheromone();
+    //return searchController.layPheromone();
+ 
+    double poisson = getPoissonCDF(rate_of_laying_pheromone);
+    double random_num = rng->uniformReal(0, 1);
+    cout<<"poisson="<<poisson<<endl;
+    cout<<"random_num="<<random_num<<endl;
+  
+    if(poisson > random_num) {
+      cout << "Laying a pheromone..." << endl;
+      cout << endl;
+      return true;
+    } 
+    else 
+    {
+      return false;
+    }
   }
-
   return false;
 }
 

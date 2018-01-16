@@ -4,7 +4,7 @@
 using namespace std;
 
 SearchController::SearchController() {
-  pheromones.clear(); //qilu 08/2017
+  //pheromones.clear(); //qilu 08/2017
   rng = new random_numbers::RandomNumberGenerator();
   currentLocation.x = 0;
   currentLocation.y = 0;
@@ -139,28 +139,26 @@ void SearchController::senseLocalResourceDensity(int num_tags)
   cout << endl;
 }
 
-bool SearchController::layPheromone() 
+/*bool SearchController::layPheromone() 
 {
   double poisson = getPoissonCDF(rate_of_laying_pheromone);
   double random_num = rng->uniformReal(0, 1);
   cout<<"poisson="<<poisson<<endl;
   cout<<"random_num="<<random_num<<endl;
   
-  /*if(poisson > random_num) {
+  if(poisson > random_num) {
     cout << "Laying a pheromone..." << endl;
     cout << endl;
     return true;
   } else {
     return false;
-  }*/
-  return true;//for testing
-
-}
+  }
+}*/
 
 
 
 //void SearchController::insertPheromone(const int center_id, const vector<Point> &pheromone_trail)
-void SearchController::insertPheromone( const vector<Point> &pheromone_trail)
+/*void SearchController::insertPheromone( const vector<Point> &pheromone_trail)
 {
   // At this point in time we are not making a pheromone trail
   // the first index of the trail is the same position as the pheromone location
@@ -170,15 +168,10 @@ void SearchController::insertPheromone( const vector<Point> &pheromone_trail)
 
   pheromones.push_back(pheromone);
   //pheromones[center_id].push_back(pheromone);
-  cout << "pheromoneLocation x: " << pheromone_trail[0].x << " y: " << pheromone_trail[0].y << endl;
-  
-  /*for(map<int, vector<Pheromone>>::iterator it= pheromones.begin(); it!=pheromones.end(); ++it) {
-                for(int i=0; i<it->second.size(); i++){
-				cout<<"pheromone["<<it->first<<"]["<<i<<"]="<<it->second[i].getLocation().x<<", "<<it->second[i].getLocation().y<<endl;
-			}
-		}*/
+  cout << "PheromoneStatus: pheromoneLocation x: " << pheromone_trail[0].x << " y: " << pheromone_trail[0].y << endl;
+ 
   cout << "================================================================" << endl;
-}
+}*/
 
 CPFAState SearchController::GetCPFAState() 
 {
@@ -263,7 +256,8 @@ void SearchController::SetCurrentLocation(Point currentLocation) {
 
 void SearchController::ProcessData() {
 }
-void SearchController::updatePheromoneList()
+
+/*void SearchController::updatePheromoneList()
 {
   //ros::Time time = ros::Time::now();
   //map<int, vector<Pheromone>> newPheromoneList;
@@ -278,22 +272,11 @@ void SearchController::updatePheromoneList()
       newPheromoneList.push_back(pheromones[i]);
     }
   }
-  //qilu 08/2017
-  /*for(int i = 0; i < pheromones.size(); i++) {
-	  for(int j=0; j<pheromones[i].size(); j++){
-	      Point pLoc = pheromones[i][j].getLocation();
-          pheromones[i][j].update(time);
-		  
-        if(pheromones[i][j].isActive()) {
-          newPheromoneList[i].push_back(pheromones[i][j]);
-        }
-    }
-  } */
 
   pheromones = newPheromoneList;
-}
+}*/
 
-void SearchController::setPheromone()
+/*void SearchController::setPheromone()
 {
   cout << "Setting pheromone location..." << endl;
   double maxStrength = 0.0;
@@ -305,14 +288,7 @@ void SearchController::setPheromone()
       maxStrength += pheromones[i].getWeight();
     }
   }
-  
-  //qilu 08/2017
-  /*for(int i = 0; i < pheromones[center_idx].size(); i++) {  
-	if(pheromones[center_idx][i].isActive()) {
-          maxStrength += pheromones[center_idx][i].getWeight();
-     }
     
-  }*/
   // Calculate a random weight.
   randomWeight = rng->uniformReal(0.0, maxStrength);
 
@@ -322,7 +298,7 @@ void SearchController::setPheromone()
     if(randomWeight < pheromones[i].getWeight()) {
       //We've chosen a pheromone! 
 
-      //  SetTarget(pheromones[i].GetLocation());
+      //SetTarget(pheromones[i].GetLocation());
       //target_location = pheromones[center_idx][i].getLocation();
       //target_location = pheromones[i].getLocation();
       //cout << "pheromoneLocation x: " << target_location.x << " y: " << target_location.y << endl;
@@ -336,7 +312,7 @@ void SearchController::setPheromone()
     //We didn't pick a pheromone! Remove its weight from randomWeight. 
     randomWeight -= pheromones[i].getWeight();
   }
-}
+}*/
 
 void SearchController::setObstacleAvoidance(bool turn_direction)
 {

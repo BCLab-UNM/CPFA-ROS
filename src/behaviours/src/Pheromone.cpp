@@ -30,10 +30,15 @@ Pheromone::Pheromone(const Point new_location,
  * The pheromones slowly decay and eventually become inactive. This simulates
  * the effect of a chemical pheromone trail that dissipates over time.
  *****/
-void Pheromone::update()
+void Pheromone::update(long int current_time)
 {
     /* pheromones experience exponential decay with time */
-    weight *= exp(-decay_rate * (current_time - last_updated));
+    cout<<"PheromoneStatus: current_time in decay="<<current_time<<endl;
+    cout<<"PheromoneStatus: last_updated in decay="<<last_updated<<endl;
+    cout<<"PheromoneStatus: time diff in seconds="<<(current_time - last_updated)/1e2<<endl;
+    weight *= exp(-decay_rate * (current_time - last_updated)/1e2);
+    cout<<"PheromoneStatus: Location=("<<getLocation().x<<","<<getLocation().y<<")"<<endl;
+    cout<<"PheromoneStatus: weight="<<weight<<endl;
     last_updated = current_time;
 }
 

@@ -317,8 +317,9 @@ void behaviourStateMachine(const ros::TimerEvent&)
 
     if (logicController.layPheromone()) {
       swarmie_msgs::PheromoneTrail trail;
-      //Point pheromone_location_point = logicController.getTargetLocation();
+      //Point pheromone_location_point = logicController.GetCurrentLocation();//qilu 12/2017
       Point pheromone_location_point = logicController.GetCurrentLocation();//qilu 12/2017
+      
       
       geometry_msgs::Pose2D pheromone_location;
       pheromone_location.x = pheromone_location_point.x - centerLocation.x;
@@ -327,7 +328,7 @@ void behaviourStateMachine(const ros::TimerEvent&)
       
       //cout << "*****logicController.GetCenterIdx() = "<<logicController.GetCenterIdx()<<endl;
       //cout << "*****current location = "<<currentLocation<<endl;
-      //cout << "*****pheromone_location = "<<pheromone_location<<endl;
+      cout << "PheromoneStatus: pheromone_location = ("<<pheromone_location.x << ", "<< pheromone_location.y<< ")"<<endl;
       trail.waypoints.push_back(pheromone_location);
       //trail.centerIdx = logicController.GetCenterIdx();//this is for MPFA
       pheromoneTrailPublish.publish(trail);
@@ -444,7 +445,6 @@ void sendDriveCommand(double left, double right)
 
 void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& message) {
   //CPFAState cpfa_state = logicController.GetCPFAState();
-  cout << "DensityStatus: targetHandler: time="<<getROSTimeInMilliSecs()/1e3<<endl;
   
   bool ignored_tag = false;
   // Number of resource tags
@@ -468,7 +468,7 @@ void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& messag
       loc.setPosition( make_tuple( tagPose.pose.position.x,
 				   tagPose.pose.position.y,
 				   tagPose.pose.position.z ) );
-      cout <<"DensityStatus: tag location={"<<tagPose.pose.position.x<<","<<tagPose.pose.position.y<<","<< tagPose.pose.position.z<<"}"<<endl;
+      //cout <<"PheromoneStatus: tag location={"<<tagPose.pose.position.x<<","<<tagPose.pose.position.y<<","<< tagPose.pose.position.z<<"}"<<endl;
       // Pass the orientation of the AprilTag
       loc.setOrientation( ::boost::math::quaternion<float>( tagPose.pose.orientation.x,
 							    tagPose.pose.orientation.y,
@@ -498,8 +498,6 @@ void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& messag
           {*/
       tags.push_back(loc);
     }
-     cout<<"DensityStatus: number of tags="<<num_tags<<endl;
-     cout<<"DensityStatus: tags size = "<<tags.size()<<endl;
       //}
       //if ((cpfa_state == return_to_nest || cpfa_state == travel_to_search_site || cpfa_state == set_target_location || cpfa_state == start_state) && loc.id == 0 ) {
 
@@ -521,8 +519,7 @@ void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& messag
  
 }
 else{
- cout<<"DensityStatus: No tag is detected.."<<endl;
- cout<<"DensityStatus: number of tags="<<num_tags<<endl;
+ //cout<<"PheromoneStatus: No tag is detected.."<<endl;
 }
 }
 void modeHandler(const std_msgs::UInt8::ConstPtr& message) {
@@ -659,23 +656,23 @@ void pheromoneTrailHandler(const swarmie_msgs::PheromoneTrail& message) {
     // Framework implemented for pheromone waypoints, but we are only using
     // the first index of the trail momentarily for the pheromone location
     swarmie_msgs::PheromoneTrail trail = message;
-    cout<<"trail.waypoints.size="<<trail.waypoints.size()<<endl;
-    cout <<"trail.waypoints[0]="<<trail.waypoints[0].x<<", "<<trail.waypoints[0].y<<endl;
+    //cout<<"PheromoneStatus: trail.waypoints.size="<<trail.waypoints.size()<<endl;
+    //cout <<"trail.waypoints[0]="<<trail.waypoints[0].x<<", "<<trail.waypoints[0].y<<endl;
     // Adjust pheromone location to account for center location
     //trail.waypoints[0].x += centerLocation.x;
     //trail.waypoints[0].y += centerLocation.y;
     //cout <<"after****trail.waypoints[0]="<<trail.waypoints[0].x<<", "<<trail.waypoints[0].y<<endl;
     
     vector<Point> pheromone_trail;
-    cout<<"trail.waypoints.size()="<<trail.waypoints.size()<<endl;
-    //int centerId = trail.centerIdx;
+    //cout<<"PheromoneStatus: trail.waypoints.size()="<<trail.waypoints.size()<<endl;
     
     for(int i = 0; i < trail.waypoints.size(); i++) {
       Point waypoint(trail.waypoints[i].x, trail.waypoints[i].y, trail.waypoints[i].theta);
       pheromone_trail.push_back(waypoint);
     }
+    //cout<<"PheromoneStatus: pheromone_trail.size()="<<pheromone_trail.size()<<endl;
       
-    cout<<"Pheromone trail handler... "<<endl;
+    //cout<<"Pheromone trail handler... "<<endl;
     //logicController.insertPheromone(centerId, pheromone_trail);
     logicController.insertPheromone(pheromone_trail);
     return;
