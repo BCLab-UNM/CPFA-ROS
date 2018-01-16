@@ -73,7 +73,7 @@ Result DropOffController::DoWork() {
     {
       if (finalInterrupt)
       {
-	    result.lay_pheromone = true; 
+	    //result.lay_pheromone = true; 
         result.type = behavior;
         result.b = nextProcess;		    
         //result.b = COMPLETED;
@@ -300,7 +300,7 @@ void DropOffController::Reset() {
   result.fingerAngle = -1;
   result.wristAngle = 0.7;
   result.reset = false;
-  result.lay_pheromone = false;
+  //result.lay_pheromone = false;
   result.wpts.waypoints.clear();
   spinner = 0;
   spinSizeIncrease = 0;

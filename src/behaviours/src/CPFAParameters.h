@@ -15,7 +15,7 @@ struct CPFAParameters {
   const float rate_of_informed_search_decay = 0.1666;
 
   // Reduce these to increase probability
-  const float rate_of_site_fidelity = 0.3;
+  const float rate_of_following_site_fidelity = 0.3;
   const float rate_of_laying_pheromone = 5;
   const float rate_of_pheromone_decay = 0.025;
 };

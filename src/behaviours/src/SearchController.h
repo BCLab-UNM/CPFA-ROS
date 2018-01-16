@@ -28,13 +28,13 @@ public:
   // sets the value of the current location
   //void UpdateData(geometry_msgs::Pose2D currentLocation, geometry_msgs::Pose2D centerLocation);
   void senseLocalResourceDensity(int num_tags);
-  bool layPheromone();
+  //bool layPheromone();
   //Point getTargetLocation();
   /*
    * Mobility passes in pheromone to CPFASearchController after resource is picked up.
    */
   //void insertPheromone(const int center_id, const std::vector<Point>& pheromone_trail);
-  void insertPheromone(const std::vector<Point>& pheromone_trail);
+  //void insertPheromone(const std::vector<Point>& pheromone_trail);
   CPFAState GetCPFAState() override;
   void SetCPFAState(CPFAState state) override;
   //int GetCenterIdx();
@@ -61,7 +61,7 @@ private:
   double probability_of_returning_to_nest=0.001;
   double uninformed_search_variation= 0.4;
   double rate_of_informed_search_decay =0.1666;
-  double rate_of_site_fidelity = 0.3;
+  double rate_of_following_site_fidelity = 0.3;
   double rate_of_laying_pheromone =5;
   double rate_of_pheromone_decay = 0.025;
   bool first_waypoint = true;
@@ -80,17 +80,17 @@ private:
    * The strength of the pheromone decays over time. Waypoints are removed once
    * their value drops below a certain threshold.
    */
-  void updatePheromoneList();
+  //void updatePheromoneList();
   /* While in the PHEROMONE state and after determining whether the rover should
    * use a pheromone, this function is called to determine which pheromone in our list
    * of pheromones should be selected as a target location and will provide a path
    * of waypoints to be followed to reach that location.
    */
-  void setPheromone();
+  //void setPheromone();
   CPFAState cpfa_state = start_state;
   int arena_size;
   int local_resource_density; // An estimate of the density of the resources in the local region.
-  std::vector<Pheromone> pheromones; // Stores all pheromone trails
+  //std::vector<Pheromone> pheromones; // Stores all pheromone trails
   //map<int, vector<Pheromone>> pheromones;// qilu 08/2017
   bool succesfullPickup = false;
   bool avoided_obstacle = false;

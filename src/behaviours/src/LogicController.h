@@ -78,6 +78,7 @@ public:
   bool layPheromone(); //qilu 12/2017
   //Point getTargetLocation(); //qilu 12/2017
   Point GetCurrentLocation(); //qilu 12/2017
+  void updatePheromoneList();
   
 protected:
   void ProcessData();
@@ -137,7 +138,7 @@ private:
   double probability_of_returning_to_nest=0.001;
   double uninformed_search_variation= 0.4;
   double rate_of_informed_search_decay =0.1666;
-  double rate_of_site_fidelity = 0.6;//original is 0.3
+  double rate_of_following_site_fidelity = 0.6;//original is 0.3
   double rate_of_laying_pheromone =5;
   double rate_of_pheromone_decay = 0.025;
   bool first_waypoint = true;
