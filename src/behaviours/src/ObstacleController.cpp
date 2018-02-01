@@ -7,9 +7,12 @@ ObstacleController::ObstacleController()
   obstacleAvoided = true;
   obstacleDetected = false;
   obstacleInterrupt = false;
-  result.PIDMode = CONST_PID;
+  result.PIDMode = CONST_PID; //use the const PID to turn at a constant speed
 }
 
+
+//note, not a full reset as this could cause a bad state
+//resets the interupt and knowledge of an obstacle or obstacle avoidance only.
 void ObstacleController::Reset() {
   obstacleAvoided = true;
   obstacleDetected = false;
@@ -20,7 +23,8 @@ void ObstacleController::Reset() {
 // Avoid crashing into objects detected by the ultraound
 void ObstacleController::avoidObstacle() {
   
-    //obstacle on right side
+    //always turn left to avoid obstacles
+    cout<<"always turn left to avoid obstacles..."<<endl;
     if (right < 0.8 || center < 0.8 || left < 0.8) {
       result.type = precisionDriving;
 
@@ -35,7 +39,7 @@ void ObstacleController::avoidObstacle() {
 // A collection zone was seen in front of the rover and we are not carrying a target
 // so avoid running over the collection zone and possibly pushing cubes out.
 void ObstacleController::avoidCollectionZone() {
-  
+  cout<<"SwitchStatus: avoid collection zone..."<<endl;
     result.type = precisionDriving;
 
     result.pd.cmdVel = 0.0;
@@ -49,13 +53,14 @@ void ObstacleController::avoidCollectionZone() {
     }
 
     result.pd.setPointVel = 0.0;
-    result.pd.cmdVel = 0.0;
+    //result.pd.cmdVel = 0.0;
+    result.pd.cmdVel = -0.1; //qilu 01/2018
     result.pd.setPointYaw = 0;
 }
 
 
 Result ObstacleController::DoWork() {
-  cout<<"ObstacleController::DoWork()..."<<endl;
+  cout<<"SwitchStatus: ObstacleController::DoWork()..."<<endl;
   clearWaypoints = true;
   set_waypoint = true;
   result.PIDMode = CONST_PID;
@@ -68,15 +73,16 @@ Result ObstacleController::DoWork() {
     avoidObstacle();
   }
 
+  //if an obstacle has been avoided
   if (can_set_waypoint) {
-
-    can_set_waypoint = false;
+  cout<<"Obstacle: set wpts.waypoint..."<<endl;
+    can_set_waypoint = false; //only one waypoint is set
     set_waypoint = false;
     clearWaypoints = false;
 
-    result.type = waypoint;
-    result.PIDMode = FAST_PID;
-    Point forward;
+    result.type = waypoint; 
+    result.PIDMode = FAST_PID; //use fast pid for waypoints
+    Point forward;            //waypoint is directly ahead of current heading
     forward.x = currentLocation.x + (0.5 * cos(currentLocation.theta));
     forward.y = currentLocation.y + (0.5 * sin(currentLocation.theta));
     result.wpts.waypoints.clear();
@@ -102,6 +108,8 @@ void ObstacleController::setCurrentLocation(Point currentLocation) {
 void ObstacleController::ProcessData() {
 
   //timeout timer for no tag messages
+  //this is used to set collection zone seen to false beacuse
+  //there is no report of 0 tags seen
   long int Tdifference = current_time - timeSinceTags;
   float Td = Tdifference/1e3;
   if (Td >= 0.5) {
@@ -109,20 +117,26 @@ void ObstacleController::ProcessData() {
     phys= false;
     if (!obstacleAvoided)
     {
+		cout<<"obstacle not avoid..."<<endl;
       can_set_waypoint = true;
     }
   }
 
-  //Process sonar info
+  //If we are ignoring the center sonar
   if(ignore_center_sonar){
+    //If the center distance is longer than the reactivation threshold 
     if(center > reactivate_center_sonar_threshold){
+      //ignore_center_sonar = false; //look at sonar again beacuse center ultrasound has gone long
       //ignore_center_sonar = false; //look at sonar again beacuse center ultrasound has gone long
   }
     else{
+      //set the center distance to "max" to simulated no obstacle
       center = 3;
     }
   }
   else {
+    //this code is to protect against a held block causing a false short distance
+    //currently pointless due to above code
     if (center < 3.0) {
       result.wristAngle = 0.7;
     }
@@ -131,13 +145,15 @@ void ObstacleController::ProcessData() {
     }
   }
 
+  //if any sonar is below the trigger distance set physical obstacle true
   if (left < triggerDistance || right < triggerDistance || center < triggerDistance)
   {
     phys = true;
+    cout<<"SwitchStatus: detect an obstacle..."<<endl;
     timeSinceTags = current_time;
   }
 
-
+  //if physical obstacle or collection zone visible
   if (collection_zone_seen || phys)
   {
     obstacleDetected = true;
@@ -162,7 +178,7 @@ void ObstacleController::SetTagData(vector<Tag> tags){
 
   // this loop is to get the number of center tags
   if (!targetHeld) {
-    for (int i = 0; i < tags.size(); i++) {
+    for (int i = 0; i < tags.size(); i++) { //redundant for loop
       if (tags[i].getID() == 256) {
 
 	collection_zone_seen = checkForCollectionZoneTags( tags );
@@ -176,7 +192,9 @@ bool ObstacleController::checkForCollectionZoneTags( vector<Tag> tags ) {
 
   for ( auto & tag : tags ) { 
 
-    // Check the orientation of the tag. If we are outside the collection zone the yaw will be positive so treat the collection zone as an obstacle. If the yaw is negative the robot is inside the collection zone and the boundary should not be treated as an obstacle. This allows the robot to leave the collection zone after dropping off a target.
+    // Check the orientation of the tag. If we are outside the collection zone the yaw will be positive so treat the collection zone as an obstacle. 
+    //If the yaw is negative the robot is inside the collection zone and the boundary should not be treated as an obstacle. 
+    //This allows the robot to leave the collection zone after dropping off a target.
     if ( tag.calcYaw() > 0 ) 
       {
 	// checks if tag is on the right or left side of the image
@@ -196,22 +214,33 @@ bool ObstacleController::checkForCollectionZoneTags( vector<Tag> tags ) {
 
 }
 
+//obstacle controller should inrerupt is based upon the transition from not seeing and obstacle to seeing an obstacle
 bool ObstacleController::ShouldInterrupt() {
 
-  cout<<"obstacle controller should interrupt..."<<endl;
+  //cout<<"SwitchStatus: obstacle controller should interrupt..."<<endl;
   if(obstacleDetected && !obstacleInterrupt)
   {
     obstacleInterrupt = true;
-    cout<<"true"<<endl;
-    
+    cout<<"SwitchStatus: obstacle controller should interrupt... true"<<endl;
+    //cout<<"SwitchStatus: result_cpfa_status="<<result.cpfa_state<<endl;
     return true;
   }
   else
   {
+    //if the obstacle has been avoided and we had previously detected one interrupt to change to waypoints
     if(obstacleAvoided && obstacleDetected)
     {
       Reset();
-      cout<<"true"<<endl;
+      if(obstacleAvoided && GetCPFAState() == return_to_nest)
+      {
+		  cout<<"Obstacle avoid and returning to nest... interrupt...true"<<endl;
+		  SetCPFAState(reached_nest);
+      }
+      else
+      {
+		  cout<<"Obstacle detected... interrupt...true"<<endl;
+		  }
+      
     return true;
     } else {
       cout<<"false"<<endl;
@@ -243,7 +272,7 @@ void ObstacleController::SetCurrentTimeInMilliSecs( long int time )
 void ObstacleController::SetTargetHeld() {
   targetHeld = true;
 
-
+  //adjust current state on transition from no cube held to cube held
   if (previousTargetState == false) {
     obstacleAvoided = true;
     obstacleInterrupt = false;
@@ -254,10 +283,12 @@ void ObstacleController::SetTargetHeld() {
 
 void ObstacleController::setTargetHeldClear()
 {
+  //adjust current state on transition from cube held to cube not held
   if (targetHeld)
   {
     Reset();
     targetHeld = false;
+    previousTargetState = false;
     ignore_center_sonar = false;
   }
 }
@@ -269,6 +300,7 @@ CPFAState ObstacleController::GetCPFAState()
 void ObstacleController::SetCPFAState(CPFAState state) {
   cpfa_state = state;
   result.cpfa_state = state;
+  cout<<"Obstacle set state: result.cpfa_state ="<<result.cpfa_state <<endl;
 }
 
 

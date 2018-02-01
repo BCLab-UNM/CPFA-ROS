@@ -9,7 +9,7 @@ This repository contains:
 2. 3D .STL models for the physical Swarmie build 
 3. Bash shell scripts for initializing simulated Swarmies in the Gazebo simulator, as well as physical Swarmies
 
-- For a step-by-step guide to using SwarmBaseCode-ROS to control a physical Swarmie robot, please see the instructions in the physical robot [Quick Start Guide](https://github.com/BCLab-UNM/Swarmathon-Docs/blob/master/Quick%20Start%20Physical%20Guide.md).
+- For a step-by-step guide to using SwarmBaseCode-ROS to control a physical Swarmie robot, please see the instructions in the physical robot [Quick Start Guide](https://github.com/BCLab-UNM/Swarmathon-Docs/blob/master/PhysicalInstallGuide.md).
 
 - Please submit bug reports for SwarmBaseCode-ROS through GitHub's Issues system. For all other questions regarding the SwarmBaseCode-ROS code base, please visit the forums on the [NASA Swarmathon website](http://www.nasaswarmathon.com).
 
@@ -43,6 +43,12 @@ rosdep update      # Note this is not run with sudo
 Note: if you accidentally ran ```sudo rosdep update``` you can repair the permissions ```sudo rosdep fix-permissions```.
 
 You may request the installation of addition packages on the competition rovers. To do so create a pull request modifying the [preinstalled packages list](https://github.com/BCLab-UNM/Swarmathon-Docs/blob/master/PreinstalledCompetitionPackages.md) document.
+
+Most systems will already have usb development support installed, but just in case:
+
+```
+ sudo apt install libusb-dev
+```
 
 ##### 2. Install additional ROS packages
 
@@ -82,24 +88,35 @@ sudo apt install git
 
 ##### 5. Install SwarmBaseCode-ROS
 
-1. Clone this GitHub repository to your home directory (~), renaming the repo so ROS and catkin can properly identify it (you can name the target directory whatever you like):
+1a. To update your existing repository using the base code (your competition repository name will have been provided to you):
+
+```
+cd YourRepositoryName
+git remote add SwarmBaseCode https://github.com/BCLab-UNM/SwarmBaseCode-ROS
+git pull SwarmBaseCode
+```
+
+#### OR
+
+If you just want a clean copy of the base code then:
+
+1b. Clone this GitHub repository to your home directory (~), renaming the repo so ROS and catkin can properly identify it (you can name the target directory whatever you like):
 
   ```
   cd ~
   git clone https://github.com/BCLab-UNM/SwarmBaseCode-ROS.git SwarmBaseCode-ROS
+  cd SwarmBaseCode-ROS
   ```
 
-2. Change your current working directory to the root directory of the downloaded repo.
 
-
-3. Set up [ublox](http://wiki.ros.org/ublox) GPS submodule and April Tag library:
+2. Set up [ublox](http://wiki.ros.org/ublox) GPS submodule and April Tag library:
 
   ```
   git submodule init
   git submodule update
   ```
 
-4. Compile SwarmBaseCode-ROS as a ROS catkin workspace:
+3. Compile SwarmBaseCode-ROS as a ROS catkin workspace:
  
   Make sure bash is aware of the location of the ROS environment:
   ```
@@ -314,14 +331,24 @@ You are now set for rapid deployment and development!
 - -R will ask the user for which rovers they wish to connect with and start sending information back to the workstation GUI
 
 ```./deploy.sh -L```
-- -L will give users the ability to compile and package the repository that they are CURRENTLY running the script from, transfer, unpack, and start sending information back to the workstation automatically. This option has a unique option to assist users in rapid development:
-	+ Typing '-RC' recompiles the code base the user is currently using to deploy to a swarmie
+- -L will compile and compress the local repository from which the script was run. Then the user is prompted for a list of rovers that will receive the repository. The code is unpacked on the specified rovers and the nodes started.
+
+- ex.) ```./deploy.sh -L``` means the local repo is compiled and compressed
+
+- Rover Name/IP To Start: ```R17 R18 R19``` means the packaged local repo is sent to R17 R18 R19 and then those nodes are started
+
+- If changes are made to the local repo they will not take affect as part of the transfer until the script is made aware of the changes. This is done by using the -RC command in place of a target rover id:
+	+ Typing '-RC' recompiles the code base the user is currently using to deploy to a swarmie and repackages it for transfer
 
 ```deploy.sh -G {branch}```
 (where branch is the desired branch you wish to pull)
 - -G requires the branch users wish to pull from. This allows users to choose different branches for testing. This will then follow a similar logic to -L and begin sending information back to the workstation GUI.  Like -L this has unique built-in options
 	+ Typing '-NB' will allow users to get a new branch at anytime
 	+ Typing '-RP' will allow users to re-pull from your current selected github branch
+
+If you want to use the script, and don't want to use the interface, you are able to do so.  Running any option (-R, -L, -G) followed by a -S will trigger a silent mode for the command, running your commands and returning to the terminal that the script was called from immediately after all operations are performed.
+
+EX:  ```./deploy.sh -R -S robot1``` will attempt to connect and run robot1 and then return to the current terminal without opening the interface.
 
 Feature:
 
@@ -344,58 +371,147 @@ Once the key has been setup, copy the key from the users machine to each rover y
 
 That's it! You should now have a seamless way to SSH without having to type in passwords each time!
 =======
+## Behaviours
 # CPFA-ROS
-
+This section provides an overview of the behaviours package. We
+describe the overall architecture of the package and a few pitfalls
+you may encounter when writing your own behaviours. The behaviours
+package is designed to separate the logic of individual behaviours
+from the details of implementing them on ROS (ie. the messages that
+are actually published). This allows for the possibility of easily
+porting the behavior to a different system without significantly
+rewriting the code. The interface between the abstract behaviours and
+ROS is handled by ROSAdapter which is responsible for sending and
+receiving all ROS messages.
 Please make sure that you have read all of the [documentation](https://github.com/BCLab-UNM/CPFA-ROS) and have set up all of the software regarding the Swarmathon as well as having read the [paper](https://www.cs.unm.edu/~melaniem/Publications_files/Hecker_Beyond_Pheromones_Swarm_Intelligence_2015.pdf)  that contains the algorithm.
-
+The architecture of the behaviours package is hierarchical, with the
+`ROSAdapter` at the top of the hierarchy. The ROSAdapter interacts
+with the `LogicController` which in turn manages all the individual
+controllers that implement specific behaviours.
 This repository is a ROS (Robot Operating System) controller framework for the Swarmie robots used in the [NASA Swarmathon](http://www.nasaswarmathon.com), a national swarm robotics competition. This particular framework is a ROS implementation of the CPFA (central-place foraging algorithm) developed for [iAnt robot swarms](http://swarms.cs.unm.edu) at the [University of New Mexico](http://www.unm.edu/).
+### Controller
 
-
+An abstract class that all controllers implement. The swarmies are
+structured as a collection of low level controllers that each perform
+a simple task such as deciding where to go next when searching
+(`SearchController`), or determining whether to turn left or right to
+avoid an obstacle (`ObstacleController`). These low-level behaviours,
+implemented as simple controllers are combined by the logic controller
+into the high-level foraging behavior of the swarmies. To add a new
+behavior to the swarmies you would write a new controller and
+integrate it in to the logic controller through the priority system
+described below.
 ### Running the CPFA simulation
-
+#### Controller API
 Assuming you have installed everything as the Swarmathon-ROS repository has instructed and you have read the paper, then we can begin. The CPFA relies a set of parameters that can be modified depending on the resource distribution that will be used for a run. 
+* `void Reset()`
 
+  Resets the internal state of the controller.
 In the ` ~/rover_workspace/CPFA_parameters/` directory you will see a set of files with a `.yaml` extension. Each file corresponds to the appropriate resource distribution and have been hand tuned to have parameters that will work for each of those distributions, albeit not optimally. 
+* `Result DoWork()`
 
-You will see all the parameters that the paper describes as the parameters evolved by the GA. 
-
+  that action in a `Result` struct. Note that no action is taken in
+  this method, we just determine what needs to be done and pass it
+  back to be executed by the `ROSAdapter`.
 ![Alt text](https://github.com/BCLab-UNM/CPFA-ROS/blob/documentation/readmeImages/parameters.png "CPFA Parameters")
-
+* `bool ShouldInterrupt()`
 To start the simulation you will run the `~/rover_workspace/run.sh` script like normal to start up the GUI. Selecting the uniform distribution option will run the   `uniform.yaml` parameters file, the clustered option will run the `clustered.yaml` paramteters file, and the power law option will run the `powerlaw.yaml` file. 
-
+  If the internal state of the controller is such that it must take
+  action this method should return true.
 ![Alt text](https://github.com/BCLab-UNM/CPFA-ROS/blob/documentation/readmeImages/gui1.png "Opening Screen")
-
+* `bool HasWork()`
 If you decide to choose a custom world, then you will also be allowed to pick any of the `.yaml` files available by clicking on the CPFA button as well as make any custom paramter files with custom parameters as long as they follow the same format as the default parameter files.
-
+  If the controller has work to do (ie. needs to take action in some
+  way) then this method should return true.
 ![Alt text](https://github.com/BCLab-UNM/CPFA-ROS/blob/documentation/readmeImages/gui2.png "Custom Parameters Widget")
-
+* `void ProcessData()`
 #### ROS Parameters
-
+  Carries out behaviour-specific processing of internal data (or data
+  that has been passed in to the controller such as robot location or
+  other sensor readings).
 The `.yaml`files will get loaded into the rosparam namespace as soon as the simulation starts. If you would like to see a list of all the CPFA parameters, then run the following command:
-
+### ROSAdapter
 ```
+The main role of `ROSAdapter` is to manage sensor input, passing
+relevant data coming from ROS messages to the logic controller (which
+in turn may pass that data on to individual controllers). ROSAdapter
+calls `LogicController::DoWork()` ten times per second and takes
+action based on the `Result` returned by that call. Taking action
+typically means sending a message that will cause the wheels or
+gripper to move. The easiest way to trigger some other action is to
+have the ROSAdapter poll the logic controller at regular intervals to
+check whether some event has occurred (a good example of this is
+checking whether a manual waypoint has been reached).
 rosparam list | grep CPFA
+### Logic Controller
 ```
-
-This will list out all of the rosparameters that have been set and filters out any of them containing CPFA. You can then use
+The logic controller manages all the other controllers in the
+one for the logic state and one for the process state
 `rosparam get <parameter name>` to see the value of the paramter to confirm. Some other useful ways to use this if you want to modify the
+The logic state state-machine has three states
+* INTERRUPT
+* WAITING
+* PRECISION_COMMAND
 parameters in real time, you can use `rosparam set <paramter name>` to dynamically modify the parameter and in the code you can reset that value. 
-
+The interrupt state is entered whenever one of the controllers has
+signaled that it has work to do. In the interrupt state the logic
+controller polls all controllers to determine which ones have work and
+calls `DoWork()` on the controller with highest priority (priority is
+determined by the current process state of the logic controller,
+discussed below). The next logic state is determined by the result
+returned by that controller. The other two states are relatively
+simple. The waiting is used when waiting for the drive controller to
+reach its last waypoint (note that the drive controller is not part of
+the priority system described above, rather it is called directly
+whenever the logic state is waiting). The precision state is used when
+a controller wants to take direct control of the robot's
+actuators. In this state the result from the highest priority
+controller is passed directly to the drive controller do be acted on.
+This allows for very high precision driving to perform tasks such as
+aligning with a cube when picking it up.
 ![Alt text](https://github.com/BCLab-UNM/CPFA-ROS/blob/documentation/readmeImages/rosparamlist.png "rosparam list")
-
+The process state state-machine determines the priorities of the
+controllers. There are four states:
+* SEARCHING
+* TARGET_PICKUP
+* DROP_OFF
+* MANUAL
 #### Debugging
-
-To view some print statements about the current status of the rovers you can run the following command:
-
+The states searching, target\_pickup, and drop\_off are entered when
+searching for cubes, picking up cubes, and dropping off cubes
+respectively. Under each state the priority of the controllers
+changes. Check `LogicController::ProcessData()` to see the priorities
+(higher is higher priority, -1 is disabled). The manual state is a
+special state that is unreachable while the robot is in autonomous
+waypoint controller.
 ```
-rostopic echo /rosout | grep <rover name>CPFA
+`LogicController::controllerInterconnect()` which can be used to share
+data between controllers.
 ```
-
+The remaining functions on `LogicController` are use to pass data from
+the `ROSAdapter` to the relevant controllers.
 Example:
-
+### List of Controllers
 ```
-rostopic echo /rosout | grep achillesCPFA
+* `DriveController` Tells the robot how to drive. Driving is typically
+  based on waypoints and controlled with a PID controller that
+  directs the motors based on the current error in the robot's
+  orientation and position. The drive controller can also accept
+  precision commands that bypass the PID.
+* `DropOffController` Handles dropping off a cube at the center once
+  one has been picked up.
+* `ManualWaypointController` Implemented for testing. Allows us to
+  instruct the swarmie to drive to a particular (x,y) coordinate. Only
+  operates in manual mode.
+* `ObstacleController` Handles obstacle avoidance.
+* `RangeController` Prevents the swarmie from leaving a pre-defined
+  foraging range.
+* `SearchController` Implements a correlated random walk as a basic
+  search method.
 ```
-
+### PID
 ![Alt text](https://github.com/BCLab-UNM/CPFA-ROS/blob/documentation/readmeImages/debugging.png "Debugging")
->>>>>>> master
+controller that is configured using the `PIDConfig` struct. This
+struct is used to set the gains and the anti-windup parameters of the
+PID. The PID parameters can be tuned by modifying the config structs
+in the drive controller.

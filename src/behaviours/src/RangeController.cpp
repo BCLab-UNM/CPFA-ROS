@@ -123,8 +123,10 @@ CPFAState RangeController::GetCPFAState()
 }
 
 void RangeController::SetCPFAState(CPFAState state) {
+	
   cpfa_state = state;
   result.cpfa_state = state;
+  cout<<"SwitchStatus: rangectrl: state="<<cpfa_state<<endl;
 }
 
 bool RangeController::HasWork() 

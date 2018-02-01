@@ -17,6 +17,15 @@ void SiteFidelityController::Reset()
 {
 }
 
+
+void SiteFidelityController::SiteFidelityReset()
+{
+	site_fidelity_location.x = 0;
+    site_fidelity_location.y = 0;
+    site_fidelity_location.theta = 0;
+}
+	  
+	  
 Result SiteFidelityController::DoWork() 
 {
 	cout<<"CPFAStatus: SiteFidelityController::DoWork()"<<endl;
@@ -27,6 +36,7 @@ Result SiteFidelityController::DoWork()
   if (hypot(site_fidelity_location.x - current_location.x, site_fidelity_location.y - current_location.y) < 0.15) 
   {
 	  cout <<"CPFAStatus: SF: Reached site fidelity"<<endl;
+	SiteFidelityReset();  
     result.type = behavior;
     result.b = COMPLETED;
     cout <<"result.wpts.waypoints size="<<result.wpts.waypoints.size()<<endl;
@@ -83,6 +93,16 @@ void SiteFidelityController::SetTargetPickedUp()
 void SiteFidelityController::setCurrentLocation(Point current_location)
 {
   this->current_location = current_location;
+}
+
+bool SiteFidelityController::SiteFidelityInvalid()
+{
+	if(site_fidelity_location.x == 0 && site_fidelity_location.y == 0)
+	{
+		return true;
+	}
+		
+	return false; 
 }
 
 void SiteFidelityController::ProcessData() 

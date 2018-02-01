@@ -4,6 +4,8 @@
 #include "PID.h"
 #include "Controller.h"
 #include <angles/angles.h>
+//#include <random_numbers/random_numbers.h>
+#include "CPFAParameters.h"
 
 class DriveController : virtual Controller
 {
@@ -22,16 +24,25 @@ public:
   
   void SetCPFAState(CPFAState state) override;
   CPFAState GetCPFAState() override;
+  
+  void SetCurrentTimeInMilliSecs( long int time );
+  
 private:
 
   Result result;
+
+  //random_numbers::RandomNumberGenerator* rng;
+  //double rndNum;
   
-  float left;
-  float right;
+  CPFAParameters CPFA_parameters;
+  //MAX PWM is 255
+  //abridge currently limits MAX to 120 to prevent overcurrent draw
+  float left; //left wheels PWM value
+  float right; //right wheels PWM value
 
-  bool interupt = false;
+  bool interupt = false; //hold if interupt has occured yet
 
-  float rotateOnlyAngleTolerance = 0.05;  //May be too low?
+  float rotateOnlyAngleTolerance = 0.01;  //The original is 0.05.
   float finalRotationTolerance = 0.1;
   const float waypointTolerance = 0.15; //15 cm tolerance.
 
@@ -45,7 +56,9 @@ private:
   Point currentLocation;
   Point currentLocationMap;
   Point currentLocationAverage;
-
+  long int current_time = 0;
+  
+  
   Point centerLocation;
   Point centerLocationMap;
   Point centerLocationOdom;
@@ -64,6 +77,8 @@ private:
   void slowPID(float errorVel,float errorYaw, float setPointVel, float setPointYaw);
   void constPID(float erroVel,float constAngularError, float setPointVel, float setPointYaw);
 
+  //each PID movement paradigm needs at minimum two PIDs to acheive good robot motion.
+  //one PID is for linear movement and the second for rotational movements
   PID fastVelPID;
   PID fastYawPID;
 

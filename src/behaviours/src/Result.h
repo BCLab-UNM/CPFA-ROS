@@ -4,6 +4,8 @@
 // can be returned by a controller object.
 
 /* EXAMPLE:
+ * 
+ * This struct returns the neccesary commands to logic controller for the current controller to control the robot
  *
  * struct Result res;
  * res.type = ...;
@@ -45,7 +47,9 @@ enum CPFAState
   search_with_uninformed_walk,
   search_with_informed_walk,
   sense_local_resource_density,
-  return_to_nest
+  avoid_obstacle,
+  return_to_nest,
+  reached_nest
 };
 
 /**
@@ -72,28 +76,28 @@ enum PIDType {
 };
 
 enum ResultType {
-  behavior,
-  waypoint,
-  precisionDriving
+  behavior, //result contains behaviour related signals for logic controller to interpret
+  waypoint, //result contains waypoints for drive controller
+  precisionDriving //controller wants direct error input into drive controller
 };
 
 enum BehaviorTrigger {
-  wait,
-  prevProcess, // deprecated, will be removed later
-  noChange,
+  wait, //used by logic controller to indicate to ROSAdapter indicate when nothing should happen
+  prevProcess,
+  noChange, //guard used by logic controller against faulty configurations
   nextProcess, // deprecated, will be removed later
   COMPLETED,
-  FAILED
+  FAILED //giveup search and return to nest
 };
 
 struct PrecisionDriving {
-  float cmdVel = 0.0;
-  float cmdAngularError = 0.0;
-  float cmdAngular = 0.0;
-  float setPointVel = 0.0;
-  float setPointYaw = 0.0;
+  float cmdVel = 0.0; //velocity command
+  float cmdAngularError = 0.0; //for the current error
+  float cmdAngular = 0.0; //for const pid, angular target speed
+  float setPointVel = 0.0; //set this to the target speed 
+  float setPointYaw = 0.0; //set this to either the target heading or 0
 
-  float left = 0.0;
+  float left = 0.0; //this is used by drive controller to pass PWM to ROSAdapter
   float right = 0.0;
 };
 
@@ -104,17 +108,17 @@ struct Waypoints {
 struct Result {
   CPFAState cpfa_state;
   CPFASearchType cpfa_search_type;
-  ResultType type;
+  ResultType type; //stores the type of the result
 
-  BehaviorTrigger b;
-  Waypoints wpts;
-  PrecisionDriving pd;
+  BehaviorTrigger b; //hold the behaviour type
+  Waypoints wpts; //hold the waypoints
+  PrecisionDriving pd; //holds precision commands
 
-  float fingerAngle = -1;
-  float wristAngle = -1;
-  PIDType PIDMode;
+  float fingerAngle = -1; //holds commanded for finger angle, defualt is -1 no movment
+  float wristAngle = -1; //"                  " wrist angle, "                        "
+  PIDType PIDMode; //hold the PID type selected for use
 
-  bool reset;
+  bool reset; //holds a reset command where logic controller will reset the controller that asks
   bool lay_pheromone = false;
 };
 

@@ -4,7 +4,7 @@
 #include <random_numbers/random_numbers.h>
 #include <vector>
 #include <iostream>
-
+#include "CPFAParameters.h"
 #include "Pheromone.h"
 #include "Controller.h"
 
@@ -49,7 +49,12 @@ public:
   void SetSuccesfullPickup();
   void SetCurrentTimeInMilliSecs( long int time );
   void setSearchType(bool informed_search);
-  
+  void SetArenaSize(int size);
+  void SetRandomSearchLocation();
+  bool ReachedWaypoint();
+  void SetReachedWaypoint(bool reached);
+  bool GiveupSearch();
+  void SetGiveupSearch(bool giveup);
 protected:
 
   void ProcessData();
@@ -57,13 +62,11 @@ protected:
 private:
   
   // CPFA Parameters
-  double probability_of_switching_to_searching = 0.015;
-  double probability_of_returning_to_nest=0.001;
-  double uninformed_search_variation= 0.4;
-  double rate_of_informed_search_decay =0.1666;
-  double rate_of_following_site_fidelity = 0.3;
-  double rate_of_laying_pheromone =5;
-  double rate_of_pheromone_decay = 0.025;
+  //double probability_of_switching_to_searching = 0.015;
+  //double probability_of_returning_to_nest=0.001;
+  //double uninformed_search_variation= 0.4;
+  //double rate_of_informed_search_decay =0.1666;
+  
   bool first_waypoint = true;
   /* The distribution poisson describes the likelihood of finding at
    * least the quantity of resources determined by the c (localesourceDensity)
@@ -99,10 +102,13 @@ private:
   Point currentLocation;
   Point centerLocation;
   Point searchLocation;
-  int attemptCount = 0;
+  //int attemptCount = 0;
   //struct for returning data to ROS adapter
   Result result;
-
+  bool reachedWaypoint = false;
+  //bool reachedCenter = false;
+   bool giveupSearch = false;
+   
   // Search state
   // Flag to allow special behaviour for the first waypoint
 /*  bool succesfullPickup = false;
@@ -111,9 +117,10 @@ private:
 
   long int current_time = 0;
   long int informed_search_time = 0;
-
-  CPFAParameters CPFA_parameters;
+CPFAParameters CPFA_parameters;
+  
 */
+  CPFAParameters CPFA_parameters;
   bool informed_search = false;
   float search_step_size = 0.5;
 

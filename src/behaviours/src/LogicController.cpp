@@ -25,11 +25,10 @@ void LogicController::Reset() {
   cout<<"logicState="<<logicState<<endl;
   cout<<"processState="<<processState<<endl;
   ProcessData();
-  
 
   control_queue = priority_queue<PrioritizedController>();
 }
-	
+
 //***********************************************************************************************************************
 //This function is called every 1/10th second by the ROSAdapter
 //The logical flow if the behaviours is controlled here by using a interrupt, haswork, priority queue system.
@@ -126,40 +125,53 @@ Result LogicController::DoWork() {
           processState = (ProcessState)((int)processState - 1);
         }
       }
+      if(result.b == FAILED)
+      {  
+		  cout<<"SwitchStatus: switch to site fidelity"<<endl;
+		  processState = PROCESS_STATE_SITE_FIDELITY;
+		  }
+      
       //update the priorites of the controllers based upon the new process state.
-      if (result.b == nextProcess || result.b == prevProcess) 
+      if (result.b == nextProcess || result.b == prevProcess || result.b == FAILED) 
       {
 		  cout<<"result.b == next or prev"<<endl;
 		  if(processState == PROCESS_STATE_SITE_FIDELITY)
 		  {
-		       //double followSiteFidelityRate = getPoissonCDF(rate_of_following_site_fidelity);
-		       double followSiteFidelityRate = 0.1;
-               cout <<"LayStatus: followSiteFidelityRate="<<followSiteFidelityRate<<endl;
+		       double followSiteFidelityRate = getPoissonCDF(CPFA_parameters.rate_of_following_site_fidelity);
+		       //double followSiteFidelityRate = 0.1;
+               cout <<"TestStatus: followSiteFidelityRate="<<followSiteFidelityRate<<endl;
                double r1 = rng->uniformReal(0, 1);
-               cout<<"CPFAStatus: r1 = "<< r1<<endl;
-               if(r1 > followSiteFidelityRate)//informed search with pheromone waypoints or uninformed search
+               cout<<"TestStatus: r1 = "<< r1<<endl;
+               if(r1 > followSiteFidelityRate || siteFidelityController.SiteFidelityInvalid())//informed search with pheromone waypoints or uninformed search
                {
+				   cout<<"TestStatus: invalid fidelity="<<siteFidelityController.SiteFidelityInvalid()<<endl;
 				   if(pheromoneController.SelectPheromone())
 				   {
 		             //result.type = behavior;
                      //result.b = nextProcess;		    
                      processState = PROCESS_STATE_PHEROMONE; 
-                     cout <<"LayStatus: processState ="<<processState<<"  pheromome..."<<endl;
+                     cout <<"TestStatus: select a pheromone..."<<endl;
                    }
                    else
                    {
 				     processState = PROCCESS_STATE_SEARCHING; 
-                     cout <<"LayStatus: processState ="<<processState<<"  uninformed search..."<<endl;
+                     cout <<"TestStatus: no pheromone trail selected ="<<processState<<"  uninformed search..."<<endl;
+                     searchController.Reset();
 				   }
 			   }
+			   else
+			   {
+				   cout<<"TestStatus: follow site fidelity..."<<endl;
+				   }
            }
 	     
          ProcessData();
          result.b = wait;
          driveController.Reset(); //it is assumed that the drive controller may be in a bad state if interrupted so reset it
       }
-      else if(result.b == COMPLETED || result.b == FAILED){
-		  cout <<"CPFAStatus: Completed..."<<endl;
+      //else if(result.b == COMPLETED || result.b == FAILED){
+      else if(result.b == COMPLETED){
+		  cout <<"SwitchStatus: Completed..."<<endl;
 		  informed_search = true;
           processState = PROCCESS_STATE_SEARCHING;
           ProcessData();
@@ -198,14 +210,25 @@ Result LogicController::DoWork() {
     //ask drive controller how to drive
     //commands to be passed the ROS Adapter as left and right wheel PWM values in the result struct are returned
     result = driveController.DoWork();
-    
+    //cout<<"CPFAStatus: LogicController: result.wpts.waypoint=["<<result.wpts.waypoints[0].x<<" size="<<result.wpts.waypoints.size()<<endl;
     //when out of waypoints drive controller will through an interrupt however unlike other controllers
     //drive controller is not on the priority queue so it must be checked here
-    if (result.type == behavior) {
+    if (result.type == behavior) 
+    {
 		cout <<"logic state== waiting; result type == behavior"<<endl;
-      if(driveController.ShouldInterrupt()) {
-        logicState = LOGIC_STATE_INTERRUPT;
-        cout<<"driver controller interrupt..."<<endl;
+		if(driveController.ShouldInterrupt()) 
+        {
+          logicState = LOGIC_STATE_INTERRUPT;
+          cout<<"SwitchStatus: driver controller interrupt...true"<<endl;
+          if(processState == PROCCESS_STATE_SEARCHING)
+          {
+		    cout<<"SwitchStatus: set reached..."<<endl;
+		    searchController.SetReachedWaypoint(true);
+		    if(searchController.GiveupSearch())
+		    {
+				
+				}
+		  } 
       }
     }
     break;
@@ -230,6 +253,7 @@ Result LogicController::DoWork() {
   }//end of precision case****************************************************************************************
   }//end switch statment******************************************************************************************
    //cout<<"PheromoneStatus: current_time="<<current_time<<endl;
+   
    updatePheromoneList();
   //now using proccess logic allow the controller to communicate data between eachother
   controllerInterconnect();
@@ -386,6 +410,17 @@ void LogicController::controllerInterconnect()
       pheromoneController.SetTargetPickedUp();//qilu 12/2017
       //targetHeld = true;
     }
+    if(obstacleController.HasWork() && searchController.GetCPFAState() == return_to_nest)
+    {
+		searchController.SetCPFAState(avoid_obstacle);
+		obstacleController.SetCPFAState(return_to_nest);
+		} 
+	if(obstacleController.GetCPFAState() == reached_nest )
+	{
+		cout<<"SwitchStatus: interconnect, set reached_nest..."<<endl;
+		searchController.SetCPFAState(start_state);
+		}
+    
   }
   
   if(pheromoneController.SenseCompleted())
@@ -428,9 +463,17 @@ void LogicController::controllerInterconnect()
   }*/
   
 }
+
+void LogicController::SetArenaSize(int size)
+{
+	cout<<"set arena size "<< size<<endl;
+	searchController.SetArenaSize(size);
+	}
+
 // Recieves position in the world inertial frame (should rename to SetOdomPositionData)
 void LogicController::SetPositionData(Point currentLocation) 
 {
+	cout<<"set position data "<< currentLocation.x<<","<<currentLocation.y<<endl;
   searchController.SetCurrentLocation(currentLocation);
   dropOffController.SetCurrentLocation(currentLocation);
   obstacleController.setCurrentLocation(currentLocation);
@@ -483,7 +526,6 @@ void LogicController::SetCenterLocationOdom(Point centerLocationOdom)
 {
   searchController.SetCenterLocation(centerLocationOdom);
   dropOffController.SetCenterLocation(centerLocationOdom);
-  //return_to_nest_controller.SetCenterLocation(centerLocationOdom);
 }
 
 void LogicController::AddManualWaypoint(Point manualWaypoint, int waypoint_id)
@@ -491,10 +533,6 @@ void LogicController::AddManualWaypoint(Point manualWaypoint, int waypoint_id)
   manualWaypointController.AddManualWaypoint(manualWaypoint, waypoint_id);
 }
 
-/*int LogicController::GetCenterIdx(){
-	return searchController.GetCenterIdx();
-	}
-*/
 void LogicController::RemoveManualWaypoint(int waypoint_id)
 {
   manualWaypointController.RemoveManualWaypoint(waypoint_id);
@@ -526,7 +564,7 @@ void LogicController::updatePheromoneList()
 void LogicController::insertPheromone(const vector<Point> &pheromone_trail) 
 {
   //searchController.insertPheromone(pheromone_trail);
-  pheromoneController.insertPheromone(pheromone_trail, rate_of_pheromone_decay);
+  pheromoneController.insertPheromone(pheromone_trail, CPFA_parameters.rate_of_pheromone_decay);
 }
 
 
@@ -537,13 +575,13 @@ void LogicController::SetCenterLocationMap(Point centerLocationMap)
 
 void LogicController::SetCurrentTimeInMilliSecs( long int time )
 {
-	cout<<"Logic: time="<<time<<endl;
   current_time = time;
   dropOffController.SetCurrentTimeInMilliSecs( time );
   pickUpController.SetCurrentTimeInMilliSecs( time );
   obstacleController.SetCurrentTimeInMilliSecs( time );
   pheromoneController.SetCurrentTimeInMilliSecs(time);//qilu 12/2017
-  //searchController.SetCurrentTimeInMilliSecs( time);
+  driveController.SetCurrentTimeInMilliSecs(time);
+  searchController.SetCurrentTimeInMilliSecs( time);
   //random_dispersal_controller.setCurrentTime( time );
 }
 
@@ -606,15 +644,15 @@ void LogicController::printCPFASearchType() {
       cout << "random_search" << endl;
     else 
       cout << "WTF" << endl;
-}
-
+}  
+  
 bool LogicController::layPheromone() {
 
   if(lay_pheromone) {
     lay_pheromone = false;
     //return searchController.layPheromone();
  
-    double poisson = getPoissonCDF(rate_of_laying_pheromone);
+    double poisson = getPoissonCDF(CPFA_parameters.rate_of_laying_pheromone);
     double random_num = rng->uniformReal(0, 1);
     cout<<"poisson="<<poisson<<endl;
     cout<<"random_num="<<random_num<<endl;
@@ -643,6 +681,7 @@ Point LogicController::GetCurrentLocation() {
 void LogicController::SetCPFAState(CPFAState state) {
   if(state != cpfa_state) {
     cpfa_state = state;
+    cout<<"SwitchStatus: logic, state="<<cpfa_state<<endl;
     for(PrioritizedController cntrlr : prioritizedControllers) {
       if(state != cntrlr.controller->GetCPFAState()) {
         cntrlr.controller->SetCPFAState(state);

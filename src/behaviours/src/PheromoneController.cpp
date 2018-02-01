@@ -18,7 +18,7 @@ void PheromoneController::Reset()
 	//pheromones.clear(); //qilu 08/2017
   
   targetHeld = true;//qilu 12/2017
-  cout<<"TestStatus: reset sense_local_density_completed"<<endl;
+  //cout<<"TestStatus: reset sense_local_density_completed"<<endl;
   sense_local_density_completed = false;//qilu 12/2017
   drive_to_pheromone =false; //qilu 12/2017
   total_resource = 0;
@@ -94,7 +94,7 @@ Result PheromoneController::DoWork()
   if (!sense_local_density_completed && !drive_to_pheromone)
   {
     //cout<<"TestStatus: rotateAngle="<<rotateAngle<<endl;
-    if(rotateAngle >= 320)
+    if(rotateAngle >= 318)
     {
 		//cout<<"PheromoneStatus: sense completed...# of tags="<<total_resource<<endl;
 		int firstIdx =0;
@@ -103,20 +103,29 @@ Result PheromoneController::DoWork()
 	    
 	    for(int i = 1; i < detect_resource_angle.size(); i++)
         {
+			cout<<"detect_resource_angle["<<i<<"]="<<detect_resource_angle[i]<<endl;
+			cout<<"detect_resource_angle["<<firstIdx<<"]="<<detect_resource_angle[firstIdx]<<endl;
+			
 			diffAngle = detect_resource_angle[i]-detect_resource_angle[firstIdx];
+			cout<<"TestStatus: diffAngle="<<diffAngle<<endl;
 			if(diffAngle<0)
 			{
 				diffAngle += 360;
 			}
-			if(diffAngle > 40)
+			if(diffAngle > 45)
 			{
+				cout<<"TestStatus: max_num_tags="<<max_num_tags<<endl;
 				total_resource += max_num_tags;
 				max_num_tags = num_resource_detected[i];
+				cout<<"TestStatus: max_num_tags="<<max_num_tags<<endl;
 				firstIdx = i;
+				cout<<"TestStatus: firstIdx="<<firstIdx<<endl;
+				
 				flag = false;
 			}
 			else
 			{
+				cout<<"TestStatus: num_resource_detected["<<i<<"]="<<num_resource_detected[i]<<endl;
 				if(num_resource_detected[i]> max_num_tags)
 				{
 					max_num_tags = num_resource_detected[i];
@@ -128,17 +137,17 @@ Result PheromoneController::DoWork()
 	    {
 			total_resource += max_num_tags;
 			}
-	  cout<<"PheromoneStatus: the final density="<<total_resource<<endl;
+	  cout<<"TestStatus: the final density="<<total_resource<<endl;
 	  detect_resource_angle.clear();
 	  num_resource_detected.clear();
-	  cout<<"PheromoneStatus: num_resource_detected size="<<num_resource_detected.size()<<endl;
+	  //cout<<"PheromoneStatus: num_resource_detected size="<<num_resource_detected.size()<<endl;
       result.type = behavior;
       //result.b = COMPLETED;
       result.b = nextProcess;
       result.reset = true;
       
       sense_local_density_completed = true;
-      cout<<"TestStatus: complete sensing. sense_local_density_completed="<<sense_local_density_completed<<endl; 
+      //cout<<"TestStatus: complete sensing. sense_local_density_completed="<<sense_local_density_completed<<endl; 
       sense_local_resource_density = false;
       rotateAngle =0;
       targetHeld = true;
@@ -150,7 +159,7 @@ Result PheromoneController::DoWork()
     }
     else
     { 
-		cout<<"TestStatus: Sensing...."<<endl;
+		//cout<<"TestStatus: Sensing...."<<endl;
 		 sense_local_resource_density = true;
 		 result.wristAngle = 1.25;//lower the gripper to sense local density. qilu 12/2017
         result.type = precisionDriving;
@@ -164,29 +173,27 @@ Result PheromoneController::DoWork()
   
   if(drive_to_pheromone)
   {
-	  cout <<"PheromoneStatus: drive to pheromone..."<<endl;
+	  cout <<"TestStatus: drive to pheromone..."<<endl;
 	  
 	 
-	  cout<<"PheromoneStatus: selected_pheromone.x="<<selected_pheromone.x<<endl;
-      cout<<"PheromoneStatus: current_location.x="<<current_location.x<<endl;
+	  cout<<"TestStatus: selected_pheromone=["<<selected_pheromone.x<<", "<<selected_pheromone.y<<"]"<<endl;
+      //cout<<"PheromoneStatus: current_location.x="<<current_location.x<<endl;
 	  if (hypot(selected_pheromone.x - current_location.x, selected_pheromone.y - current_location.y) < 0.15) 
 	  {
           drive_to_pheromone= false;
           sense_local_density_completed  = false;
-          cout <<"TestStatus: sense_local_density_completed="<<sense_local_density_completed<<endl;
+          //cout <<"TestStatus: sense_local_density_completed="<<sense_local_density_completed<<endl;
           cout <<"TestStatus: Reached pheromone waypoint..."<<endl;
 		  result.type = behavior;
 		  result.b = COMPLETED;
 		  //targetHeld =true;
-		  cout <<"result.wpts.waypoints size="<<result.wpts.waypoints.size()<<endl;
 	  } 
 	  else 
 	  {
-          cout <<"PheromoneStatus: travel to pheromone_waypoint, "<<selected_pheromone.x<<endl;
+          cout <<"TestStatus: travel to pheromone_waypoint, "<<selected_pheromone.x<<endl;
 		  result.type = waypoint;
 		  result.PIDMode = FAST_PID;
 		  result.wpts.waypoints.insert(result.wpts.waypoints.begin(), selected_pheromone);
-		  cout <<"result.wpts.waypoints size="<<result.wpts.waypoints.size()<<endl;
 	  }		    
   }
   return result;
@@ -204,20 +211,24 @@ void PheromoneController::updatePheromoneList()
     
     if(pheromones[i].isActive()) 
     {
-		cout<<"PheromoneStatus: pheromones["<<i<<"].=("<<pheromones[i].getLocation().x<<","<<pheromones[i].getLocation().y<<")"<<endl;
+		cout<<"TestStatus: pheromones["<<i<<"].=("<<pheromones[i].getLocation().x<<","<<pheromones[i].getLocation().y<<")"<<endl;
       newPheromoneList.push_back(pheromones[i]);
     }
+    else
+    {
+		cout<<"TestStatus: the pheromone ["<<pheromones[i].getLocation().x<<","<<pheromones[i].getLocation().y<<"] is inactive"<<endl;
+		}
   }
   pheromones = newPheromoneList;
 }
 
 bool PheromoneController::SelectPheromone()
 {
-	cout << "Setting pheromone location..." << endl;
+	//cout << "TestStatus: Selectinhing pheromone..." << endl;
   double maxStrength = 0.0;
   double randomWeight = 0.0;
   bool isPheromoneSet = false;
-
+   cout<<"TestStatus: pheromones.size()="<<pheromones.size()<<endl;
   if(pheromones.size()==0) return isPheromoneSet; //the case of no pheromone.
   
   //Calculate a maximum strength based on active pheromone weights.
@@ -243,10 +254,11 @@ bool PheromoneController::SelectPheromone()
       //SetTarget(pheromones[i].GetLocation());
       //target_location = pheromones[center_idx][i].getLocation();
       //target_location = pheromones[i].getLocation();
-      //cout << "pheromoneLocation x: " << target_location.x << " y: " << target_location.y << endl;
-
+      
       selected_pheromone = pheromones[i].getLocation();
-      // TrailToFollow = pheromones[i].GetTrail();
+      //cout << "PheromoneStatus: pheromoneLocation x: " <<selected_pheromone.x << " y: " << selected_pheromone.y << endl;
+
+// TrailToFollow = pheromones[i].GetTrail();
       isPheromoneSet = true;
       //If we pick a pheromone, break out of this loop. 
       break;
@@ -265,12 +277,12 @@ void PheromoneController::insertPheromone( const vector<Point> &pheromone_trail,
   // the first index of the trail is the same position as the pheromone location
   Point new_location = pheromone_trail[0];
   //Pheromone pheromone(new_location, pheromone_trail, ros::Time::now(), rate_of_pheromone_decay);
-  cout<<"PheromoneStatus: create pheromone, current_time="<<current_time<<endl;
+  cout<<"TestStatus: create pheromone..."<<endl;
   Pheromone pheromone(new_location, pheromone_trail, current_time, pheromone_decay_rate);
 
   pheromones.push_back(pheromone);
   //pheromones[center_id].push_back(pheromone);
-  cout << "PheromoneStatus: pheromoneLocation x: " << pheromone_trail[0].x << " y: " << pheromone_trail[0].y << endl;
+  cout << "TestStatus: pheromoneLocation=[" << pheromone_trail[0].x << ", " << pheromone_trail[0].y<<"]" << endl;
   
   /*for(map<int, vector<Pheromone>>::iterator it= pheromones.begin(); it!=pheromones.end(); ++it) {
                 for(int i=0; i<it->second.size(); i++){
@@ -329,6 +341,7 @@ void PheromoneController::SetTagData(std::vector<Tag> tags)
    //resource_density += target_count;//qilu 12/2017
    //if(target_count>0)
    //{
+       cout<<"TestStatus: target_count="<<target_count<<endl;
 	   num_resource_detected.push_back(target_count);
 	   currentAngle = current_location.theta*180/M_PI;
 	   detect_resource_angle.push_back(currentAngle);

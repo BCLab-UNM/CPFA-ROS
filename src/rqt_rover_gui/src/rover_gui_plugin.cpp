@@ -881,7 +881,7 @@ void RoverGUIPlugin::pollRoversTimerEventHandler()
         ekf_subscribers[*i] = nh.subscribe("/"+*i+"/odom/ekf", 10, &RoverGUIPlugin::EKFEventHandler, this);
         gps_subscribers[*i] = nh.subscribe("/"+*i+"/odom/navsat", 10, &RoverGUIPlugin::GPSEventHandler, this);
         gps_nav_solution_subscribers[*i] = nh.subscribe("/"+*i+"/navsol", 10, &RoverGUIPlugin::GPSNavSolutionEventHandler, this);
-        rover_diagnostic_subscribers[*i] = nh.subscribe("/"+*i+"/diagnostics", 10, &RoverGUIPlugin::diagnosticEventHandler, this);
+        rover_diagnostic_subscribers[*i] = nh.subscribe("/"+*i+"/diagnostics", 1, &RoverGUIPlugin::diagnosticEventHandler, this);
 
         RoverStatus rover_status;
         // Build new ui rover list string
@@ -1624,6 +1624,7 @@ void RoverGUIPlugin::customWorldRadioButtonEventHandler(bool toggled)
     if(toggled)
     {
         ui.custom_world_path_button->setStyleSheet("color: white; border:2px solid white;");
+
         ui.number_of_tags_label->setStyleSheet("color: grey;");
         ui.number_of_tags_combobox->setStyleSheet("color: grey; border:2px solid grey; padding: 1px 0px 1px 3px");
     }
@@ -1632,6 +1633,7 @@ void RoverGUIPlugin::customWorldRadioButtonEventHandler(bool toggled)
         sim_mgr.setCustomWorldPath("");
         ui.custom_world_path->setText("");
         ui.custom_world_path_button->setStyleSheet("color: grey; border:2px solid grey;");
+
         ui.number_of_tags_label->setStyleSheet("color: white;");
         ui.number_of_tags_combobox->setStyleSheet("color: white; border:2px solid white; padding: 1px 0px 1px 3px");
     }
@@ -1653,7 +1655,6 @@ void RoverGUIPlugin::unboundedRadioButtonEventHandler(bool toggled)
         ui.unbounded_arena_size_combobox->setStyleSheet("color: grey; border:2px solid grey; padding: 1px 0px 1px 3px");
     }
 }
-
 
 void RoverGUIPlugin::mapPopoutButtonEventHandler()
 {
@@ -1738,7 +1739,14 @@ void RoverGUIPlugin::buildSimulationButtonEventHandler()
     {
         emit sendInfoLogMessage("Not adding collection disk...");
     }
-
+    
+    arenaDim_publisher = nh.advertise<std_msgs::Float32>("/arena_dim", 10, this); 
+    std_msgs::Float32 msg_arena;
+    msg_arena.data = arena_dim; 
+    arenaDim_publisher.publish(msg_arena);  
+    
+    
+    
     if(!ui.create_savable_world_checkbox->isChecked())
     {
         int n_rovers_created = 0;
@@ -1836,15 +1844,16 @@ void RoverGUIPlugin::buildSimulationButtonEventHandler()
     };
       
 
-    // Add rovers to the simulation and start the associated ROS nodes
-    for (int i = 0; i < n_rovers; i++)
-    {
+        // Add rovers to the simulation and start the associated ROS nodes
+        for (int i = 0; i < n_rovers; i++)
+        {
             // add the global offset for sim rovers
             ui.map_frame->setGlobalOffsetForRover(rovers[i].toStdString(), rover_positions[i].x(), rover_positions[i].y());
             ui.map_frame->setUniqueRoverColor(rovers[i].toStdString(), rover_colors[i]);
-        emit sendInfoLogMessage("Adding rover "+rovers[i]+"...");
-        return_msg = sim_mgr.addRover(rovers[i], rover_positions[i].x(), rover_positions[i].y(), 0, 0, 0, rover_yaw[i]);
-        emit sendInfoLogMessage(return_msg);
+
+            emit sendInfoLogMessage("Adding rover "+rovers[i]+"...");
+            return_msg = sim_mgr.addRover(rovers[i], rover_positions[i].x(), rover_positions[i].y(), 0, 0, 0, rover_yaw[i]);
+            emit sendInfoLogMessage(return_msg);
 
             emit sendInfoLogMessage("Starting rover node for "+rovers[i]+"...");
             return_msg = sim_mgr.startRoverNode(rovers[i]);
@@ -1858,7 +1867,7 @@ void RoverGUIPlugin::buildSimulationButtonEventHandler()
               sleep(rover_load_delay); // Gives plugins enough time to finish loading
             }
         }
-      }
+    }
     else
     {
         emit sendInfoLogMessage("Not creating rovers...");
@@ -1916,7 +1925,6 @@ void RoverGUIPlugin::buildSimulationButtonEventHandler()
     {
         display_sim_visualization = false;
     }
-
 }
 
 void RoverGUIPlugin::clearSimulationButtonEventHandler()
@@ -2145,6 +2153,7 @@ QString RoverGUIPlugin::stopROSJoyNode()
 QString RoverGUIPlugin::addUniformTargets()
 {
     QString number_of_tags = ui.number_of_tags_combobox->currentText();
+
     QProgressDialog progress_dialog;
     progress_dialog.setWindowTitle("Placing " + number_of_tags + " Targets");
     progress_dialog.setCancelButton(NULL); // no cancel button
@@ -2908,5 +2917,4 @@ RoverGUIPlugin::~RoverGUIPlugin()
 
 
 PLUGINLIB_EXPORT_CLASS(rqt_rover_gui::RoverGUIPlugin, rqt_gui_cpp::Plugin)
-
 
