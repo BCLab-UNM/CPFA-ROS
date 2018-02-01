@@ -131,7 +131,7 @@ private:
   CPFAState cpfa_state = start_state;
   
   //controller parameters
-  double rate_of_laying_pheromone =5;
+  //double rate_of_laying_pheromone =5;
 };
 #endif // end header define
 

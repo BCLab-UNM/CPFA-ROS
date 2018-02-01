@@ -118,6 +118,7 @@ Result result;
 
 std_msgs::String msg;
 
+float arena_dim =0.0; //qilu 01/2018
 
 geometry_msgs::Twist velocity;
 char host[128];
@@ -125,15 +126,17 @@ string publishedName;
 char prev_state_machine[128];
 
 // Publishers
-ros::Publisher stateMachinePublish;
+ros::Publisher stateMachinePublisher;
 ros::Publisher status_publisher;
-ros::Publisher fingerAnglePublish;
-ros::Publisher wristAnglePublish;
+ros::Publisher fingerAnglePublisher;
+ros::Publisher wristAnglePublisher;
 ros::Publisher infoLogPublisher;
-ros::Publisher driveControlPublish;
+ros::Publisher driveControlPublisher;
 ros::Publisher heartbeatPublisher;
+// Publishes swarmie_msgs::Waypoint messages on "/<robot>/waypooints"
+// to indicate when waypoints have been reached.
 ros::Publisher waypointFeedbackPublisher;
-ros::Publisher pheromoneTrailPublish;//qilu 12/2017
+ros::Publisher pheromoneTrailPublisher;//qilu 12/2017
 
 // Subscribers
 ros::Subscriber joySubscriber;
@@ -143,6 +146,9 @@ ros::Subscriber odometrySubscriber;
 ros::Subscriber mapSubscriber;
 ros::Subscriber pheromoneTrailSubscriber;//qilu 12/2017
 ros::Subscriber virtualFenceSubscriber;
+ros::Subscriber arenaDimSubscriber;
+// manualWaypointSubscriber listens on "/<robot>/waypoints/cmd" for
+// swarmie_msgs::Waypoint messages.
 ros::Subscriber manualWaypointSubscriber;
 
 // Timers
@@ -171,6 +177,7 @@ void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& tagInf
 void odometryHandler(const nav_msgs::Odometry::ConstPtr& message);
 void mapHandler(const nav_msgs::Odometry::ConstPtr& message);
 void virtualFenceHandler(const std_msgs::Float32MultiArray& message);
+void arenaDimHandler(const std_msgs::Float32::ConstPtr& message);
 void pheromoneTrailHandler(const swarmie_msgs::PheromoneTrail& message); //qilu 12/2017
 void manualWaypointHandler(const swarmie_msgs::Waypoint& message);
 void behaviourStateMachine(const ros::TimerEvent&);
@@ -203,22 +210,24 @@ int main(int argc, char **argv) {
   modeSubscriber = mNH.subscribe((publishedName + "/mode"), 1, modeHandler);
   targetSubscriber = mNH.subscribe((publishedName + "/targets"), 10, targetHandler);
   odometrySubscriber = mNH.subscribe((publishedName + "/odom/filtered"), 10, odometryHandler);
+  
   mapSubscriber = mNH.subscribe((publishedName + "/odom/ekf"), 10, mapHandler);
+  
   pheromoneTrailSubscriber = mNH.subscribe("/pheromones", 10, pheromoneTrailHandler);//qilu 12/2017
-  virtualFenceSubscriber = mNH.subscribe(("/virtualFence"), 10, virtualFenceHandler);
+  arenaDimSubscriber = mNH.subscribe("/arena_dim", 10, arenaDimHandler); //qilu 08/2017
   manualWaypointSubscriber = mNH.subscribe((publishedName + "/waypoints/cmd"), 10, manualWaypointHandler);
   message_filters::Subscriber<sensor_msgs::Range> sonarLeftSubscriber(mNH, (publishedName + "/sonarLeft"), 10);
   message_filters::Subscriber<sensor_msgs::Range> sonarCenterSubscriber(mNH, (publishedName + "/sonarCenter"), 10);
   message_filters::Subscriber<sensor_msgs::Range> sonarRightSubscriber(mNH, (publishedName + "/sonarRight"), 10);
   
   status_publisher = mNH.advertise<std_msgs::String>((publishedName + "/status"), 1, true);
-  stateMachinePublish = mNH.advertise<std_msgs::String>((publishedName + "/state_machine"), 1, true);
-  fingerAnglePublish = mNH.advertise<std_msgs::Float32>((publishedName + "/fingerAngle/cmd"), 1, true);
-  wristAnglePublish = mNH.advertise<std_msgs::Float32>((publishedName + "/wristAngle/cmd"), 1, true);
+  stateMachinePublisher = mNH.advertise<std_msgs::String>((publishedName + "/state_machine"), 1, true);
+  fingerAnglePublisher = mNH.advertise<std_msgs::Float32>((publishedName + "/fingerAngle/cmd"), 1, true);
+  wristAnglePublisher = mNH.advertise<std_msgs::Float32>((publishedName + "/wristAngle/cmd"), 1, true);
   infoLogPublisher = mNH.advertise<std_msgs::String>("/infoLog", 1, true);
-  driveControlPublish = mNH.advertise<geometry_msgs::Twist>((publishedName + "/driveControl"), 10);
+  driveControlPublisher = mNH.advertise<geometry_msgs::Twist>((publishedName + "/driveControl"), 10);
   heartbeatPublisher = mNH.advertise<std_msgs::String>((publishedName + "/behaviour/heartbeat"), 1, true);
-  pheromoneTrailPublish = mNH.advertise<swarmie_msgs::PheromoneTrail>("/pheromones", 10, true);
+  pheromoneTrailPublisher = mNH.advertise<swarmie_msgs::PheromoneTrail>("/pheromones", 10, true);
   waypointFeedbackPublisher = mNH.advertise<swarmie_msgs::Waypoint>((publishedName + "/waypoints"), 1, true);
 
   publish_status_timer = mNH.createTimer(ros::Duration(status_publish_interval), publishStatusTimerEventHandler);
@@ -269,7 +278,6 @@ void behaviourStateMachine(const ros::TimerEvent&)
   // auto mode but wont work in main goes here)
   if (!initilized)
   {
-     //cout<<"not initialized..."<<endl;
     if (timerTimeElapsed > startDelayInSeconds)
     {
 
@@ -278,14 +286,18 @@ void behaviourStateMachine(const ros::TimerEvent&)
       initilized = true;
       //TODO: this just sets center to 0 over and over and needs to change
       Point centerOdom;
-      centerOdom.x = 1.3 * cos(currentLocation.theta);
-      centerOdom.y = 1.3 * sin(currentLocation.theta);
+      centerOdom.x = 2.0 * cos(currentLocation.theta);
+      centerOdom.y = 2.0 * sin(currentLocation.theta);
+      //centerOdom.x = 2.0 * cos(currentLocation.theta);
+      //centerOdom.y = 2.0 * sin(currentLocation.theta);
       centerOdom.theta = centerLocation.theta;
       logicController.SetCenterLocationOdom(centerOdom);
       
       Point centerMap;
-      centerMap.x = currentLocationMap.x + (1.3 * cos(currentLocationMap.theta));
-      centerMap.y = currentLocationMap.y + (1.3 * sin(currentLocationMap.theta));
+      centerMap.x = currentLocationMap.x + (2 * cos(currentLocationMap.theta));
+      centerMap.y = currentLocationMap.y + (2 * sin(currentLocationMap.theta));
+      //centerMap.x = currentLocationMap.x + (2.0 * cos(currentLocationMap.theta));
+      //centerMap.y = currentLocationMap.y + (2.0 * sin(currentLocationMap.theta));
       centerMap.theta = centerLocationMap.theta;
       logicController.SetCenterLocationMap(centerMap);
       
@@ -296,6 +308,9 @@ void behaviourStateMachine(const ros::TimerEvent&)
       centerLocationOdom.y = centerOdom.y;
       
       startTime = getROSTimeInMilliSecs();
+      
+      logicController.SetArenaSize(arena_dim);
+  
     }
 
     else
@@ -331,7 +346,7 @@ void behaviourStateMachine(const ros::TimerEvent&)
       cout << "PheromoneStatus: pheromone_location = ("<<pheromone_location.x << ", "<< pheromone_location.y<< ")"<<endl;
       trail.waypoints.push_back(pheromone_location);
       //trail.centerIdx = logicController.GetCenterIdx();//this is for MPFA
-      pheromoneTrailPublish.publish(trail);
+      pheromoneTrailPublisher.publish(trail);
 
       
       cout << "================================================================" << endl;
@@ -339,14 +354,25 @@ void behaviourStateMachine(const ros::TimerEvent&)
       return;
     }
     
+    
     //update the time used by all the controllers
     logicController.SetCurrentTimeInMilliSecs( getROSTimeInMilliSecs() );
     
     //update center location
     logicController.SetCenterLocationOdom( updateCenterLocation() );
     
+    /*for(int i=0; result.wpts.waypoints.size(); i++){
+        cout<<"CPFAStatus: 1 ROSAdapter: result.wpts.waypoint=["<<result.wpts.waypoints[i].x<<endl;
+    }*/
+    
     //ask logic controller for the next set of actuator commands
     result = logicController.DoWork();
+    
+    
+    /*for(int i=0; result.wpts.waypoints.size(); i++){
+        cout<<"CPFAStatus: 2 ROSAdapter: result.wpts.waypoint=["<<result.wpts.waypoints[i].x<<endl;
+    }*/
+    
     
     bool wait = false;
     //if a wait behaviour is thrown sit and do nothing untill logicController is ready
@@ -363,9 +389,9 @@ void behaviourStateMachine(const ros::TimerEvent&)
       sendDriveCommand(0.0,0.0);
       std_msgs::Float32 angle;
       angle.data = prevFinger;
-      fingerAnglePublish.publish(angle);
+      fingerAnglePublisher.publish(angle);
       angle.data = prevWrist;
-      wristAnglePublish.publish(angle);
+      wristAnglePublisher.publish(angle);
     }
     //normally interpret logic controllers actuator commands and deceminate them over the appropriate ROS topics
     else
@@ -377,14 +403,14 @@ void behaviourStateMachine(const ros::TimerEvent&)
       if (result.fingerAngle != -1)
       {
         angle.data = result.fingerAngle;
-        fingerAnglePublish.publish(angle);
+        fingerAnglePublisher.publish(angle);
         prevFinger = result.fingerAngle;
       }
 
       if (result.wristAngle != -1)
       {
         angle.data = result.wristAngle;
-        wristAnglePublish.publish(angle);
+        wristAnglePublisher.publish(angle);
         prevWrist = result.wristAngle;
       }
     }
@@ -405,6 +431,8 @@ void behaviourStateMachine(const ros::TimerEvent&)
     // publish current state for the operator to see
     stateMachineMsg.data = "WAITING";
 
+    // poll the logicController to get the waypoints that have been
+    // reached.
     std::vector<int> cleared_waypoints = logicController.GetClearedWaypoints();
 
     for(std::vector<int>::iterator it = cleared_waypoints.begin();
@@ -418,6 +446,10 @@ void behaviourStateMachine(const ros::TimerEvent&)
     result = logicController.DoWork();
     if(result.type != behavior || result.b != wait)
     {
+      // if the logic controller requested that the robot drive, then
+      // drive. Otherwise there are no manual waypoints and the robot
+      // should sit idle. (ie. only drive according to joystick
+      // input).
       sendDriveCommand(result.pd.left,result.pd.right);
     }
     //cout << endl;
@@ -426,7 +458,7 @@ void behaviourStateMachine(const ros::TimerEvent&)
   // publish state machine string for user, only if it has changed, though
   if (strcmp(stateMachineMsg.data.c_str(), prev_state_machine) != 0)
   {
-    stateMachinePublish.publish(stateMachineMsg);
+    stateMachinePublisher.publish(stateMachineMsg);
     sprintf(prev_state_machine, "%s", stateMachineMsg.data.c_str());
   }
 }
@@ -436,7 +468,7 @@ void sendDriveCommand(double left, double right)
   velocity.linear.x = left,
       velocity.angular.z = right;
   // publish the drive commands
-  driveControlPublish.publish(velocity);
+  driveControlPublisher.publish(velocity);
 }
 
 /*************************
@@ -453,7 +485,8 @@ void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& messag
   if (message->detections.size() > 0) {
     vector<Tag> tags;
 
-    for (int i = 0; i < message->detections.size(); i++) {
+    for (int i = 0; i < message->detections.size(); i++) 
+    {
 
       // Package up the ROS AprilTag data into our own type that does not rely on ROS.
       Tag loc;
@@ -537,6 +570,10 @@ void sonarHandler(const sensor_msgs::Range::ConstPtr& sonarLeft, const sensor_ms
   logicController.SetSonarData(sonarLeft->range, sonarCenter->range, sonarRight->range);
 }
 
+void arenaDimHandler(const std_msgs::Float32::ConstPtr& message){
+	arena_dim = message->data;
+	}
+
 void odometryHandler(const nav_msgs::Odometry::ConstPtr& message) {
   //Get (x,y) location directly from pose
   currentLocation.x = message->pose.pose.position.x;
@@ -565,8 +602,8 @@ void virtualFenceHandler(const std_msgs::Float32MultiArray& message)
   // 0 = Disable the virtual fence
   // 1 = circle
   // 2 = rectangle
+ 
   int shape_type = static_cast<int>(message.data[0]); // Shape type
-  
   if (shape_type == 0)
   {
     logicController.setVirtualFenceOff();

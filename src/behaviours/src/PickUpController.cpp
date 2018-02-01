@@ -61,7 +61,7 @@ void PickUpController::SetTagData(vector<Tag> tags)
 
         if(tags[i].getID() == 256)
         {
-			cout <<"CPFAStatus: see collection disk..."<<endl;
+			cout <<"SwitchStatus: see collection disk..."<<endl;
           Reset();
 
           if (has_control)

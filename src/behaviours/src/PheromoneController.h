@@ -27,7 +27,7 @@ public:
 
 
   void SetCurrentTimeInMilliSecs( long int time ) { current_time = time; }
-  void SetTargetPickedUp () { targetHeld = true; }
+  void SetTargetPickedUp() { targetHeld = true; }
   void setCurrentLocation (Point location) { current_location = location; }
 
   void DriveToPheromoneTrail();

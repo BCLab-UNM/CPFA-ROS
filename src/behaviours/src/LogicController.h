@@ -51,13 +51,37 @@ public:
   void SetVelocityData(float linearVelocity, float angularVelocity);
   void SetMapVelocityData(float linearVelocity, float angularVelocity);
   void SetCenterLocationOdom(Point centerLocationOdom);
-   //int GetCenterIdx();
   void SetCenterLocationMap(Point centerLocationMap);
+  void SetArenaSize(int size);
+  
+  // Passthrough for providing new waypoints to the
+  // ManualWaypointController.
   void AddManualWaypoint(Point wpt, int waypoint_id);
+
+  
+  // Passthrough for removing waypoints from the
+  // ManualWaypointController.
   void RemoveManualWaypoint(int waypoint_id);
+
+  
+  // Passthrough for getting the list of manual waypoints that have
+  // been visited. 
   std::vector<int> GetClearedWaypoints();
 
+  
+  // Put the logic controller into manual mode. Changes process state
+  // to PROCESS_STATE_MANUAL and logic state to LOGIC_STATE_INTERRUPT.
+  
+  // If the logic controller is already in manual mode this has no
+  // effect.
   void SetModeManual();
+
+  
+  // Put the logic controller into autonomous mode. Resets the logic
+  // controller and clears all manual waypoints.
+  //
+  // If the logic controller is already in autonomous mode, then this
+  // has no effect.
   void SetModeAuto();
 
   void SetCurrentTimeInMilliSecs( long int time );
@@ -65,7 +89,6 @@ public:
   void SetCPFAState(CPFAState state) override;
   CPFAState GetCPFAState() override;
 
-  //void SetTargetHeld();
   // Tell the logic controller whether rovers should automatically
   // resstrict their foraging range. If so provide the shape of the
   // allowed range.
@@ -101,7 +124,7 @@ private:
     PROCESS_STATE_PHEROMONE,
     _LAST,
     PROCCESS_STATE_MANUAL
-  };//PROCESS_STATE_SENSE_DENSITY,
+  };
      
 
   CPFAState cpfa_state = start_state;
@@ -132,15 +155,13 @@ private:
   bool informed_search = false;
   int local_resource_density = 0;
   bool lay_pheromone = false;
-
+ 
 // CPFA Parameters
-  double probability_of_switching_to_searching = 0.015;
-  double probability_of_returning_to_nest=0.001;
-  double uninformed_search_variation= 0.4;
-  double rate_of_informed_search_decay =0.1666;
-  double rate_of_following_site_fidelity = 0.6;//original is 0.3
-  double rate_of_laying_pheromone =5;
-  double rate_of_pheromone_decay = 0.025;
+  //double probability_of_switching_to_searching = 0.015;
+  //double rate_of_following_site_fidelity = 5;//original is 0.3; range [0, 20]; 0 -> 1; 20 -> 0
+  //double rate_of_laying_pheromone =5; //range [0, 20]; 0 -> 1; 20 -> 0
+  //double rate_of_pheromone_decay = 0.025; //range [0, 1];
+
   bool first_waypoint = true;
   
   bool set_informed_type =false; //qilu 12/2017
@@ -156,7 +177,7 @@ private:
 
   CPFAParameters CPFA_parameters;*/ //remove this block if the code works. 
   /* End CPFA State variables */
-
+CPFAParameters CPFA_parameters;
 };
 
 #endif // LOGICCONTROLLER_H

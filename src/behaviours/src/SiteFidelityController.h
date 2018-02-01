@@ -30,10 +30,12 @@ public:
   void setCurrentLocation(Point current_location);
   void SetCPFAState(CPFAState state) override;
   CPFAState GetCPFAState() override;
+  bool SiteFidelityInvalid();
+    
 private:
 
     void ProcessData();
-  
+    void SiteFidelityReset();
     bool target_picked_up = false;
     Point site_fidelity_location;
     Point current_location;
