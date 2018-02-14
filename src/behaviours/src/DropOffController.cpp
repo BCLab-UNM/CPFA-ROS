@@ -368,7 +368,7 @@ void DropOffController::ProcessData() {
 }
 
 bool DropOffController::ShouldInterrupt() {
-	cout<<"dropoff controller should interrupt...";
+	cout<<"dropoff controller should interrupt..."<<endl;
   ProcessData();
   if (startWaypoint && !interrupt) {
     interrupt = true;

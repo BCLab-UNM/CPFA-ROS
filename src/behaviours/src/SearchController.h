@@ -102,7 +102,7 @@ private:
   Point currentLocation;
   Point centerLocation;
   Point searchLocation;
-  //int attemptCount = 0;
+  int attemptCount = 0;
   //struct for returning data to ROS adapter
   Result result;
   bool reachedWaypoint = false;

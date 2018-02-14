@@ -7,7 +7,7 @@ MapData::MapData()
     display_global_offset = false;
 }
 
-void MapData::addToGPSRoverPath(string rover, float x, float y)
+void MapData::AddToGPSRoverPath(string rover, float x, float y)
 {
   // Negate the y direction to orient the map so up is north.
   y = -y;
@@ -29,7 +29,7 @@ void MapData::addToGPSRoverPath(string rover, float x, float y)
 
 }
 
-void MapData::addToEncoderRoverPath(string rover, float x, float y)
+void MapData::AddToEncoderRoverPath(string rover, float x, float y)
 {
   // Negate the y direction to orient the map so up is north.
   y = -y;
@@ -51,7 +51,7 @@ void MapData::addToEncoderRoverPath(string rover, float x, float y)
 
 }
 
-void MapData::addToEKFRoverPath(string rover, float x, float y)
+void MapData::AddToEKFRoverPath(string rover, float x, float y)
 {
   // Negate the y direction to orient the map so up is north.
   y = -y;
@@ -74,7 +74,7 @@ void MapData::addToEKFRoverPath(string rover, float x, float y)
 }
 
 // Expects the input y to be consistent with the map coordinate system
-int MapData::addToWaypointPath(string rover, float x, float y)
+int MapData::AddToWaypointPath(string rover, float x, float y)
 {
   update_mutex.lock();
 
@@ -90,7 +90,7 @@ int MapData::addToWaypointPath(string rover, float x, float y)
   return this_id;
 }
 
-void MapData::removeFromWaypointPath(std::string rover, int id)
+void MapData::RemoveFromWaypointPath(std::string rover, int id)
 {
   update_mutex.lock();
 
@@ -100,7 +100,7 @@ void MapData::removeFromWaypointPath(std::string rover, int id)
   update_mutex.unlock();
 }
 
-void MapData::reachedWaypoint(int waypoint_id)
+void MapData::ReachedWaypoint(int waypoint_id)
 {
   update_mutex.lock();
 
@@ -131,7 +131,7 @@ void MapData::reachedWaypoint(int waypoint_id)
   update_mutex.unlock();
 }
 
-void MapData::addTargetLocation(string rover, float x, float y)
+void MapData::AddTargetLocation(string rover, float x, float y)
 {
   //The QT drawing coordinate system is reversed from the robot coordinate system in the y direction
     y = -y;
@@ -143,7 +143,7 @@ void MapData::addTargetLocation(string rover, float x, float y)
 }
 
 
-void MapData::addCollectionPoint(string rover, float x, float y)
+void MapData::AddCollectionPoint(string rover, float x, float y)
 {
     // The QT drawing coordinate system is reversed from the robot coordinate system in the y direction
     y = -y;
@@ -154,22 +154,22 @@ void MapData::addCollectionPoint(string rover, float x, float y)
 
 }
 
-void MapData::setGlobalOffset(bool display)
+void MapData::SetGlobalOffset(bool display)
 {
     display_global_offset = display;
 }
 
-void MapData::setGlobalOffsetForRover(string rover, float x, float y)
+void MapData::SetGlobalOffsetForRover(string rover, float x, float y)
 {
     rover_global_offsets[rover] = pair<float,float>(x,y);
 }
 
-std::pair<float,float> MapData::getGlobalOffsetForRover(string rover)
+std::pair<float,float> MapData::GetGlobalOffsetForRover(string rover)
 {
   return rover_global_offsets[rover];
 }
 
-bool MapData::isDisplayingGlobalOffset()
+bool MapData::IsDisplayingGlobalOffset()
 {
   return display_global_offset;
 }
@@ -275,14 +275,14 @@ std::map<int, std::tuple<float,float,bool> >* MapData::getWaypointPath(std::stri
     return &waypoint_path[rover_name];
 }
 
-void MapData::resetAllWaypointPaths()
+void MapData::ResetAllWaypointPaths()
 {
     waypoint_path.clear();
     global_offset_waypoint_path.clear();
     waypoint_id_counter = 0;
 }
 
-void MapData::resetWaypointPathForSelectedRover(std::string rover)
+void MapData::ResetWaypointPathForSelectedRover(std::string rover)
 {
    waypoint_path[rover].clear();
    global_offset_waypoint_path[rover].clear();
@@ -406,15 +406,15 @@ bool MapData::inManualMode(string rover_name)
    return rover_mode[rover_name] == 0;
 }
 
-void MapData::setAutonomousMode(string rover_name)
+void MapData::SetAutonomousMode(string rover_name)
 {
    update_mutex.lock();
    rover_mode[rover_name] = 1;
-   resetWaypointPathForSelectedRover(rover_name);
+   ResetWaypointPathForSelectedRover(rover_name);
    update_mutex.unlock();
 }
 
-void MapData::setManualMode(string rover_name)
+void MapData::SetManualMode(string rover_name)
 {
    update_mutex.lock();
    rover_mode[rover_name] = 0;

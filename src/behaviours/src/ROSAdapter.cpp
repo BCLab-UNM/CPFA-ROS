@@ -62,6 +62,8 @@ private:
 // Random number generator
 random_numbers::RandomNumberGenerator* rng;
 
+std_msgs::UInt8 collision_msg;
+
 // Create logic controller
 
 LogicController logicController;
@@ -137,6 +139,7 @@ ros::Publisher heartbeatPublisher;
 // to indicate when waypoints have been reached.
 ros::Publisher waypointFeedbackPublisher;
 ros::Publisher pheromoneTrailPublisher;//qilu 12/2017
+ros::Publisher obstaclePubisher;
 
 // Subscribers
 ros::Subscriber joySubscriber;
@@ -220,6 +223,7 @@ int main(int argc, char **argv) {
   message_filters::Subscriber<sensor_msgs::Range> sonarCenterSubscriber(mNH, (publishedName + "/sonarCenter"), 10);
   message_filters::Subscriber<sensor_msgs::Range> sonarRightSubscriber(mNH, (publishedName + "/sonarRight"), 10);
   
+  obstaclePubisher = mNH.advertise<std_msgs::UInt8>((publishedName + "/obstacle"), 10, true);
   status_publisher = mNH.advertise<std_msgs::String>((publishedName + "/status"), 1, true);
   stateMachinePublisher = mNH.advertise<std_msgs::String>((publishedName + "/state_machine"), 1, true);
   fingerAnglePublisher = mNH.advertise<std_msgs::Float32>((publishedName + "/fingerAngle/cmd"), 1, true);
@@ -414,6 +418,8 @@ void behaviourStateMachine(const ros::TimerEvent&)
         prevWrist = result.wristAngle;
       }
     }
+  collision_msg.data = logicController.getCollisionCalls();  
+  obstaclePubisher.publish(collision_msg); 
     //publishHandeling here
     //logicController.getPublishData(); suggested
     //adds a blank space between sets of debugging data to easily tell one tick from the next
@@ -710,8 +716,8 @@ void pheromoneTrailHandler(const swarmie_msgs::PheromoneTrail& message) {
     //cout<<"PheromoneStatus: pheromone_trail.size()="<<pheromone_trail.size()<<endl;
       
     //cout<<"Pheromone trail handler... "<<endl;
-    //logicController.insertPheromone(centerId, pheromone_trail);
-    logicController.insertPheromone(pheromone_trail);
+    //logicController.InsertPheromone(centerId, pheromone_trail);
+    logicController.InsertPheromone(pheromone_trail);
     return;
 }
 

@@ -27,7 +27,7 @@ public:
   CPFAState cpfa_state = start_state;
   //struct for returning data to the ROS adapter
   Result result;
-  void setCurrentLocation(Point current_location);
+  void SetCurrentLocation(Point current_location);
   void SetCPFAState(CPFAState state) override;
   CPFAState GetCPFAState() override;
   bool SiteFidelityInvalid();

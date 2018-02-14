@@ -25,7 +25,7 @@ public:
 
   bool GetIgnoreCenter() {return ignoreCenterSonar;}
   bool GetTargetHeld() {return targetHeld;}
-
+  bool GetTargetFound(){return targetFound;}
   void SetCurrentTimeInMilliSecs( long int time );
   
   void SetCPFAState(CPFAState state) override;

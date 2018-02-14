@@ -23,8 +23,8 @@ public:
   bool ShouldInterrupt() override;
   bool HasWork() override;
 
-  void setCurrentLocation(Point current_location) {this->current_location = current_location;}
-  void setCurrentTime(long int time) {current_time = time;}
+  void SetCurrentLocation(Point current_location) {this->current_location = current_location;}
+  void SetCurrentTime(long int time) {current_time = time;}
   void SetCPFAState(CPFAState state) override;
   CPFAState GetCPFAState() override;
 private:

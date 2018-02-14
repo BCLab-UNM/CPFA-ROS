@@ -28,7 +28,7 @@ public:
 
   void SetCurrentTimeInMilliSecs( long int time ) { current_time = time; }
   void SetTargetPickedUp() { targetHeld = true; }
-  void setCurrentLocation (Point location) { current_location = location; }
+  void SetCurrentLocation (Point location) { current_location = location; }
 
   void DriveToPheromoneTrail();
   void SetTagData(std::vector<Tag> tags);
@@ -37,8 +37,8 @@ public:
   //double getPoissonCDF(const double lambda);
   int GetResourceDensity();
   bool SelectPheromone();
-  void insertPheromone(const std::vector<Point>& pheromone_trail, double decay_rate);
-  void updatePheromoneList();
+  void InsertPheromone(const std::vector<Point>& pheromone_trail, double decay_rate);
+  void UpdatePheromoneList();
   /* While in the PHEROMONE state and after determining whether the rover should
    * use a pheromone, this function is called to determine which pheromone in our list
    * of pheromones should be selected as a target location and will provide a path

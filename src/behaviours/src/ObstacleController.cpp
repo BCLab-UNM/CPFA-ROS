@@ -8,6 +8,10 @@ ObstacleController::ObstacleController()
   obstacleDetected = false;
   obstacleInterrupt = false;
   result.PIDMode = CONST_PID; //use the const PID to turn at a constant speed
+  rng = new random_numbers::RandomNumberGenerator();
+  
+  cout << "ObstacleController -> 0" << endl;
+
 }
 
 
@@ -18,6 +22,7 @@ void ObstacleController::Reset() {
   obstacleDetected = false;
   obstacleInterrupt = false;
   delay = current_time;
+  SetCPFAState(start_state);
 }
 	
 // Avoid crashing into objects detected by the ultraound
@@ -31,7 +36,9 @@ void ObstacleController::avoidObstacle() {
       result.pd.cmdAngular = -K_angular;
 
       result.pd.setPointVel = 0.0;
-      result.pd.cmdVel = 0.0;
+      double vel = rng->uniformReal(0, 0.5);
+            result.pd.cmdVel = vel;
+      //result.pd.cmdVel = 0.0;
       result.pd.setPointYaw = 0;
     }
 }
@@ -54,7 +61,9 @@ void ObstacleController::avoidCollectionZone() {
 
     result.pd.setPointVel = 0.0;
     //result.pd.cmdVel = 0.0;
-    result.pd.cmdVel = -0.1; //qilu 01/2018
+	double vel = rng->uniformReal(-0.5, 0);
+      
+    result.pd.cmdVel = vel; //qilu 02/2018
     result.pd.setPointYaw = 0;
 }
 
@@ -64,7 +73,6 @@ Result ObstacleController::DoWork() {
   clearWaypoints = true;
   set_waypoint = true;
   result.PIDMode = CONST_PID;
-
   // The obstacle is an april tag marking the collection zone
   if(collection_zone_seen){
     avoidCollectionZone();
@@ -93,7 +101,7 @@ Result ObstacleController::DoWork() {
 }
 
 
-void ObstacleController::setSonarData(float sonarleft, float sonarcenter, float sonarright) {
+void ObstacleController::SetSonarData(float sonarleft, float sonarcenter, float sonarright) {
   left = sonarleft;
   right = sonarright;
   center = sonarcenter;
@@ -101,7 +109,7 @@ void ObstacleController::setSonarData(float sonarleft, float sonarcenter, float 
   ProcessData();
 }
 
-void ObstacleController::setCurrentLocation(Point currentLocation) {
+void ObstacleController::SetCurrentLocation(Point currentLocation) {
   this->currentLocation = currentLocation;
 }
 
@@ -231,15 +239,13 @@ bool ObstacleController::ShouldInterrupt() {
     if(obstacleAvoided && obstacleDetected)
     {
       Reset();
-      if(obstacleAvoided && GetCPFAState() == return_to_nest)
+      cout<<"TestStatus: obstacle interrupt: GetCPFAState()="<<GetCPFAState()<<endl;
+      if(GetCPFAState() == return_to_nest)
       {
-		  cout<<"Obstacle avoid and returning to nest... interrupt...true"<<endl;
+		  cout<<"TestStatus: Obstacle avoid and set to reach nest... interrupt...true"<<endl;
 		  SetCPFAState(reached_nest);
-      }
-      else
-      {
-		  cout<<"Obstacle detected... interrupt...true"<<endl;
 		  }
+      
       
     return true;
     } else {
@@ -260,7 +266,7 @@ bool ObstacleController::HasWork() {
 }
 
 //ignore center ultrasound
-void ObstacleController::setIgnoreCenterSonar(){
+void ObstacleController::SetIgnoreCenterSonar(){
   ignore_center_sonar = true; 
 }
 
@@ -281,7 +287,7 @@ void ObstacleController::SetTargetHeld() {
   }
 }
 
-void ObstacleController::setTargetHeldClear()
+void ObstacleController::SetTargetHeldClear()
 {
   //adjust current state on transition from cube held to cube not held
   if (targetHeld)
