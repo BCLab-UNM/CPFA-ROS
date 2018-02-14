@@ -94,7 +94,7 @@ Result PheromoneController::DoWork()
   if (!sense_local_density_completed && !drive_to_pheromone)
   {
     //cout<<"TestStatus: rotateAngle="<<rotateAngle<<endl;
-    if(rotateAngle >= 318)
+    if(rotateAngle >= 315)
     {
 		//cout<<"PheromoneStatus: sense completed...# of tags="<<total_resource<<endl;
 		int firstIdx =0;
@@ -103,23 +103,23 @@ Result PheromoneController::DoWork()
 	    
 	    for(int i = 1; i < detect_resource_angle.size(); i++)
         {
-			cout<<"detect_resource_angle["<<i<<"]="<<detect_resource_angle[i]<<endl;
-			cout<<"detect_resource_angle["<<firstIdx<<"]="<<detect_resource_angle[firstIdx]<<endl;
+			//cout<<"detect_resource_angle["<<i<<"]="<<detect_resource_angle[i]<<endl;
+			//cout<<"detect_resource_angle["<<firstIdx<<"]="<<detect_resource_angle[firstIdx]<<endl;
 			
 			diffAngle = detect_resource_angle[i]-detect_resource_angle[firstIdx];
-			cout<<"TestStatus: diffAngle="<<diffAngle<<endl;
+			//cout<<"TestStatus: diffAngle="<<diffAngle<<endl;
 			if(diffAngle<0)
 			{
 				diffAngle += 360;
 			}
 			if(diffAngle > 45)
 			{
-				cout<<"TestStatus: max_num_tags="<<max_num_tags<<endl;
+				//cout<<"TestStatus: max_num_tags="<<max_num_tags<<endl;
 				total_resource += max_num_tags;
 				max_num_tags = num_resource_detected[i];
-				cout<<"TestStatus: max_num_tags="<<max_num_tags<<endl;
+				//cout<<"TestStatus: max_num_tags="<<max_num_tags<<endl;
 				firstIdx = i;
-				cout<<"TestStatus: firstIdx="<<firstIdx<<endl;
+				//cout<<"TestStatus: firstIdx="<<firstIdx<<endl;
 				
 				flag = false;
 			}
@@ -199,7 +199,7 @@ Result PheromoneController::DoWork()
   return result;
 }
 
-void PheromoneController::updatePheromoneList()
+void PheromoneController::UpdatePheromoneList()
 {
   vector<Pheromone> newPheromoneList;
   //cout<<"PheromoneStatus: pheromones.size()="<<pheromones.size()<<endl;
@@ -211,7 +211,7 @@ void PheromoneController::updatePheromoneList()
     
     if(pheromones[i].isActive()) 
     {
-		cout<<"TestStatus: pheromones["<<i<<"].=("<<pheromones[i].getLocation().x<<","<<pheromones[i].getLocation().y<<")"<<endl;
+		//cout<<"TestStatus: pheromones["<<i<<"].=("<<pheromones[i].getLocation().x<<","<<pheromones[i].getLocation().y<<")"<<endl;
       newPheromoneList.push_back(pheromones[i]);
     }
     else
@@ -271,7 +271,7 @@ bool PheromoneController::SelectPheromone()
 	return isPheromoneSet = true;
 }
 
-void PheromoneController::insertPheromone( const vector<Point> &pheromone_trail, double pheromone_decay_rate)
+void PheromoneController::InsertPheromone( const vector<Point> &pheromone_trail, double pheromone_decay_rate)
 {
   // At this point in time we are not making a pheromone trail
   // the first index of the trail is the same position as the pheromone location
@@ -299,15 +299,17 @@ bool PheromoneController::SenseCompleted()
 	}
 bool PheromoneController::ShouldInterrupt()
 {
-  cout<<"pheromone controller should interrupt..."<<endl;
+  cout<<"pheromone controller should interrupt...";
   //qilu 12/2017
   //ProcessData(); 
   if(sense_local_density_completed)
   {
+	  cout<<"True"<<endl;
     return true;
   }
   else
   {
+	  cout<<"false"<<endl;
     return false;
   }
   
@@ -341,7 +343,7 @@ void PheromoneController::SetTagData(std::vector<Tag> tags)
    //resource_density += target_count;//qilu 12/2017
    //if(target_count>0)
    //{
-       cout<<"TestStatus: target_count="<<target_count<<endl;
+       //cout<<"TestStatus: target_count="<<target_count<<endl;
 	   num_resource_detected.push_back(target_count);
 	   currentAngle = current_location.theta*180/M_PI;
 	   detect_resource_angle.push_back(currentAngle);

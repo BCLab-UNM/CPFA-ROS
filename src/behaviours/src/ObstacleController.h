@@ -3,6 +3,7 @@
 
 #include "Controller.h"
 #include "Tag.h"
+#include <random_numbers/random_numbers.h>
 
 class ObstacleController : virtual Controller
 {
@@ -13,18 +14,18 @@ public:
 
   void Reset() override;
   Result DoWork() override;
-  void setSonarData(float left, float center, float right);
-  void setCurrentLocation(Point currentLocation);
+  void SetSonarData(float left, float center, float right);
+  void SetCurrentLocation(Point currentLocation);
   void SetTagData(vector<Tag> tags);
   bool ShouldInterrupt() override;
   bool HasWork() override;
-  void setIgnoreCenterSonar();
+  void SetIgnoreCenterSonar();
   void SetCurrentTimeInMilliSecs( long int time );
   void SetTargetHeld();
 
   // Checks if a target is held and if so resets the state of the obestacle controller otherwise does nothing
-  void setTargetHeldClear();
-  bool getShouldClearWaypoints() {bool tmp = clearWaypoints; clearWaypoints = false; return tmp;}
+  void SetTargetHeldClear();
+  bool GetShouldClearWaypoints() {bool tmp = clearWaypoints; clearWaypoints = false; return tmp;}
   void SetCPFAState(CPFAState state) override;
   CPFAState GetCPFAState() override;
   
@@ -54,9 +55,11 @@ private:
      * Member variables
      */
 
+  random_numbers::RandomNumberGenerator* rng;
+  
   bool obstacleInterrupt; //records if obstacle has interupted
   bool obstacleDetected;  //records if an obstacle has been detected
-  bool obstacleAvoided; //record if an obstacke has been avoided
+  bool obstacleAvoided; //record if an obstacle has been avoided
   bool clearWaypoints = false;  //record if drivecontrollers waypoints should be cleared
 
   float left = 0; //distance on left ultrasound

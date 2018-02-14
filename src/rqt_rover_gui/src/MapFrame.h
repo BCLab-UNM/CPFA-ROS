@@ -49,28 +49,28 @@ namespace rqt_rover_gui
 
       MapFrame(QWidget *parent, Qt::WindowFlags = 0);
 
-      void setWhetherToDisplay(string rover, bool yes);
-      void createPopoutWindow(MapData *map_data);
+      void SetWhetherToDisplay(string rover, bool yes);
+      void CreatePopoutWindow(MapData *map_data);
 
-      void setDisplayEncoderData(bool display);
-      void setDisplayGPSData(bool display);
-      void setDisplayEKFData(bool display);
-      void setGlobalOffset(bool display);
-      void setGlobalOffsetForRover(std::string rover, float x, float y);
-      void setDisplayUniqueRoverColors(bool display);
-      void setUniqueRoverColor(std::string, QColor rover_color);
+      void SetDisplayEncoderData(bool display);
+      void SetDisplayGPSData(bool display);
+      void SetDisplayEKFData(bool display);
+      void SetGlobalOffset(bool display);
+      void SetGlobalOffsetForRover(std::string rover, float x, float y);
+      void SetDisplayUniqueRoverColors(bool display);
+      void SetUniqueRoverColor(std::string, QColor rover_color);
 
-      void addToGPSRoverPath(std::string rover, float x, float y);
-      void addToEncoderRoverPath(std::string rover, float x, float y);
-      void addToEKFRoverPath(std::string rover, float x, float y);
+      void AddToGPSRoverPath(std::string rover, float x, float y);
+      void AddToEncoderRoverPath(std::string rover, float x, float y);
+      void AddToEKFRoverPath(std::string rover, float x, float y);
 
-      void setMapData(MapData* map_data);
+      void SetMapData(MapData* map_data);
 
       // Create a waypoint on map. Rovers will navigate to the waypoint.
-      void addWaypoint(std::string rover, float x, float y);
-      void removeWaypoint(std::string rover, int id );
-      void resetAllWaypointPaths();
-      void resetWaypointPathForSelectedRover(std::string rover);
+      void AddWaypoint(std::string rover, float x, float y);
+      void RemoveWaypoint(std::string rover, int id );
+      void ResetAllWaypointPaths();
+      void ResetWaypointPathForSelectedRover(std::string rover);
      
       void clear();
       void clear(std::string rover);
@@ -85,8 +85,8 @@ namespace rqt_rover_gui
       // Excludes manual trasform
       void setAutoTransform();
 
-      void enableWaypoints(std::string rover);
-      void disableWaypoints(std::string rover);
+      void EnableWaypoints(std::string rover);
+      void DisableWaypoints(std::string rover);
 
       // Show a copy of the map in its own resizable window
       void popout();
@@ -101,8 +101,8 @@ namespace rqt_rover_gui
 
     public slots:
 
-        void receiveWaypointReached(int);
-        void receiveCurrentRoverName(QString);
+        void ReceiveWaypointReached(int);
+        void ReceiveCurrentRoverName(QString);
         
     protected:
 

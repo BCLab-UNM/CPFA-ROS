@@ -181,7 +181,6 @@ Result DriveController::DoWork()
 
 	  cout<<"CPFAStatus:: skid steer..."<<endl;
 	  //cout<<"CPFAStatus: before waypoint.back().x="<<waypoints.back().x<<endl;
-      cout<<"CPFAStatus: before result.wpts.waypoint=["<<result.wpts.waypoints[0].x<<", "<<result.wpts.waypoints[0].y<<"]"<<endl;
       
       // calculate the distance between current and desired heading in radians
       waypoints.back().theta = atan2(waypoints.back().y - currentLocation.y, waypoints.back().x - currentLocation.x);
@@ -208,10 +207,10 @@ Result DriveController::DoWork()
         //cout<<"CPFAStatus: waypoint.back().x="<<waypoints.back().x<<endl;
         cout<<"CPFAStatus: result.wpts.waypoint=["<<result.wpts.waypoints[0].x<<", "<< result.wpts.waypoints[0].y<<"]"<<endl;
         stateMachineState = STATE_MACHINE_WAYPOINTS;
-        cout<<"SwitchStatus:: Reach goal..."<<endl;
+        cout<<"TestStatusSwitchStatus:: Reach goal..."<<endl;
         //result.cpfa_state = search_with_uninformed_walk;
         cout<<"CPFAStatus: result.wpts.waypoint size="<<result.wpts.waypoints.size()<<endl;
-        cout<<"result.cpfa_state  = "<<result.cpfa_state <<endl;
+        cout<<"cpfa_state  = "<<GetCPFAState() <<endl;
       }
       cout<<"1...."<<endl;
       break;

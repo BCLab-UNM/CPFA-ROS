@@ -54,6 +54,7 @@ public:
   void SetCenterLocationMap(Point centerLocationMap);
   void SetArenaSize(int size);
   
+  int getCollisionCalls();
   // Passthrough for providing new waypoints to the
   // ManualWaypointController.
   void AddManualWaypoint(Point wpt, int waypoint_id);
@@ -85,7 +86,7 @@ public:
   void SetModeAuto();
 
   void SetCurrentTimeInMilliSecs( long int time );
-  void insertPheromone(const std::vector<Point>& pheromone_trail); //qilu 12/2017
+  void InsertPheromone(const std::vector<Point>& pheromone_trail); //qilu 12/2017
   void SetCPFAState(CPFAState state) override;
   CPFAState GetCPFAState() override;
 
@@ -101,7 +102,7 @@ public:
   bool layPheromone(); //qilu 12/2017
   //Point getTargetLocation(); //qilu 12/2017
   Point GetCurrentLocation(); //qilu 12/2017
-  void updatePheromoneList();
+  void UpdatePheromoneList();
   
 protected:
   void ProcessData();

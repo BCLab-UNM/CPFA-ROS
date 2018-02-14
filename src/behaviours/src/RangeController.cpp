@@ -60,13 +60,13 @@ RangeController::RangeController()
 
 RangeController::RangeController( float backtrack_distance )
 {
-  setBacktrackDistance( backtrack_distance );
+  SetBacktrackDistance( backtrack_distance );
 }
 
 RangeController::RangeController( float backtrack_distance, RangeShape* range )
 {
-  setBacktrackDistance( backtrack_distance );
-  setRangeShape( range );
+  SetBacktrackDistance( backtrack_distance );
+  SetRangeShape( range );
 }
 
 void RangeController::Reset()
@@ -154,12 +154,12 @@ bool RangeController::HasWork()
   return has_work;
 }
 
-void RangeController::setCurrentLocation( Point current ) 
+void RangeController::SetCurrentLocation( Point current ) 
 {
   current_location = current;
 }
 
-void RangeController::setBacktrackDistance( float backtrack_distance )
+void RangeController::SetBacktrackDistance( float backtrack_distance )
 {
   if (backtrack_distance <= 0) throw RangeControllerInvalidParameterException(" The backtrack distance must be positive.");
 
@@ -167,7 +167,7 @@ void RangeController::setBacktrackDistance( float backtrack_distance )
 }
 
 // Set the shape of the valid foraging range
-void RangeController::setRangeShape( RangeShape* range )
+void RangeController::SetRangeShape( RangeShape* range )
 {
   if ( this->range != NULL ) delete this->range; // Clean up memory
   this->range = range;
@@ -196,7 +196,7 @@ Point RangeController::distAlongLineSegment(Point start, Point end, float dist)
   return P;
 }
 
-void RangeController::setEnabled( bool enabled )
+void RangeController::SetEnabled( bool enabled )
 {
   this->enabled = enabled;
 } 

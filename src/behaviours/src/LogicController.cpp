@@ -144,7 +144,15 @@ Result LogicController::DoWork() {
                cout<<"TestStatus: r1 = "<< r1<<endl;
                if(r1 > followSiteFidelityRate || siteFidelityController.SiteFidelityInvalid())//informed search with pheromone waypoints or uninformed search
                {
-				   cout<<"TestStatus: invalid fidelity="<<siteFidelityController.SiteFidelityInvalid()<<endl;
+				   if(siteFidelityController.SiteFidelityInvalid())
+				   {
+					   cout<<"TestStatus: no site fidelity..."<<endl;
+					   }
+					   else
+					   {
+						   cout<<"TestStatus: has fidelity..."<<endl;
+				   
+						   }
 				   if(pheromoneController.SelectPheromone())
 				   {
 		             //result.type = behavior;
@@ -222,12 +230,12 @@ Result LogicController::DoWork() {
           cout<<"SwitchStatus: driver controller interrupt...true"<<endl;
           if(processState == PROCCESS_STATE_SEARCHING)
           {
-		    cout<<"SwitchStatus: set reached..."<<endl;
+		    cout<<"TestStatusSwitchStatus: searchCtrl set reached..."<<endl;
 		    searchController.SetReachedWaypoint(true);
-		    if(searchController.GiveupSearch())
+		    /*if(searchController.GiveupSearch())
 		    {
 				
-				}
+				}*/
 		  } 
       }
     }
@@ -254,7 +262,7 @@ Result LogicController::DoWork() {
   }//end switch statment******************************************************************************************
    //cout<<"PheromoneStatus: current_time="<<current_time<<endl;
    
-   updatePheromoneList();
+   UpdatePheromoneList();
   //now using proccess logic allow the controller to communicate data between eachother
   controllerInterconnect();
 
@@ -385,6 +393,17 @@ bool LogicController::HasWork()
   return false;
 }
 
+int LogicController::getCollisionCalls()
+{
+	if(obstacleController.HasWork())
+	{
+		cout<<"ObstacleState: get one obstacle avoidance call..."<<endl;
+		return 1;
+		}
+		
+	return 0;
+}
+
 void LogicController::controllerInterconnect() 
 {
   cout<<"controller interconnect..."<<endl;
@@ -395,10 +414,13 @@ void LogicController::controllerInterconnect()
     //obstacle needs to know if the center ultrasound should be ignored
     if(pickUpController.GetIgnoreCenter()) 
     {
-		cout<<"get ingnore center..."<<endl;
-      obstacleController.setIgnoreCenterSonar();
+      obstacleController.SetIgnoreCenterSonar();
     }
-
+    if(pickUpController.GetTargetFound())
+    {
+		searchController.SetCPFAState(switched_to_search);
+		}
+    
     //pickup controller annouces it has pickedup a target
     if(pickUpController.GetTargetHeld()) 
     {
@@ -410,16 +432,26 @@ void LogicController::controllerInterconnect()
       pheromoneController.SetTargetPickedUp();//qilu 12/2017
       //targetHeld = true;
     }
-    if(obstacleController.HasWork() && searchController.GetCPFAState() == return_to_nest)
+    if(obstacleController.HasWork()) 
     {
-		searchController.SetCPFAState(avoid_obstacle);
-		obstacleController.SetCPFAState(return_to_nest);
-		} 
-	if(obstacleController.GetCPFAState() == reached_nest )
-	{
-		cout<<"SwitchStatus: interconnect, set reached_nest..."<<endl;
-		searchController.SetCPFAState(start_state);
+		if(searchController.GetCPFAState() == return_to_nest)
+		{
+			obstacleController.SetCPFAState(return_to_nest);
+		    cout<<"TestStatus: obstacle set to return to nest..."<<obstacleController.GetCPFAState()<<endl;
 		}
+		else
+		{
+		    searchController.SetCPFAState(avoid_obstacle);
+             cout<<"TestStatus: SearchCtrl set to avoid obstacle..."<<searchController.GetCPFAState()<<endl;			
+			}
+	} 
+	if(obstacleController.GetCPFAState() == reached_nest)
+	{
+		cout<<"TestStatusSwitchStatus: interconnect, set reached_nest..."<<endl;
+		searchController.SetCPFAState(reached_nest);
+		//searchController.SetReachedWaypoint(true);
+		//obstacleController.SetCPFAState(start_state);
+	}
     
   }
   
@@ -436,12 +468,11 @@ void LogicController::controllerInterconnect()
   //ask if drop off has released the target from the claws yet
   if (!dropOffController.HasTarget()) 
   {
-	  cout<<"drop off: does not have target..."<<endl;
-    obstacleController.setTargetHeldClear();
+    obstacleController.SetTargetHeldClear();
   }
 
   //obstacle controller is running driveController needs to clear its waypoints
-  if(obstacleController.getShouldClearWaypoints())
+  if(obstacleController.GetShouldClearWaypoints())
   {
 	  cout<<"clear waypoints..."<<endl;
     driveController.Reset();
@@ -476,20 +507,20 @@ void LogicController::SetPositionData(Point currentLocation)
 	cout<<"set position data "<< currentLocation.x<<","<<currentLocation.y<<endl;
   searchController.SetCurrentLocation(currentLocation);
   dropOffController.SetCurrentLocation(currentLocation);
-  obstacleController.setCurrentLocation(currentLocation);
+  obstacleController.SetCurrentLocation(currentLocation);
   driveController.SetCurrentLocation(currentLocation);
   manualWaypointController.SetCurrentLocation(currentLocation);
-  siteFidelityController.setCurrentLocation(currentLocation);
-  pheromoneController.setCurrentLocation(currentLocation);//qilu 12/2017
+  siteFidelityController.SetCurrentLocation(currentLocation);
+  pheromoneController.SetCurrentLocation(currentLocation);//qilu 12/2017
   //return_to_nest_controller.SetCurrentLocation(currentLocation);
-  randomDispersalController.setCurrentLocation(currentLocation);
+  randomDispersalController.SetCurrentLocation(currentLocation);
 }
 
 
 // Recieves position in the world frame with global data (GPS)
 void LogicController::SetMapPositionData(Point currentLocation) 
 {
-  rangeController.setCurrentLocation(currentLocation);  
+  rangeController.SetCurrentLocation(currentLocation);  
 }
 
 void LogicController::SetVelocityData(float linearVelocity, float angularVelocity) 
@@ -518,7 +549,7 @@ void LogicController::SetAprilTags(vector<Tag> tags)
 void LogicController::SetSonarData(float left, float center, float right) 
 {
   pickUpController.SetSonarData(center);
-  obstacleController.setSonarData(left,center,right);
+  obstacleController.SetSonarData(left,center,right);
 }
 
 // Called once by RosAdapter in guarded init
@@ -545,26 +576,26 @@ std::vector<int> LogicController::GetClearedWaypoints()
 
 void LogicController::setVirtualFenceOn( RangeShape* range )
 {
-  rangeController.setRangeShape(range);
-  rangeController.setEnabled(true);
+  rangeController.SetRangeShape(range);
+  rangeController.SetEnabled(true);
 }
 
 void LogicController::setVirtualFenceOff()
 {
-  rangeController.setEnabled(false);
+  rangeController.SetEnabled(false);
 }
 
 
-void LogicController::updatePheromoneList()
+void LogicController::UpdatePheromoneList()
 {
-	pheromoneController.updatePheromoneList();
+	pheromoneController.UpdatePheromoneList();
 	
 }
 
-void LogicController::insertPheromone(const vector<Point> &pheromone_trail) 
+void LogicController::InsertPheromone(const vector<Point> &pheromone_trail) 
 {
-  //searchController.insertPheromone(pheromone_trail);
-  pheromoneController.insertPheromone(pheromone_trail, CPFA_parameters.rate_of_pheromone_decay);
+  //searchController.InsertPheromone(pheromone_trail);
+  pheromoneController.InsertPheromone(pheromone_trail, CPFA_parameters.rate_of_pheromone_decay);
 }
 
 

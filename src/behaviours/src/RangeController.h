@@ -123,10 +123,10 @@ class RangeController : virtual Controller {
   bool HasWork() override;
 
   // Setters
-  void setRangeShape( RangeShape* range );
-  void setBacktrackDistance( float backtrack_distance );
-  void setCurrentLocation( Point current );
-  void setEnabled( bool enabled );  
+  void SetRangeShape( RangeShape* range );
+  void SetBacktrackDistance( float backtrack_distance );
+  void SetCurrentLocation( Point current );
+  void SetEnabled( bool enabled );  
   
   // Destructor
   ~RangeController();
