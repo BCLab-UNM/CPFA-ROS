@@ -29,7 +29,7 @@ void ObstacleController::Reset() {
 void ObstacleController::avoidObstacle() {
   
     //always turn left to avoid obstacles
-    cout<<"always turn left to avoid obstacles..."<<endl;
+   //cout<<"always turn left to avoid obstacles..."<<endl;
     if (right < 0.8 || center < 0.8 || left < 0.8) {
       result.type = precisionDriving;
 
@@ -46,7 +46,7 @@ void ObstacleController::avoidObstacle() {
 // A collection zone was seen in front of the rover and we are not carrying a target
 // so avoid running over the collection zone and possibly pushing cubes out.
 void ObstacleController::avoidCollectionZone() {
-  cout<<"SwitchStatus: avoid collection zone..."<<endl;
+ //cout<<"SwitchStatus: avoid collection zone..."<<endl;
     result.type = precisionDriving;
 
     result.pd.cmdVel = 0.0;
@@ -69,7 +69,7 @@ void ObstacleController::avoidCollectionZone() {
 
 
 Result ObstacleController::DoWork() {
-  cout<<"SwitchStatus: ObstacleController::DoWork()..."<<endl;
+ //cout<<"SwitchStatus: ObstacleController::DoWork()..."<<endl;
   clearWaypoints = true;
   set_waypoint = true;
   result.PIDMode = CONST_PID;
@@ -83,7 +83,7 @@ Result ObstacleController::DoWork() {
 
   //if an obstacle has been avoided
   if (can_set_waypoint) {
-  cout<<"Obstacle: set wpts.waypoint..."<<endl;
+ //cout<<"Obstacle: set wpts.waypoint..."<<endl;
     can_set_waypoint = false; //only one waypoint is set
     set_waypoint = false;
     clearWaypoints = false;
@@ -157,7 +157,7 @@ void ObstacleController::ProcessData() {
   if (left < triggerDistance || right < triggerDistance || center < triggerDistance)
   {
     phys = true;
-    cout<<"SwitchStatus: detect an obstacle..."<<endl;
+   //cout<<"SwitchStatus: detect an obstacle..."<<endl;
     timeSinceTags = current_time;
   }
 
@@ -229,7 +229,7 @@ bool ObstacleController::ShouldInterrupt() {
   if(obstacleDetected && !obstacleInterrupt)
   {
     obstacleInterrupt = true;
-    cout<<"SwitchStatus: obstacle controller should interrupt... true"<<endl;
+   //cout<<"SwitchStatus: obstacle controller should interrupt... true"<<endl;
     //cout<<"SwitchStatus: result_cpfa_status="<<result.cpfa_state<<endl;
     return true;
   }
@@ -249,7 +249,7 @@ bool ObstacleController::ShouldInterrupt() {
       
     return true;
     } else {
-      cout<<"false"<<endl;
+     //cout<<"false"<<endl;
     return false;
     }
   }
@@ -306,7 +306,7 @@ CPFAState ObstacleController::GetCPFAState()
 void ObstacleController::SetCPFAState(CPFAState state) {
   cpfa_state = state;
   result.cpfa_state = state;
-  cout<<"Obstacle set state: result.cpfa_state ="<<result.cpfa_state <<endl;
+ //cout<<"Obstacle set state: result.cpfa_state ="<<result.cpfa_state <<endl;
 }
 
 

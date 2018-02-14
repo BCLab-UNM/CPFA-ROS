@@ -3,7 +3,7 @@
 using namespace std;
 
 LogicController::LogicController() {
-  cout<<"start logic controller..."<<endl;
+ //cout<<"start logic controller..."<<endl;
   logicState = LOGIC_STATE_INTERRUPT;
   processState = PROCCESS_STATE_SEARCHING;
   rng = new random_numbers::RandomNumberGenerator();
@@ -22,8 +22,8 @@ void LogicController::Reset() {
   std::cout << "LogicController.Reset()" << std::endl;
   logicState = LOGIC_STATE_INTERRUPT;
   processState = PROCCESS_STATE_SEARCHING;
-  cout<<"logicState="<<logicState<<endl;
-  cout<<"processState="<<processState<<endl;
+ //cout<<"logicState="<<logicState<<endl;
+ //cout<<"processState="<<processState<<endl;
   ProcessData();
 
   control_queue = priority_queue<PrioritizedController>();
@@ -68,7 +68,7 @@ Result LogicController::DoWork() {
         }
         else {
           control_queue.push(cntrlr);
-          cout<<"cntrlr..."<<endl;
+         //cout<<"cntrlr..."<<endl;
         }
       }
     }
@@ -82,32 +82,32 @@ Result LogicController::DoWork() {
     else {
       //default result state if someone has work this safe guards against faulty result types
       result.b = noChange;
-      cout<<"behavior is no change"<<endl;
+     //cout<<"behavior is no change"<<endl;
     }
     
     //take the top member of the priority queue and run their do work function.
     result = control_queue.top().controller->DoWork();
     
-    cout<<"get the result..."<<endl;
+   //cout<<"get the result..."<<endl;
     // This tells ROS Adapter whether to lay a pheromone
     lay_pheromone = result.lay_pheromone;
 	
     //anaylyze the result that was returned and do state changes accordingly
     //behavior types are used to indicate behavior changes of some form
-    cout<<"result.type="<<result.type<<endl;
+   //cout<<"result.type="<<result.type<<endl;
     if(result.type == behavior) {
-      cout<<"result type == behavior"<<endl;
+     //cout<<"result type == behavior"<<endl;
       //ask for an external reset so the state of the controller is preserved untill after it has returned a result and
       //gotten a chance to communicate with other controllers
       if (result.reset) {
-		  cout<<"result reset..."<<endl;
+		 //cout<<"result reset..."<<endl;
         controllerInterconnect(); //allow controller to communicate state data before it is reset
-        cout<<"controller="<<control_queue.top().controller<<endl;
+       //cout<<"controller="<<control_queue.top().controller<<endl;
         control_queue.top().controller->Reset();
       }
       //ask for the procces state to change to the next state or loop around to the begining
       if(result.b == nextProcess) {
-		  cout<<"next process..."<<endl;
+		 //cout<<"next process..."<<endl;
         if (processState == _LAST - 1) {
           processState = _FIRST;
         }
@@ -117,7 +117,7 @@ Result LogicController::DoWork() {
       }
       //ask for the procces state to change to the previouse state or loop around to the end
       else if(result.b == prevProcess) {
-        cout<<"previous process..."<<endl;
+       //cout<<"previous process..."<<endl;
         if (processState == _FIRST) {
           processState = (ProcessState)((int)_LAST - 1);
         }
@@ -127,32 +127,31 @@ Result LogicController::DoWork() {
       }
       if(result.b == FAILED)
       {  
-		  cout<<"SwitchStatus: switch to site fidelity"<<endl;
+		 //cout<<"SwitchStatus: switch to site fidelity"<<endl;
 		  processState = PROCESS_STATE_SITE_FIDELITY;
 		  }
       
       //update the priorites of the controllers based upon the new process state.
       if (result.b == nextProcess || result.b == prevProcess || result.b == FAILED) 
       {
-		  cout<<"result.b == next or prev"<<endl;
+		 //cout<<"result.b == next or prev"<<endl;
 		  if(processState == PROCESS_STATE_SITE_FIDELITY)
 		  {
 		       double followSiteFidelityRate = getPoissonCDF(CPFA_parameters.rate_of_following_site_fidelity);
 		       //double followSiteFidelityRate = 0.1;
                cout <<"TestStatus: followSiteFidelityRate="<<followSiteFidelityRate<<endl;
                double r1 = rng->uniformReal(0, 1);
-               cout<<"TestStatus: r1 = "<< r1<<endl;
+              //cout<<"TestStatus: r1 = "<< r1<<endl;
                if(r1 > followSiteFidelityRate || siteFidelityController.SiteFidelityInvalid())//informed search with pheromone waypoints or uninformed search
                {
 				   if(siteFidelityController.SiteFidelityInvalid())
 				   {
-					   cout<<"TestStatus: no site fidelity..."<<endl;
-					   }
-					   else
-					   {
-						   cout<<"TestStatus: has fidelity..."<<endl;
-				   
-						   }
+					  cout<<"TestStatus: no site fidelity..."<<endl;
+				   }
+				   else
+				   {
+					  cout<<"TestStatus: has fidelity, but choose not follow..."<<endl;
+				   }
 				   if(pheromoneController.SelectPheromone())
 				   {
 		             //result.type = behavior;
@@ -192,9 +191,9 @@ Result LogicController::DoWork() {
     //precision driving result types are when a controller wants direct command of the robots actuatorshandler
     //logic controller facilitates the command pass through in the LOGIC_STATE_PRECISION_COMMAND switch case
     else if(result.type == precisionDriving) {
-      cout<<"result type == precisionDriving..."<<endl;
+     //cout<<"result type == precisionDriving..."<<endl;
       logicState = LOGIC_STATE_PRECISION_COMMAND;
-      cout<<"logicState="<<logicState<<endl;
+     //cout<<"logicState="<<logicState<<endl;
       break; 
 
     }
@@ -202,9 +201,9 @@ Result LogicController::DoWork() {
     //waypoints are also a pass through facilitated command but with a slightly diffrent overhead
     //they are handled in the LOGIC_STATE_WAITING switch case
     else if(result.type == waypoint) {
-      cout<<"result type == waypoint"<<endl;
+     //cout<<"result type == waypoint"<<endl;
       logicState = LOGIC_STATE_WAITING;
-      cout<<"logicState ="<<logicState<<endl;
+     //cout<<"logicState ="<<logicState<<endl;
       driveController.SetResultData(result);
       //fall through on purpose
     }
@@ -214,7 +213,7 @@ Result LogicController::DoWork() {
     //this case is primarly when logic controller is waiting for drive controller to reach its last waypoint
   case LOGIC_STATE_WAITING: {
      cout <<"logic state waiting..."<<LOGIC_STATE_WAITING<<endl;
-     cout<<"logicState="<<logicState<<endl; 
+    //cout<<"logicState="<<logicState<<endl; 
     //ask drive controller how to drive
     //commands to be passed the ROS Adapter as left and right wheel PWM values in the result struct are returned
     result = driveController.DoWork();
@@ -227,10 +226,10 @@ Result LogicController::DoWork() {
 		if(driveController.ShouldInterrupt()) 
         {
           logicState = LOGIC_STATE_INTERRUPT;
-          cout<<"SwitchStatus: driver controller interrupt...true"<<endl;
+         //cout<<"SwitchStatus: driver controller interrupt...true"<<endl;
           if(processState == PROCCESS_STATE_SEARCHING)
           {
-		    cout<<"TestStatusSwitchStatus: searchCtrl set reached..."<<endl;
+		   //cout<<"TestStatusSwitchStatus: searchCtrl set reached..."<<endl;
 		    searchController.SetReachedWaypoint(true);
 		    /*if(searchController.GiveupSearch())
 		    {
@@ -244,10 +243,10 @@ Result LogicController::DoWork() {
 
     //used for precision driving pass through
   case LOGIC_STATE_PRECISION_COMMAND: {
-    cout<<"logic state precision command..."<<endl;
+   //cout<<"logic state precision command..."<<endl;
     //unlike waypoints precision commands change every update tick so we ask the
     //controller for new commands on every update tick.
-    cout<<"control_queue.top().controller="<<control_queue.top().controller<<endl;
+   //cout<<"control_queue.top().controller="<<control_queue.top().controller<<endl;
     result = control_queue.top().controller->DoWork();
 
     //pass the driving commands to the drive controller so it can interpret them
@@ -292,7 +291,7 @@ double LogicController::getPoissonCDF(const double lambda)
 
 
 void LogicController::ProcessData() {
-  cout<<"CPFAStatus: ";
+ //cout<<"CPFAStatus: ";
   //this controller priority is used when searching
   if (processState == PROCCESS_STATE_SEARCHING) 
   {
@@ -406,11 +405,11 @@ int LogicController::getCollisionCalls()
 
 void LogicController::controllerInterconnect() 
 {
-  cout<<"controller interconnect..."<<endl;
-  cout<<"processState="<<processState<<endl;
+ //cout<<"controller interconnect..."<<endl;
+ //cout<<"processState="<<processState<<endl;
   if (processState == PROCCESS_STATE_SEARCHING) 
   {
-    cout<<"state searching" <<endl;
+   //cout<<"state searching" <<endl;
     //obstacle needs to know if the center ultrasound should be ignored
     if(pickUpController.GetIgnoreCenter()) 
     {
@@ -442,7 +441,7 @@ void LogicController::controllerInterconnect()
 		else
 		{
 		    searchController.SetCPFAState(avoid_obstacle);
-             cout<<"TestStatus: SearchCtrl set to avoid obstacle..."<<searchController.GetCPFAState()<<endl;			
+             //cout<<"TestStatus: SearchCtrl set to avoid obstacle..."<<searchController.GetCPFAState()<<endl;			
 			}
 	} 
 	if(obstacleController.GetCPFAState() == reached_nest)
@@ -458,7 +457,7 @@ void LogicController::controllerInterconnect()
   if(pheromoneController.SenseCompleted())
   {
 	  local_resource_density = pheromoneController.GetResourceDensity();
-	  cout<<"LayStatus: LogicalControoller local_resource_density="<<local_resource_density<<endl;
+	 //cout<<"LayStatus: LogicalControoller local_resource_density="<<local_resource_density<<endl;
 	  }
   
   if(processState == PROCESS_STATE_PHEROMONE)
@@ -474,7 +473,7 @@ void LogicController::controllerInterconnect()
   //obstacle controller is running driveController needs to clear its waypoints
   if(obstacleController.GetShouldClearWaypoints())
   {
-	  cout<<"clear waypoints..."<<endl;
+	 //cout<<"clear waypoints..."<<endl;
     driveController.Reset();
   }
   
@@ -482,7 +481,7 @@ void LogicController::controllerInterconnect()
   // informed search or an uninformed search
   if (informed_search)
   {
-	  cout<<"set search type..."<<endl;
+	 //cout<<"set search type..."<<endl;
     searchController.setSearchType(informed_search);
     informed_search = false;
   }
@@ -685,8 +684,8 @@ bool LogicController::layPheromone() {
  
     double poisson = getPoissonCDF(CPFA_parameters.rate_of_laying_pheromone);
     double random_num = rng->uniformReal(0, 1);
-    cout<<"poisson="<<poisson<<endl;
-    cout<<"random_num="<<random_num<<endl;
+   //cout<<"poisson="<<poisson<<endl;
+   //cout<<"random_num="<<random_num<<endl;
   
     if(poisson > random_num) {
       cout << "Laying a pheromone..." << endl;
@@ -712,7 +711,7 @@ Point LogicController::GetCurrentLocation() {
 void LogicController::SetCPFAState(CPFAState state) {
   if(state != cpfa_state) {
     cpfa_state = state;
-    cout<<"SwitchStatus: logic, state="<<cpfa_state<<endl;
+   //cout<<"SwitchStatus: logic, state="<<cpfa_state<<endl;
     for(PrioritizedController cntrlr : prioritizedControllers) {
       if(state != cntrlr.controller->GetCPFAState()) {
         cntrlr.controller->SetCPFAState(state);
@@ -731,7 +730,7 @@ CPFAState LogicController::GetCPFAState() {
 void LogicController::SetModeAuto() {
   if(processState == PROCCESS_STATE_MANUAL) {
     // only do something if we are in manual mode
-    cout<<"do something if we are in manual mode..."<<endl;
+   //cout<<"do something if we are in manual mode..."<<endl;
     this->Reset();
     manualWaypointController.Reset();
   }

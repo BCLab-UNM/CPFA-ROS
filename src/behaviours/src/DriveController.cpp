@@ -20,12 +20,12 @@ DriveController::~DriveController() {}
 void DriveController::Reset()
 {
   waypoints.clear();
-  cout<<"stateMachineState="<<stateMachineState<<endl;
+  //cout<<"stateMachineState="<<stateMachineState<<endl;
   if (stateMachineState == STATE_MACHINE_ROTATE || stateMachineState == STATE_MACHINE_SKID_STEER)
   {
     stateMachineState = STATE_MACHINE_WAYPOINTS;
   }
-  cout<<"stateMachineState="<<stateMachineState<<endl;
+  //cout<<"stateMachineState="<<stateMachineState<<endl;
 }
 
 void DriveController::SetCurrentTimeInMilliSecs( long int time )
@@ -38,20 +38,20 @@ Result DriveController::DoWork()
   
   ///WARNING waypoint input must use FAST_PID at this point in time failure to set fast pid will result in no movment
 
- cout <<"CPFAStatus: DriveController::DoWork()"<<endl;
+ //cout <<"CPFAStatus: DriveController::DoWork()"<<endl;
  
   if(result.type == behavior)
   {
     if(result.b == noChange)
     {
-		cout<<"no change..."<<endl;
+		//cout<<"no change..."<<endl;
       //if drive controller gets a no change command it is allowed to continue its previous action
       //normally this will be to follow waypoints but it is not specified as such.
     }
 
     else if(result.b == wait)
     {
-		cout<<"do nothing till told"<<endl;
+		//cout<<"do nothing till told"<<endl;
       //do nothing till told otherwise
       left = 0.0;
       right = 0.0;
@@ -63,14 +63,14 @@ Result DriveController::DoWork()
   else if(result.type == precisionDriving)
   {
     //interpret input result as a precision driving command
-    cout<<"precision driving 1..."<<endl;
+    //cout<<"precision driving 1..."<<endl;
     stateMachineState = STATE_MACHINE_PRECISION_DRIVING;
 
   }
 
   else if(result.type == waypoint)
   {
-	  cout<<"process data"<<endl;
+	  //cout<<"process data"<<endl;
     //interpret input result as new waypoints to add into the queue
     ProcessData();
 
@@ -90,7 +90,7 @@ Result DriveController::DoWork()
   }
   case STATE_MACHINE_WAYPOINTS:
   {
-    cout<<"state machine: waypoints"<<endl;
+    //cout<<"state machine: waypoints"<<endl;
     //Handles route planning and navigation as well as making sure all waypoints are valid.
 
     bool tooClose = true;
@@ -109,12 +109,12 @@ Result DriveController::DoWork()
         tooClose = false;
       }
     }
-    cout<<"Drive: waypoints size="<<waypoints.size()<<endl;
+    //cout<<"Drive: waypoints size="<<waypoints.size()<<endl;
     //if we are out of waypoints then interupt and return to logic controller
     if (waypoints.empty())
     {
       stateMachineState = STATE_MACHINE_WAITING;
-      cout<<"stateMachineState: waiting"<<endl;
+      //cout<<"stateMachineState: waiting"<<endl;
       result.type = behavior;
       interupt = true; //reach goal and interupt
       return result;
@@ -136,7 +136,7 @@ Result DriveController::DoWork()
     // Calculate angle between currentLocation.theta and waypoints.front().theta
     // Rotate left or right depending on sign of angle
     // Stay in this state until angle is minimized
-    cout<<"CPFAStatus:: ROTATE..."<<endl;
+    //cout<<"CPFAStatus:: ROTATE..."<<endl;
     waypoints.back().theta = atan2(waypoints.back().y - currentLocation.y, waypoints.back().x - currentLocation.x);
 
     // Calculate the diffrence between current and desired heading in radians.
@@ -155,7 +155,7 @@ Result DriveController::DoWork()
     if (abs_error > rotateOnlyAngleTolerance)
     {
       // rotate but dont drive.
-      cout<<"CPFAStatus: rotate but dont drive"<<endl;
+      //cout<<"CPFAStatus: rotate but dont drive"<<endl;
       if (result.PIDMode == FAST_PID)
       {
         fastPID(0.0, errorYaw, result.pd.setPointVel, result.pd.setPointYaw);
@@ -166,7 +166,7 @@ Result DriveController::DoWork()
     else
     {
       //move to differential drive step
-      cout<<"CPFAStatus: move to differential drive step..."<<endl;
+      //cout<<"CPFAStatus: move to differential drive step..."<<endl;
       stateMachineState = STATE_MACHINE_SKID_STEER;
 
       //fall through on purpose.
@@ -179,7 +179,7 @@ Result DriveController::DoWork()
       // Drive forward
       // Stay in this state until angle is at least PI/2
 
-	  cout<<"CPFAStatus:: skid steer..."<<endl;
+	 //cout<<"CPFAStatus:: skid steer..."<<endl;
 	  //cout<<"CPFAStatus: before waypoint.back().x="<<waypoints.back().x<<endl;
       
       // calculate the distance between current and desired heading in radians
@@ -205,14 +205,14 @@ Result DriveController::DoWork()
 
         // move back to transform step
         //cout<<"CPFAStatus: waypoint.back().x="<<waypoints.back().x<<endl;
-        cout<<"CPFAStatus: result.wpts.waypoint=["<<result.wpts.waypoints[0].x<<", "<< result.wpts.waypoints[0].y<<"]"<<endl;
+       //cout<<"CPFAStatus: result.wpts.waypoint=["<<result.wpts.waypoints[0].x<<", "<< result.wpts.waypoints[0].y<<"]"<<endl;
         stateMachineState = STATE_MACHINE_WAYPOINTS;
-        cout<<"TestStatusSwitchStatus:: Reach goal..."<<endl;
+       cout<<"TestStatusSwitchStatus:: Reach goal..."<<endl;
         //result.cpfa_state = search_with_uninformed_walk;
-        cout<<"CPFAStatus: result.wpts.waypoint size="<<result.wpts.waypoints.size()<<endl;
-        cout<<"cpfa_state  = "<<GetCPFAState() <<endl;
+       //cout<<"CPFAStatus: result.wpts.waypoint size="<<result.wpts.waypoints.size()<<endl;
+       //cout<<"cpfa_state  = "<<GetCPFAState() <<endl;
       }
-      cout<<"1...."<<endl;
+     //cout<<"1...."<<endl;
       break;
   }
 
@@ -228,7 +228,7 @@ Result DriveController::DoWork()
   //package data for left and right values into result struct for use in ROSAdapter
   result.pd.right = right;
   result.pd.left = left;
- cout<<"3...."<<endl;
+//cout<<"3...."<<endl;
     
   //return modified struct
   return result;
@@ -260,7 +260,7 @@ void DriveController::ProcessData()
 		}
 	
   if (result.type == waypoint) {
-	  cout<<"driver, waypoint..."<<endl;
+	 //cout<<"driver, waypoint..."<<endl;
     //sets logic controller into stand by mode while drive controller works
     result.type = behavior;
     result.b = noChange;
@@ -369,8 +369,8 @@ void DriveController::constPID(float erroVel,float constAngularError, float setP
   if (left  < -sat) {left  = -sat;}
   if (right >  sat) {right =  sat;}
   if (right < -sat) {right = -sat;}
-  cout<<"left="<<left<<endl;
-  cout<<"right="<<right<<endl;
+ //cout<<"left="<<left<<endl;
+ //cout<<"right="<<right<<endl;
   this->left = left;
   this->right = right;
 }
@@ -525,7 +525,7 @@ CPFAState DriveController::GetCPFAState()
 void DriveController::SetCPFAState(CPFAState state) {
   cpfa_state = state;
   result.cpfa_state = state;
-  cout<<"set state result.cpfa_state ="<<result.cpfa_state <<endl;
+ //cout<<"set state result.cpfa_state ="<<result.cpfa_state <<endl;
 }
 
 

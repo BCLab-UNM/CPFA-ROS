@@ -154,7 +154,7 @@ Result PheromoneController::DoWork()
       resource_density = total_resource;
       //create a pheromone trail
       result.lay_pheromone = true;
-      cout<<"PheromoneStatus: currentLocation = ("<<current_location.x<<", "<<current_location.y<<")" <<endl;
+     //cout<<"PheromoneStatus: currentLocation = ("<<current_location.x<<", "<<current_location.y<<")" <<endl;
       
     }
     else
@@ -216,7 +216,7 @@ void PheromoneController::UpdatePheromoneList()
     }
     else
     {
-		cout<<"TestStatus: the pheromone ["<<pheromones[i].getLocation().x<<","<<pheromones[i].getLocation().y<<"] is inactive"<<endl;
+		//cout<<"TestStatus: the pheromone ["<<pheromones[i].getLocation().x<<","<<pheromones[i].getLocation().y<<"] is inactive"<<endl;
 		}
   }
   pheromones = newPheromoneList;
@@ -228,7 +228,7 @@ bool PheromoneController::SelectPheromone()
   double maxStrength = 0.0;
   double randomWeight = 0.0;
   bool isPheromoneSet = false;
-   cout<<"TestStatus: pheromones.size()="<<pheromones.size()<<endl;
+  //cout<<"TestStatus: pheromones.size()="<<pheromones.size()<<endl;
   if(pheromones.size()==0) return isPheromoneSet; //the case of no pheromone.
   
   //Calculate a maximum strength based on active pheromone weights.
@@ -299,17 +299,17 @@ bool PheromoneController::SenseCompleted()
 	}
 bool PheromoneController::ShouldInterrupt()
 {
-  cout<<"pheromone controller should interrupt...";
+ //cout<<"pheromone controller should interrupt...";
   //qilu 12/2017
   //ProcessData(); 
   if(sense_local_density_completed)
   {
-	  cout<<"True"<<endl;
+	 //cout<<"True"<<endl;
     return true;
   }
   else
   {
-	  cout<<"false"<<endl;
+	 //cout<<"false"<<endl;
     return false;
   }
   

@@ -73,7 +73,7 @@ void SiteFidelityController::SetCPFAState(CPFAState state) {
 
 bool SiteFidelityController::ShouldInterrupt()
 {
-  cout<<"site fidelity controller should interrupt..."<<endl;	
+ //cout<<"site fidelity controller should interrupt..."<<endl;	
   ProcessData();
 
   return false;

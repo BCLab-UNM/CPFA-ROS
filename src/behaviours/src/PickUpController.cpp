@@ -179,18 +179,18 @@ cout<<"pickup controller should interrupt..."<<endl;
   {
     release_control = false;
     has_control = false;
-    cout<<"P: true d1"<<endl;
+   //cout<<"P: true d1"<<endl;
     return true;
   }
 
-  cout <<"targetFound="<<targetFound<<endl;
-  cout<<"interupted="<<interupted<<endl;
-  cout<<"targetHeld="<<targetHeld<<endl;
+  //cout<<"targetFound="<<targetFound<<endl;
+ //cout<<"interupted="<<interupted<<endl;
+ //cout<<"targetHeld="<<targetHeld<<endl;
   if ((targetFound && !interupted) || targetHeld) //switch to next process. e.g. pickup and dropoff
   {
     interupted = true;
     has_control = false;
-    cout<<"P: true d2"<<endl;
+   //cout<<"P: true d2"<<endl;
     return true;
   }
 
@@ -198,19 +198,19 @@ cout<<"pickup controller should interrupt..."<<endl;
   {
     interupted = false;
     has_control = false;
-    cout<<"P: true d3"<<endl;
+   //cout<<"P: true d3"<<endl;
     return true;
   }
   else 
   {
-    cout<<"false"<<endl;
+   //cout<<"false"<<endl;
     return false;
   }
 }
 
 Result PickUpController::DoWork()
 {
-  cout<<"CPFAStatus: PickUpController::DoWork()"<<endl;
+ //cout<<"CPFAStatus: PickUpController::DoWork()"<<endl;
 
   has_control = true;
 
@@ -277,7 +277,7 @@ Result PickUpController::DoWork()
     {
         //Has to be set back to 0
         nTargetsSeen = 0;
-        cout<<">= target_timeout_limit..."<<endl;
+       //cout<<">= target_timeout_limit..."<<endl;
     }
 
     
@@ -379,23 +379,23 @@ Result PickUpController::DoWork()
       ignoreCenterSonar = true;
     }
   }
-  cout<<"ignoreCenterSonar="<<ignoreCenterSonar<<endl;
-  cout<< "cmdVel="<<result.pd.cmdVel<<endl;
-  cout<<"cmdAngularError="<<result.pd.cmdAngularError<<endl;
-  cout<<"wristAngle="<<result.wristAngle<<endl;
-  cout<<"fingerAngle="<<result.fingerAngle<<endl;
+ //cout<<"ignoreCenterSonar="<<ignoreCenterSonar<<endl;
+ //cout<< "cmdVel="<<result.pd.cmdVel<<endl;
+ //cout<<"cmdAngularError="<<result.pd.cmdAngularError<<endl;
+ //cout<<"wristAngle="<<result.wristAngle<<endl;
+ //cout<<"fingerAngle="<<result.fingerAngle<<endl;
   
   return result;
 }
 
 bool PickUpController::HasWork()
 {
-	cout<<"Pickup has work..."<<targetFound<<endl;
+	//cout<<"Pickup has work..."<<targetFound<<endl;
   return targetFound;
 }
 
 void PickUpController::Reset() {
-   cout<<"PickUpController::Reset()"<<endl;
+  //cout<<"PickUpController::Reset()"<<endl;
   result.type = precisionDriving;
   result.PIDMode = SLOW_PID;
   lockTarget = false;

@@ -272,11 +272,11 @@ int main(int argc, char **argv) {
 // controllers in the abridge package.
 void behaviourStateMachine(const ros::TimerEvent&)
 {
-  cout<<"Pheromone: behaviourStateMachine..."<<endl;
+ //cout<<"Pheromone: behaviourStateMachine..."<<endl;
   std_msgs::String stateMachineMsg;
   // time since timerStartTime was set to current time
   timerTimeElapsed = time(0) - timerStartTime;
-  cout<<"Pheromone: timerTimeElapsed="<<timerTimeElapsed<<endl;
+ //cout<<"Pheromone: timerTimeElapsed="<<timerTimeElapsed<<endl;
   //cout<<"Pheromone: time in milliSecs="<<getROSTimeInMilliSecs()<<endl;
   // init code goes here. (code that runs only once at start of
   // auto mode but wont work in main goes here)
@@ -327,7 +327,7 @@ void behaviourStateMachine(const ros::TimerEvent&)
   // Robot is in automode
   if (currentMode == 2 || currentMode == 3)
   {
-    cout<<"currentMode ..."<<endl;
+   cout<<"currentMode ..."<<endl;
     humanTime();
     
 	if(distanceToCenter() > 0.75) {

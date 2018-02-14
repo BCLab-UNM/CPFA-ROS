@@ -38,7 +38,7 @@ void SearchController::SetArenaSize(int size)
  * This code implements a basic random walk search.
  */
 Result SearchController::DoWork() {
-  cout<<"SwitchStatus: SearchController::DoWork(), size="<<result.wpts.waypoints.size()<<endl;
+ //cout<<"SwitchStatus: SearchController::DoWork(), size="<<result.wpts.waypoints.size()<<endl;
   //cout<<"search 1. result.wpts.waypoints size ="<<result.wpts.waypoints.size()<<endl;
   
   
@@ -47,7 +47,7 @@ Result SearchController::DoWork() {
 	  
 	cout<<"TestStatusCPFAStatus: waypoint is ["<<result.wpts.waypoints[0].x<<", "<<result.wpts.waypoints[0].y<<"]"<<endl;
     cout<<"TestStatusCPFAStatus: currentLocation=["<<currentLocation.x<<","<<currentLocation.y<<"]" <<endl;
-    cout<<"TestStatus: GetCPFAState()="<<GetCPFAState()<<endl;
+    //cout<<"TestStatus: GetCPFAState()="<<GetCPFAState()<<endl;
     
     if(ReachedWaypoint())
     {
@@ -114,7 +114,7 @@ Result SearchController::DoWork() {
   //cout <<"CPFAStatus: attemptCount="<<attemptCount<<endl;
   //if (attemptCount > 0 && attemptCount < 5) {
   //  attemptCount++;
-  cout<<"succesfullPickup="<<succesfullPickup<<endl;
+ //cout<<"succesfullPickup="<<succesfullPickup<<endl;
   if (succesfullPickup) 
   {
     succesfullPickup = false;
@@ -154,7 +154,7 @@ Result SearchController::DoWork() {
 	      searchLocation.y = currentLocation.y + (search_step_size * sin(searchLocation.theta));
 	      //result.cpfa_state = search_with_informed_walk;
 	      SetCPFAState(search_with_informed_walk);
-	      cout<<"set state: result.cpfa_state ="<<result.cpfa_state <<endl;
+	     //cout<<"set state: result.cpfa_state ="<<result.cpfa_state <<endl;
 	    }
 	    else 
 	    {
@@ -165,15 +165,15 @@ Result SearchController::DoWork() {
 			cout<<"TestStatusSwitchStatus: first waypoint..."<<endl;  
 	        first_waypoint = false;
 	        //searchLocation.theta = currentLocation.theta + M_PI;
-	        cout<<"CPFAStatus: currentLocation.theta="<<currentLocation.theta<<"  "<<rng->uniformReal(-M_PI/2, M_PI/2)<<endl;
+	       //cout<<"CPFAStatus: currentLocation.theta="<<currentLocation.theta<<"  "<<rng->uniformReal(-M_PI/2, M_PI/2)<<endl;
 	        searchLocation.theta = atan2(this->centerLocation.y - currentLocation.y, this->centerLocation.x - currentLocation.x);//this is the direction from center to the rover
 	        
 	        searchLocation.theta += rng->uniformReal(-M_PI/2, M_PI/2); //sample an angle in this range based on the direction from the center to the rover, so rover will not collide with the collection disk when it travels in this direction
-	        cout<<"CPFAStatus: searchLocation.theta="<<searchLocation.theta<<endl;
+	       //cout<<"CPFAStatus: searchLocation.theta="<<searchLocation.theta<<endl;
 	        SetRandomSearchLocation();
 	        //result.cpfa_state = travel_to_search_site;
 	        SetCPFAState(travel_to_search_site);
-	        cout<<"SwitchStatus: set state: cpfa_state ="<<GetCPFAState() <<endl;
+	       //cout<<"SwitchStatus: set state: cpfa_state ="<<GetCPFAState() <<endl;
 	        /*searchLocation.x = currentLocation.x + (arena_size * cos(searchLocation.theta));//need to be updated, qilu 
 	        searchLocation.y = currentLocation.y + (10*search_step_size * sin(searchLocation.theta));//need to be updated, qilu 
 	        */ 
@@ -182,14 +182,14 @@ Result SearchController::DoWork() {
 	      {
 	        //select new heading from Gaussian distribution around current heading
 	        //searchLocation.theta = rng->gaussian(currentLocation.theta, 0.25);
-	        cout<<"SwitchStatus: not first waypoint..."<<endl;
+	       //cout<<"SwitchStatus: not first waypoint..."<<endl;
 	        searchLocation.theta = rng->gaussian(currentLocation.theta, correlation);
 	        searchLocation.x = currentLocation.x + (search_step_size * cos(searchLocation.theta));
 	        searchLocation.y = currentLocation.y + (search_step_size * sin(searchLocation.theta));
 	        //result.cpfa_state = search_with_uninformed_walk;
 	        SetCPFAState(search_with_uninformed_walk);
-	        cout<<"SwitchStatus: set state: result.cpfa_state ="<<result.cpfa_state <<endl;
-	        cout<<"set state: cpfa_state ="<<GetCPFAState() <<endl;
+	       //cout<<"SwitchStatus: set state: result.cpfa_state ="<<result.cpfa_state <<endl;
+	       //cout<<"set state: cpfa_state ="<<GetCPFAState() <<endl;
 	      }
 	       
 	    //}  
@@ -202,7 +202,7 @@ Result SearchController::DoWork() {
     result.wpts.waypoints.clear();
     result.wpts.waypoints.insert(result.wpts.waypoints.begin(), searchLocation);
 
-    cout<<"TestStatusSwitchStatus: sampled wp=["<<searchLocation.x<<","<<searchLocation.y<<"]"<<endl;
+   //cout<<"TestStatusSwitchStatus: sampled wp=["<<searchLocation.x<<","<<searchLocation.y<<"]"<<endl;
 		
     
     return result;
@@ -217,26 +217,26 @@ void SearchController::SetRandomSearchLocation()
 		searchLocation.x = rng->uniformReal(-arena_size/2, -arena_size/4);
 		//searchLocation.x = pos_x - currentLocation.x;
 		//searchLocation.y = pos_x * tan(searchLocation.theta) - currentLocation.y;
-		cout<<"TestStatus...1. pos_x="<<searchLocation.x<<endl;
+		//cout<<"TestStatus...1. pos_x="<<searchLocation.x<<endl;
 		}
     else
     {
 		//searchLocation.x = arena_size/2 - 4*cos(searchLocation.theta);
 		searchLocation.x = rng->uniformReal(arena_size/4, arena_size/2);
-		cout<<"TestStatus...2. pos_x="<<searchLocation.x<<endl;
+		//cout<<"TestStatus...2. pos_x="<<searchLocation.x<<endl;
 		}
 	searchLocation.y = searchLocation.x * tan(searchLocation.theta);
     cout<<"TestStatus: searchLocation.y="<<searchLocation.y<<endl;
     
 	if(searchLocation.y >= arena_size/2) 
 	{
-		cout<<"case 1..."<<endl;
+		//cout<<"case 1..."<<endl;
 		searchLocation.y = rng->uniformReal(arena_size/4, arena_size/2);
 		searchLocation.x = searchLocation.y/tan(searchLocation.theta);
 	}
 	else if(searchLocation.y <= -arena_size/2)
 	{
-		cout<<"case 2..."<<endl;
+		//cout<<"case 2..."<<endl;
 		searchLocation.y = rng->uniformReal(-arena_size/2, -arena_size/4);
 		searchLocation.x = searchLocation.y/tan(searchLocation.theta);
 		}	
@@ -286,7 +286,7 @@ bool SearchController::ShouldInterrupt()
 		{
    		    //cout<<"SwitchStatus: time="<< current_time<<",  "<< current_time/1e3 <<", "<<current_time % 1000 <<endl;
 	        double rndNum = rng->uniformReal(0.0, 1.0);
-	        cout<<"TestStatus: switch rndNum="<<rndNum<<endl;
+	       //cout<<"TestStatus: switch rndNum="<<rndNum<<endl;
 	        //cout<<"SwitchStatus: switch rate="<<CPFA_parameters.probability_of_switching_to_searching<<endl;
 	        if(rndNum < CPFA_parameters.probability_of_switching_to_searching)
 	        {
@@ -303,7 +303,7 @@ bool SearchController::ShouldInterrupt()
         else if(GetCPFAState() == search_with_uninformed_walk || GetCPFAState() == search_with_informed_walk)
         {  
 	        double rndNum = rng->uniformReal(0.0, 1.0);
-	        cout<<"TestStatus: giveup rndNum="<<rndNum<<endl;
+	       //cout<<"TestStatus: giveup rndNum="<<rndNum<<endl;
 	        if(rndNum < CPFA_parameters.probability_of_returning_to_nest)
 	        {
 				result.reset = true;
@@ -411,7 +411,7 @@ void SearchController::SetCPFAState(CPFAState state) {
 
   cpfa_state = state;
   result.cpfa_state = state;
-  cout<<"SearchCtrl: SetCPFAState ="<<result.cpfa_state <<endl;
+ //cout<<"SearchCtrl: SetCPFAState ="<<result.cpfa_state <<endl;
 }
 
 /*Point SearchController::getTargetLocation()
@@ -435,7 +435,7 @@ void SearchController::SetCenterLocation(Point centerLocation) {
   
   result.wpts.waypoints.back().x -= diffX;
   result.wpts.waypoints.back().y -= diffY;
-  cout<<"SwitchStatus: diffX="<<diffX<<endl;
+ //cout<<"SwitchStatus: diffX="<<diffX<<endl;
   }
   
 }
