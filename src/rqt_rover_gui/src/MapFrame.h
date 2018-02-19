@@ -71,7 +71,7 @@ namespace rqt_rover_gui
       void RemoveWaypoint(std::string rover, int id );
       void ResetAllWaypointPaths();
       void ResetWaypointPathForSelectedRover(std::string rover);
-     
+
       void clear();
       void clear(std::string rover);
 

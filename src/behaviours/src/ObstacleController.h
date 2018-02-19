@@ -92,4 +92,3 @@ private:
 };
 
 #endif // OBSTACLECONTOLLER_H
-

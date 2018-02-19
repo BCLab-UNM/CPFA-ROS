@@ -11,7 +11,6 @@ PickUpController::PickUpController()
   nTargetsSeen = 0;
   blockYawError = 0;
   blockDistance = 0;
-  //timeDifference = 0;
 
   targetFound = false;
 
@@ -23,11 +22,11 @@ PickUpController::PickUpController()
   result.PIDMode = SLOW_PID;
 }
 
-PickUpController::~PickUpController() {
-}
-	
+PickUpController::~PickUpController() { /*Destructor*/  }
+
 void PickUpController::SetTagData(vector<Tag> tags)
 {
+
   if (tags.size() > 0)
   {
 
@@ -35,14 +34,16 @@ void PickUpController::SetTagData(vector<Tag> tags)
 
     //we saw a target, set target_timer
     target_timer = current_time;
+
     double closest = std::numeric_limits<double>::max();
     int target  = 0;
-    
+
     //this loop selects the closest visible block to makes goals for it
     for (int i = 0; i < tags.size(); i++)
     {
-    if (tags[i].getID() == 0)
-    {
+
+      if (tags[i].getID() == 0)
+      {
 
         targetFound = true;
 	    cout <<"target found..."<<endl;
@@ -55,10 +56,9 @@ void PickUpController::SetTagData(vector<Tag> tags)
           closest = test;
         }
       }
-      else 
+      else
       {
-      //nTargetsSeen--;
-
+        // If the center is seen, then don't try to pick up the cube.
         if(tags[i].getID() == 256)
         {
 			cout <<"SwitchStatus: see collection disk..."<<endl;
@@ -77,12 +77,14 @@ void PickUpController::SetTagData(vector<Tag> tags)
 
     float cameraOffsetCorrection = 0.023; //meters;
 
-    //blockYawError = atan((tags[target].getPositionX() + cameraOffsetCorrection)/blockDistance)*1.05; //angle to block from bottom center of chassis on the horizontal.
-
-    ///TODO: Explain the trig going on here- blockDistance is c, 0.195 is b; find a
-    //blockDistance = hypot(tags[target].getPositionX(), tags[target].getPositionY()); //distance from bottom center of chassis ignoring height.
-
+    // using a^2 + b^2 = c^2 to find the distance to the block
+    // 0.195 is the height of the camera lens above the ground in cm.
+    //
+    // a is the linear distance from the robot to the block, c is the
+    // distance from the camera lens, and b is the height of the
+    // camera above the ground.
     blockDistanceFromCamera = hypot(hypot(tags[target].getPositionX(), tags[target].getPositionY()), tags[target].getPositionZ());
+
     if ( (blockDistanceFromCamera*blockDistanceFromCamera - 0.195*0.195) > 0 )
     {
       blockDistance = sqrt(blockDistanceFromCamera*blockDistanceFromCamera - 0.195*0.195);
@@ -106,10 +108,11 @@ void PickUpController::SetTagData(vector<Tag> tags)
 
 bool PickUpController::SetSonarData(float rangeCenter)
 {
-
+  // If the center ultrasound sensor is blocked by a very close
+  // object, then a cube has been successfully lifted.
   if (rangeCenter < 0.12 && targetFound)
   {
-	  cout <<"set sonar data..."<<endl;
+	 // cout <<"set sonar data..."<<endl;
 
     result.type = behavior;
     result.b = nextProcess;
@@ -124,22 +127,14 @@ bool PickUpController::SetSonarData(float rangeCenter)
 
 void PickUpController::ProcessData()
 {
+
   if(!targetFound)
   {
+    //cout << "PICKUP No Target Seen!" << endl;
+
     // Do nothing
     return;
   }
-
- /* if ( (blockDistance*blockDistance - 0.195*0.195) > 0 )
-  {
-    blockDistance = sqrt(blockDistance*blockDistance - 0.195*0.195);
-  }
-  else
-  {
-    float epsilon = 0.00001; // A small non-zero positive number
-    blockDistance = epsilon;
-  }*/
-
 
   //diffrence between current time and millisecond time
   long int Tdiff = current_time - millTimer;
@@ -157,9 +152,10 @@ void PickUpController::ProcessData()
     result.b = nextProcess;
     result.reset = true;
     targetHeld = true;
-  
   }
-  //Lower wrist and open fingures if no locked targt
+  //Lower wrist and open fingers if no locked target -- this is the
+  //case if the robot lost tracking, or missed the cube when
+  //attempting to pick it up.
   else if (!lockTarget)
   {
     //cout << "CPFAStatus Lower wrist and open fingers if no locked target..."<<endl;
@@ -172,9 +168,9 @@ void PickUpController::ProcessData()
 
 bool PickUpController::ShouldInterrupt(){
 
-cout<<"pickup controller should interrupt..."<<endl;
   ProcessData();
-  cout <<"release_control="<<release_control<<endl;
+
+  // saw center tags, so don't try to pick up the cube.
   if (release_control)
   {
     release_control = false;
@@ -201,7 +197,7 @@ cout<<"pickup controller should interrupt..."<<endl;
    //cout<<"P: true d3"<<endl;
     return true;
   }
-  else 
+  else
   {
    //cout<<"false"<<endl;
     return false;
@@ -318,7 +314,6 @@ Result PickUpController::DoWork()
       result.pd.cmdVel = vel;
       result.pd.cmdAngularError = -blockYawError;
       timeOut = false;
-      //nTargetsSeen = 0;
 
       return result;
     }
@@ -348,10 +343,8 @@ Result PickUpController::DoWork()
     }
 
     // the magic numbers compared to Td must be in order from greater(top) to smaller(bottom) numbers
-
-    if (Td > target_reaquire_begin && timeOut) 
+    if (Td > target_reaquire_begin && timeOut)
     {
-    //cout << "CPFAStatus 9..."<<endl;
       lockTarget = false;
       ignoreCenterSonar = true;
     }
@@ -379,12 +372,7 @@ Result PickUpController::DoWork()
       ignoreCenterSonar = true;
     }
   }
- //cout<<"ignoreCenterSonar="<<ignoreCenterSonar<<endl;
- //cout<< "cmdVel="<<result.pd.cmdVel<<endl;
- //cout<<"cmdAngularError="<<result.pd.cmdAngularError<<endl;
- //cout<<"wristAngle="<<result.wristAngle<<endl;
- //cout<<"fingerAngle="<<result.fingerAngle<<endl;
-  
+
   return result;
 }
 

@@ -24,7 +24,7 @@ void ObstacleController::Reset() {
   delay = current_time;
   SetCPFAState(start_state);
 }
-	
+
 // Avoid crashing into objects detected by the ultraound
 void ObstacleController::avoidObstacle() {
   
@@ -125,7 +125,7 @@ void ObstacleController::ProcessData() {
     phys= false;
     if (!obstacleAvoided)
     {
-		cout<<"obstacle not avoid..."<<endl;
+		//cout<<"obstacle not avoid..."<<endl;
       can_set_waypoint = true;
     }
   }
@@ -185,11 +185,13 @@ void ObstacleController::SetTagData(vector<Tag> tags){
   count_right_collection_zone_tags = 0;
 
   // this loop is to get the number of center tags
-  if (!targetHeld) {
-    for (int i = 0; i < tags.size(); i++) { //redundant for loop
-      if (tags[i].getID() == 256) {
-
-	collection_zone_seen = checkForCollectionZoneTags( tags );
+  if (!targetHeld) 
+  {
+    for (int i = 0; i < tags.size(); i++) 
+	{ //redundant for loop
+      if (tags[i].getID() == 256) 
+	  {
+     	collection_zone_seen = checkForCollectionZoneTags( tags );
         timeSinceTags = current_time;
       }
     }
@@ -225,7 +227,7 @@ bool ObstacleController::checkForCollectionZoneTags( vector<Tag> tags ) {
 //obstacle controller should inrerupt is based upon the transition from not seeing and obstacle to seeing an obstacle
 bool ObstacleController::ShouldInterrupt() {
 
-  //cout<<"SwitchStatus: obstacle controller should interrupt..."<<endl;
+  //if we see and obstacle and havent thrown an interrupt yet
   if(obstacleDetected && !obstacleInterrupt)
   {
     obstacleInterrupt = true;

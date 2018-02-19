@@ -45,12 +45,13 @@ void MapData::AddToEncoderRoverPath(string rover, float x, float y)
     float offset_y = rover_global_offsets[rover].second;
     global_offset_encoder_rover_path[rover].push_back(pair<float,float>(x+offset_x,y-offset_y));
 
-    //encoder_rover_path[rover].push_back(pair<float,float>(x,y));
-    gps_rover_path[rover].push_back(pair<float,float>(x,y));
+    encoder_rover_path[rover].push_back(pair<float,float>(x,y));
+
     update_mutex.unlock();
 
 }
 
+// Expects the input y to be flipped with respect to y the map coordinate system
 void MapData::AddToEKFRoverPath(string rover, float x, float y)
 {
   // Negate the y direction to orient the map so up is north.
@@ -62,13 +63,13 @@ void MapData::AddToEKFRoverPath(string rover, float x, float y)
     if (y < min_ekf_seen_y[rover]) min_ekf_seen_y[rover] = y;
 
     update_mutex.lock();
+
     float offset_x = rover_global_offsets[rover].first;
     float offset_y = rover_global_offsets[rover].second;
     global_offset_ekf_rover_path[rover].push_back(pair<float,float>(x+offset_x,y-offset_y));
 
-    //ekf_rover_path[rover].push_back(pair<float,float>(x,y));
+    ekf_rover_path[rover].push_back(pair<float,float>(x,y));
 
-    encoder_rover_path[rover].push_back(pair<float,float>(x,y));    
     update_mutex.unlock();
 
 }
@@ -235,6 +236,7 @@ std::vector< std::pair<float,float> >* MapData::getEKFPath(std::string rover_nam
     {
         return &global_offset_ekf_rover_path[rover_name];
     }
+
     return &ekf_rover_path[rover_name];
 }
 
@@ -244,6 +246,7 @@ std::vector< std::pair<float,float> >* MapData::getGPSPath(std::string rover_nam
     {
         return &global_offset_gps_rover_path[rover_name];
     }
+
     return &gps_rover_path[rover_name];
 }
 
@@ -253,6 +256,7 @@ std::vector< std::pair<float,float> >* MapData::getEncoderPath(std::string rover
     {
         return &global_offset_encoder_rover_path[rover_name];
     }
+
     return &encoder_rover_path[rover_name];
 }
 
@@ -305,6 +309,7 @@ float MapData::getMaxGPSY(string rover_name)
     {
         return max_gps_seen_y[rover_name] - rover_global_offsets[rover_name].second;
     }
+
     return max_gps_seen_y[rover_name];
 }
 
@@ -334,6 +339,7 @@ float MapData::getMaxEKFX(string rover_name)
     {
         return max_ekf_seen_x[rover_name] + rover_global_offsets[rover_name].first;
     }
+
     return max_ekf_seen_x[rover_name];
 }
 
@@ -343,6 +349,7 @@ float MapData::getMaxEKFY(string rover_name)
     {
         return max_ekf_seen_y[rover_name] - rover_global_offsets[rover_name].second;
     }
+
     return max_ekf_seen_y[rover_name];
 }
 
@@ -362,6 +369,7 @@ float MapData::getMinEKFY(string rover_name)
     {
         return min_ekf_seen_y[rover_name] - rover_global_offsets[rover_name].second;
     }
+
     return min_ekf_seen_y[rover_name];
 }
 
@@ -371,6 +379,7 @@ float MapData::getMaxEncoderX(string rover_name)
     {
         return max_encoder_seen_x[rover_name] + rover_global_offsets[rover_name].first;
     }
+
     return max_encoder_seen_x[rover_name];
 }
 
@@ -380,6 +389,7 @@ float MapData::getMaxEncoderY(string rover_name)
     {
         return max_encoder_seen_y[rover_name] - rover_global_offsets[rover_name].second;
     }
+
     return max_encoder_seen_y[rover_name];
 }
 
@@ -389,6 +399,7 @@ float MapData::getMinEncoderX(string rover_name)
     {
         return min_encoder_seen_x[rover_name] + rover_global_offsets[rover_name].first;
     }
+
     return min_encoder_seen_x[rover_name];
 }
 
@@ -398,10 +409,11 @@ float MapData::getMinEncoderY(string rover_name)
     {
         return min_encoder_seen_y[rover_name] - rover_global_offsets[rover_name].second;
     }
+
     return min_encoder_seen_y[rover_name];
 }
 
-bool MapData::inManualMode(string rover_name)
+bool MapData::InManualMode(string rover_name)
 {
    return rover_mode[rover_name] == 0;
 }
@@ -436,4 +448,3 @@ MapData::~MapData()
 {
     clear();
 }
-

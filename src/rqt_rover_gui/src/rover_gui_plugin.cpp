@@ -203,13 +203,14 @@ namespace rqt_rover_gui
     ui.custom_world_path_button->setStyleSheet("color: white; border:1px solid white;");
 
     // Make the custom rover number combo box look greyed out to begin with
-    ui.custom_num_rovers_combobox->setStyleSheet("color: grey; border:1px solid grey;");
+    ui.custom_num_rovers_combobox->setStyleSheet("color: grey; border:2px solid grey;");
 
     ui.number_of_tags_combobox->setEnabled(false);
     ui.number_of_tags_combobox->setStyleSheet("color: grey; border:1px solid grey;");
 
     ui.tab_widget->setCurrentIndex(1); //0: show sensor display tab; 1: show simulation parameters tab 
     ui.log_tab->setCurrentIndex(1);
+
     ui.texture_combobox->setItemData(0, QColor(Qt::white), Qt::TextColorRole);
 
     ui.visualize_simulation_button->setEnabled(false);
@@ -529,7 +530,7 @@ set<string> RoverGUIPlugin::findConnectedRovers()
 void RoverGUIPlugin::statusEventHandler(const ros::MessageEvent<std_msgs::String const> &event)
 {
     const ros::M_string& header = event.getConnectionHeader();
-    ros::Time receipt_time = event.getReceiptTime();
+    ros::Time receipt_time = ros::Time::now();
 
     // Extract rover name from the message source
 
@@ -570,7 +571,7 @@ void RoverGUIPlugin::obstacleEventHandler(const ros::MessageEvent<const std_msgs
 
     if (code != 0)
     {
-		emit updateObstacleCallCount("<font color='white'>"+QString::number(++obstacle_call_count)+"</font>");	
+        emit updateObstacleCallCount("<font color='white'>"+QString::number(++obstacle_call_count)+"</font>");
     }
 }
 
@@ -721,7 +722,7 @@ void RoverGUIPlugin::pollRoversTimerEventHandler()
     //If there are no rovers connected to the GUI, reset the obstacle call count to 0
     if(ui.rover_list->count() == 0)
     {
-		obstacle_call_count = 0;
+        obstacle_call_count = 0;
     }
 
     // Returns rovers that have created a status topic
@@ -850,78 +851,79 @@ void RoverGUIPlugin::pollRoversTimerEventHandler()
     }
     else
     {
-		rover_names = new_rover_names;
+    rover_names = new_rover_names;
     
-	    emit sendInfoLogMessage("List of connected rovers has changed");
-	    selected_rover_name = "";
-	    ui.rover_list->clearSelection();
-	    ui.rover_list->clear();
-	
-	    // Also clear the rover diagnostics list
-	    ui.rover_diags_list->clear();
-	    ui.map_selection_list->clear();
-	    
-	    //Enable all autonomous button
-	    ui.all_autonomous_button->setEnabled(true);
-	    ui.all_autonomous_button->setStyleSheet("color: white; border:2px solid white;");
-	
-	    // This code is from above. Consider moving into a function or restructuring
-	    for(set<string>::const_iterator i = rover_names.begin(); i != rover_names.end(); ++i)
-	    {
-	        //Set up publishers
-	        control_mode_publishers[*i]=nh.advertise<std_msgs::UInt8>("/"+*i+"/mode", 10, true); // last argument sets latch to true
-	        waypoint_cmd_publishers[*i]=nh.advertise<swarmie_msgs::Waypoint>("/"+*i+"/waypoints/cmd", 10, true);
-	        
-	        //Set up subscribers
-	        status_subscribers[*i] = nh.subscribe("/"+*i+"/status", 10, &RoverGUIPlugin::statusEventHandler, this);
-	        waypoint_subscribers[*i] = nh.subscribe("/"+*i+"/waypoints", 10, &RoverGUIPlugin::waypointEventHandler, this);
-	        obstacle_subscribers[*i] = nh.subscribe("/"+*i+"/obstacle", 10, &RoverGUIPlugin::obstacleEventHandler, this);
-	        encoder_subscribers[*i] = nh.subscribe("/"+*i+"/odom/filtered", 10, &RoverGUIPlugin::encoderEventHandler, this);
-	        ekf_subscribers[*i] = nh.subscribe("/"+*i+"/odom/ekf", 10, &RoverGUIPlugin::EKFEventHandler, this);
-	        gps_subscribers[*i] = nh.subscribe("/"+*i+"/odom/navsat", 10, &RoverGUIPlugin::GPSEventHandler, this);
-	        gps_nav_solution_subscribers[*i] = nh.subscribe("/"+*i+"/navsol", 10, &RoverGUIPlugin::GPSNavSolutionEventHandler, this);
-	        rover_diagnostic_subscribers[*i] = nh.subscribe("/"+*i+"/diagnostics", 1, &RoverGUIPlugin::diagnosticEventHandler, this);
-	
-	        RoverStatus rover_status;
-	        // Build new ui rover list string
-	        try
-	        {
-	            rover_status = rover_statuses.at(*i);
-	        }
-	        catch (std::out_of_range& e)
-	        {
-	            emit sendInfoLogMessage("No status entry for rover " + QString::fromStdString(*i));
-	        }
-	
-	        QString rover_name_and_status = QString::fromStdString(*i) // Add the rover name
-	                                                + " (" // Delimiters needed for parsing the rover name and status when read
-	                                                +  QString::fromStdString(rover_status.status_msg) // Add the rover status
-	                                                + ")";
-	
-	        QListWidgetItem* new_item = new QListWidgetItem(rover_name_and_status);
-	        new_item->setForeground(Qt::green);
-	        ui.rover_list->addItem(new_item);
-	
-	        // Create the corresponding diagnostic data listwidgetitem
-	        QListWidgetItem* new_diags_item = new QListWidgetItem("");
-	
-	        // The user shouldn't be able to select the diagnostic output
-	        new_diags_item->setFlags(new_diags_item->flags() & ~Qt::ItemIsSelectable);
-	
-	        ui.rover_diags_list->addItem(new_diags_item);
-	
-	        // Add the map selection checkbox for this rover
-	        QListWidgetItem* new_map_selection_item = new QListWidgetItem("");
-	
-	        // set checkable but not selectable flags
-	        new_map_selection_item->setFlags(new_map_selection_item->flags() | Qt::ItemIsUserCheckable);
-	        new_map_selection_item->setFlags(new_map_selection_item->flags() & ~Qt::ItemIsSelectable);
-	        new_map_selection_item->setCheckState(Qt::Unchecked);
-	
-	        // Add to the widget list
-	        ui.map_selection_list->addItem(new_map_selection_item);
-	
-	    }
+    emit sendInfoLogMessage("List of connected rovers has changed");
+    selected_rover_name = "";
+    ui.rover_list->clearSelection();
+    ui.rover_list->clear();
+
+    // Also clear the rover diagnostics list
+    ui.rover_diags_list->clear();
+    ui.map_selection_list->clear();
+    
+    //Enable all autonomous button
+    ui.all_autonomous_button->setEnabled(true);
+    ui.all_autonomous_button->setStyleSheet("color: white; border:2px solid white;");
+
+    // This code is from above. Consider moving into a function or restructuring
+    for(set<string>::const_iterator i = rover_names.begin(); i != rover_names.end(); ++i)
+    {
+        //Set up publishers
+        control_mode_publishers[*i]=nh.advertise<std_msgs::UInt8>("/"+*i+"/mode", 10, true); // last argument sets latch to true
+        waypoint_cmd_publishers[*i]=nh.advertise<swarmie_msgs::Waypoint>("/"+*i+"/waypoints/cmd", 10, true);
+        
+
+        //Set up subscribers
+        status_subscribers[*i] = nh.subscribe("/"+*i+"/status", 10, &RoverGUIPlugin::statusEventHandler, this);
+        waypoint_subscribers[*i] = nh.subscribe("/"+*i+"/waypoints", 10, &RoverGUIPlugin::waypointEventHandler, this);
+        obstacle_subscribers[*i] = nh.subscribe("/"+*i+"/obstacle", 10, &RoverGUIPlugin::obstacleEventHandler, this);
+        encoder_subscribers[*i] = nh.subscribe("/"+*i+"/odom/filtered", 10, &RoverGUIPlugin::encoderEventHandler, this);
+        ekf_subscribers[*i] = nh.subscribe("/"+*i+"/odom/ekf", 10, &RoverGUIPlugin::EKFEventHandler, this);
+        gps_subscribers[*i] = nh.subscribe("/"+*i+"/odom/navsat", 10, &RoverGUIPlugin::GPSEventHandler, this);
+        gps_nav_solution_subscribers[*i] = nh.subscribe("/"+*i+"/navsol", 10, &RoverGUIPlugin::GPSNavSolutionEventHandler, this);
+        rover_diagnostic_subscribers[*i] = nh.subscribe("/"+*i+"/diagnostics", 1, &RoverGUIPlugin::diagnosticEventHandler, this);
+
+        RoverStatus rover_status;
+        // Build new ui rover list string
+        try
+        {
+            rover_status = rover_statuses.at(*i);
+        }
+        catch (std::out_of_range& e)
+        {
+            emit sendInfoLogMessage("No status entry for rover " + QString::fromStdString(*i));
+        }
+
+        QString rover_name_and_status = QString::fromStdString(*i) // Add the rover name
+                                                + " (" // Delimiters needed for parsing the rover name and status when read
+                                                +  QString::fromStdString(rover_status.status_msg) // Add the rover status
+                                                + ")";
+
+        QListWidgetItem* new_item = new QListWidgetItem(rover_name_and_status);
+        new_item->setForeground(Qt::green);
+        ui.rover_list->addItem(new_item);
+
+        // Create the corresponding diagnostic data listwidgetitem
+        QListWidgetItem* new_diags_item = new QListWidgetItem("");
+
+        // The user shouldn't be able to select the diagnostic output
+        new_diags_item->setFlags(new_diags_item->flags() & ~Qt::ItemIsSelectable);
+
+        ui.rover_diags_list->addItem(new_diags_item);
+
+        // Add the map selection checkbox for this rover
+        QListWidgetItem* new_map_selection_item = new QListWidgetItem("");
+
+        // set checkable but not selectable flags
+        new_map_selection_item->setFlags(new_map_selection_item->flags() | Qt::ItemIsUserCheckable);
+        new_map_selection_item->setFlags(new_map_selection_item->flags() & ~Qt::ItemIsSelectable);
+        new_map_selection_item->setCheckState(Qt::Unchecked);
+
+        // Add to the widget list
+        ui.map_selection_list->addItem(new_map_selection_item);
+
+    }
     }
 
     // If rovers have not sent a status message recently mark them as disconnected

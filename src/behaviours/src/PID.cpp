@@ -179,4 +179,3 @@ float PID::PIDOut(float calculatedError, float setPoint)
 
   return PIDOut;
 }
-

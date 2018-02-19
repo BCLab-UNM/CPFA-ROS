@@ -7,18 +7,17 @@ LogicController::LogicController() {
   logicState = LOGIC_STATE_INTERRUPT;
   processState = PROCCESS_STATE_SEARCHING;
   rng = new random_numbers::RandomNumberGenerator();
-  // Melanie wants fixed seeds
-  //srand(CPFA_parameters.random_seed);
   
   ProcessData();
-  
+
   control_queue = priority_queue<PrioritizedController>();
-  
+
 }
 
 LogicController::~LogicController() {}
 
 void LogicController::Reset() {
+
   std::cout << "LogicController.Reset()" << std::endl;
   logicState = LOGIC_STATE_INTERRUPT;
   processState = PROCCESS_STATE_SEARCHING;
@@ -42,28 +41,28 @@ Result LogicController::DoWork() {
   for(PrioritizedController cntrlr : prioritizedControllers) {
     if(cntrlr.controller->ShouldInterrupt() && cntrlr.priority >= 0)
     {
-		cout<<" is interrupt..."<<endl;
+		//cout<<" is interrupt..."<<endl;
       logicState = LOGIC_STATE_INTERRUPT;
       //do not break all shouldInterupts may need calling in order to properly pre-proccess data.
     }
   }
   
-  cout <<"logicState="<<logicState<<endl;
+  //cout <<"logicState="<<logicState<<endl;
   //logic state switch
   switch(logicState) {
-  
+
   //when an interrupt has been thorwn or there are no pending control_queue.top().actions logic controller is in this state.
   case LOGIC_STATE_INTERRUPT: {
     //Reset the control queue
     control_queue = priority_queue<PrioritizedController>();
-    
+
     //check what controllers have work to do all that say yes will be added to the priority queue.
     for(PrioritizedController cntrlr : prioritizedControllers) {
-		cout <<"priority="<<cntrlr.priority<<endl;
-		cout<< "name="<<cntrlr.controller <<endl;
+		//cout <<"priority="<<cntrlr.priority<<endl;
+		//cout<< "name="<<cntrlr.controller <<endl;
       if(cntrlr.controller->HasWork()) {
         if (cntrlr.priority < 0) {
-			cout<<"continue ... "<<endl;
+			//cout<<"continue ... "<<endl;
           continue;
         }
         else {
@@ -72,19 +71,20 @@ Result LogicController::DoWork() {
         }
       }
     }
+
     //if no controlers have work report this to ROS Adapter and do nothing.
     if(control_queue.empty()) {
-		cout<<"control_queue.empty()"<<endl;
+		//cout<<"control_queue.empty()"<<endl;
       result.type = behavior;
       result.b = wait;
       break;
     }
     else {
-      //default result state if someone has work this safe guards against faulty result types
+      //default result state if someone has work this safe gaurds against faulty result types
       result.b = noChange;
      //cout<<"behavior is no change"<<endl;
     }
-    
+
     //take the top member of the priority queue and run their do work function.
     result = control_queue.top().controller->DoWork();
     
@@ -105,6 +105,7 @@ Result LogicController::DoWork() {
        //cout<<"controller="<<control_queue.top().controller<<endl;
         control_queue.top().controller->Reset();
       }
+
       //ask for the procces state to change to the next state or loop around to the begining
       if(result.b == nextProcess) {
 		 //cout<<"next process..."<<endl;
@@ -188,7 +189,7 @@ Result LogicController::DoWork() {
       break;
     }
 
-    //precision driving result types are when a controller wants direct command of the robots actuatorshandler
+    //precision driving result types are when a controller wants direct command of the robots actuators
     //logic controller facilitates the command pass through in the LOGIC_STATE_PRECISION_COMMAND switch case
     else if(result.type == precisionDriving) {
      //cout<<"result type == precisionDriving..."<<endl;
@@ -212,7 +213,7 @@ Result LogicController::DoWork() {
 
     //this case is primarly when logic controller is waiting for drive controller to reach its last waypoint
   case LOGIC_STATE_WAITING: {
-     cout <<"logic state waiting..."<<LOGIC_STATE_WAITING<<endl;
+     //cout <<"logic state waiting..."<<LOGIC_STATE_WAITING<<endl;
     //cout<<"logicState="<<logicState<<endl; 
     //ask drive controller how to drive
     //commands to be passed the ROS Adapter as left and right wheel PWM values in the result struct are returned
@@ -368,6 +369,7 @@ void LogicController::ProcessData() {
     };
   }
   else if (processState == PROCCESS_STATE_MANUAL) {
+    // under manual control only the manual waypoint controller is active
     prioritizedControllers = {
       PrioritizedController{5,  (Controller*)(&manualWaypointController)},
       PrioritizedController{-1, (Controller*)(&searchController)},
@@ -381,14 +383,15 @@ void LogicController::ProcessData() {
 
 bool LogicController::ShouldInterrupt() 
 {
-	cout<<"logic controller should not interrupt..."<<endl;
+	//cout<<"logic controller should not interrupt..."<<endl;
   ProcessData();
+
   return false;
 }
 
-bool LogicController::HasWork()
+bool LogicController::HasWork() 
 {
-	cout<<"Logic has work... false"<<endl;
+	//cout<<"Logic has work... false"<<endl;
   return false;
 }
 
@@ -423,7 +426,7 @@ void LogicController::controllerInterconnect()
     //pickup controller annouces it has pickedup a target
     if(pickUpController.GetTargetHeld()) 
     {
-		cout<<"get target held..."<<endl;
+	//	cout<<"get target held..."<<endl;
       dropOffController.SetTargetPickedUp();
       obstacleController.SetTargetHeld();
       searchController.SetSuccesfullPickup();

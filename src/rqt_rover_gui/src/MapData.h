@@ -67,7 +67,7 @@ public:
     float getMinEncoderX(std::string rover_name);
     float getMinEncoderY(std::string rover_name);
 
-    bool inManualMode(std::string rover_name);
+    bool InManualMode(std::string rover_name);
     void SetAutonomousMode(std::string rover_name);
     void SetManualMode(std::string rover_name);
 
@@ -82,11 +82,11 @@ private:
     std::map<std::string, std::vector< std::pair<float,float> > > encoder_rover_path;
     std::map<std::string, std::map< int, std::tuple<float,float,bool> > >  waypoint_path;
 
-
     std::map<std::string, std::vector< std::pair<float,float> > > global_offset_gps_rover_path;
     std::map<std::string, std::vector< std::pair<float,float> > > global_offset_ekf_rover_path;
     std::map<std::string, std::vector< std::pair<float,float> > > global_offset_encoder_rover_path;
     std::map<std::string, std::map< int, std::tuple<float,float,bool> > >  global_offset_waypoint_path;
+
     std::map<std::string, std::vector< std::pair<float,float> > >  collection_points;
     std::map<std::string, std::vector< std::pair<float,float> > >  target_locations;
 
@@ -106,6 +106,7 @@ private:
     std::map<std::string, float> min_ekf_seen_y;
 
     bool display_global_offset;
+
     QMutex update_mutex; // To prevent race conditions when the data is being displayed by MapFrame
 
     std::string currently_selected_rover;
@@ -115,4 +116,3 @@ private:
 };
 
 #endif // MAPDATA_H
-

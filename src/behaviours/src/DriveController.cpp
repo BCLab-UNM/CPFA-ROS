@@ -16,11 +16,11 @@ DriveController::DriveController() {
 }
 
 DriveController::~DriveController() {}
-	
+
 void DriveController::Reset()
 {
   waypoints.clear();
-  //cout<<"stateMachineState="<<stateMachineState<<endl;
+
   if (stateMachineState == STATE_MACHINE_ROTATE || stateMachineState == STATE_MACHINE_SKID_STEER)
   {
     stateMachineState = STATE_MACHINE_WAYPOINTS;
@@ -44,7 +44,6 @@ Result DriveController::DoWork()
   {
     if(result.b == noChange)
     {
-		//cout<<"no change..."<<endl;
       //if drive controller gets a no change command it is allowed to continue its previous action
       //normally this will be to follow waypoints but it is not specified as such.
     }
@@ -70,7 +69,6 @@ Result DriveController::DoWork()
 
   else if(result.type == waypoint)
   {
-	  //cout<<"process data"<<endl;
     //interpret input result as new waypoints to add into the queue
     ProcessData();
 
@@ -80,7 +78,7 @@ Result DriveController::DoWork()
   {
 
   //Handlers and the final state of STATE_MACHINE are the only parts allowed to call INTERUPT
-  //This should be d one as little as possible. I Suggest to Use timeouts to set control bools false.
+  //This should be d one as little as possible. I suggest using timeouts to set control bools to false.
   //Then only call INTERUPT if bool switches to true.
   case STATE_MACHINE_PRECISION_DRIVING:
   {
@@ -88,9 +86,11 @@ Result DriveController::DoWork()
     ProcessData();
     break;
   }
+
+
   case STATE_MACHINE_WAYPOINTS:
   {
-    //cout<<"state machine: waypoints"<<endl;
+
     //Handles route planning and navigation as well as making sure all waypoints are valid.
 
     bool tooClose = true;
@@ -126,6 +126,8 @@ Result DriveController::DoWork()
       waypoints.back().theta = atan2(waypoints.back().y - currentLocation.y, waypoints.back().x - currentLocation.x);
       result.pd.setPointYaw = waypoints.back().theta;
 
+      //cout << "**************************************************************************" << endl; //DEBUGGING CODE
+      //cout << "Waypoint x : " << waypoints.back().x << " y : " << waypoints.back().y << endl; //DEBUGGING CODE
       //fall through on purpose
     }
   }
@@ -136,7 +138,7 @@ Result DriveController::DoWork()
     // Calculate angle between currentLocation.theta and waypoints.front().theta
     // Rotate left or right depending on sign of angle
     // Stay in this state until angle is minimized
-    //cout<<"CPFAStatus:: ROTATE..."<<endl;
+    cout<<"TestStatus:: ROTATE..."<<endl;
     waypoints.back().theta = atan2(waypoints.back().y - currentLocation.y, waypoints.back().x - currentLocation.x);
 
     // Calculate the diffrence between current and desired heading in radians.
@@ -146,8 +148,8 @@ Result DriveController::DoWork()
     result.pd.setPointVel = 0.0;
     //Calculate absolute value of angle
 
-    float abs_error = fabs(angles::shortest_angular_distance(currentLocation.theta, waypoints.back().theta));
-
+    //float abs_error = fabs(angles::shortest_angular_distance(currentLocation.theta, waypoints.back().theta));
+    float abs_error = fabs(errorYaw);
     // If angle > rotateOnlyAngleTolerance radians rotate but dont drive forward.
     //if (fabs(angles::shortest_angular_distance(currentLocation.theta, waypoints.back().theta)) > rotateOnlyAngleTolerance) {
     //cout<<"waypoints.back().theta="<<waypoints.back().theta<<endl;
@@ -155,7 +157,7 @@ Result DriveController::DoWork()
     if (abs_error > rotateOnlyAngleTolerance)
     {
       // rotate but dont drive.
-      //cout<<"CPFAStatus: rotate but dont drive"<<endl;
+      cout<<"TestStatus: rotate but dont drive"<<endl;
       if (result.PIDMode == FAST_PID)
       {
         fastPID(0.0, errorYaw, result.pd.setPointVel, result.pd.setPointYaw);
@@ -179,13 +181,16 @@ Result DriveController::DoWork()
       // Drive forward
       // Stay in this state until angle is at least PI/2
 
-	 //cout<<"CPFAStatus:: skid steer..."<<endl;
+	 cout<<"TestStatus:: skid steer..."<<endl;
 	  //cout<<"CPFAStatus: before waypoint.back().x="<<waypoints.back().x<<endl;
       
       // calculate the distance between current and desired heading in radians
       waypoints.back().theta = atan2(waypoints.back().y - currentLocation.y, waypoints.back().x - currentLocation.x);
       float errorYaw = angles::shortest_angular_distance(currentLocation.theta, waypoints.back().theta);
+    
       float distance = hypot(waypoints.back().x - currentLocation.x, waypoints.back().y - currentLocation.y);
+    //cout << "Skid steer, Error yaw:  " << errorYaw << " target heading : " << waypoints.back().theta << " current heading : " << currentLocation.theta << " error distance : " << distance << endl; //DEBUGGING CODE
+    //cout << "Waypoint x : " << waypoints.back().x << " y : " << waypoints.back().y << " currentLoc x : " << currentLocation.x << " y : " << currentLocation.y << endl; //DEBUGGING CODE
 
       // goal not yet reached drive while maintaining proper heading.
       if (fabs(errorYaw) < M_PI_2 &&  distance > waypointTolerance)
@@ -198,7 +203,8 @@ Result DriveController::DoWork()
             fastPID((searchVelocity-linearVelocity) ,errorYaw, result.pd.setPointVel, result.pd.setPointYaw);
           }
 	  }
-      else {
+      else 
+      {
         // stop no change
         left = 0.0;
         right = 0.0;
@@ -212,24 +218,25 @@ Result DriveController::DoWork()
        //cout<<"CPFAStatus: result.wpts.waypoint size="<<result.wpts.waypoints.size()<<endl;
        //cout<<"cpfa_state  = "<<GetCPFAState() <<endl;
       }
+      /*float abs_error = fabs(errorYaw);
+      if(abs_error > rotateOnlyAngleTolerance && current_time % 1000 <= 100)//qilu, adjust angle every 10 seconds on the way to the target 
+      {
+		  cout<<"TestStatus: adjust..."<<endl;
+		  stateMachineState = STATE_MACHINE_ROTATE;
+		  }*/
      //cout<<"1...."<<endl;
       break;
   }
 
   default:
   {
-	cout<<"2...."<<endl;
     break;
   }
-
-
-  }
-
+ }
   //package data for left and right values into result struct for use in ROSAdapter
   result.pd.right = right;
   result.pd.left = left;
-//cout<<"3...."<<endl;
-    
+
   //return modified struct
   return result;
 
@@ -248,25 +255,21 @@ bool DriveController::ShouldInterrupt()
   }
 }
 
-bool DriveController::HasWork() { 
-	cout<<"Drive has work..."<<endl;  }
+bool DriveController::HasWork() {   }
+
 
 
 void DriveController::ProcessData()
 {
-	cout <<"CPFAStatus: 1 Driver: result.wpts.waypoints size="<<result.wpts.waypoints.size()<<endl;
-    for(int i=0; i<result.wpts.waypoints.size(); i++){
-		cout<<"CPFAStatus:wpts.waypoint "<< i <<"= ["<< result.wpts.waypoints[i].x<<", "<<result.wpts.waypoints[i].y<<"]"<<endl;
-		}
-	
+  //determine if the drive commands are waypoint or precision driving
   if (result.type == waypoint) {
-	 //cout<<"driver, waypoint..."<<endl;
+    
     //sets logic controller into stand by mode while drive controller works
     result.type = behavior;
     result.b = noChange;
 
     if(result.reset) {
-		cout<<"reset result..."<<endl;
+	//	cout<<"reset result..."<<endl;
       waypoints.clear();
     }
 
@@ -288,7 +291,7 @@ void DriveController::ProcessData()
     }
     else if (result.PIDMode == SLOW_PID)
     {
-		cout<<"SLOW_PID"<<endl;
+		//cout<<"SLOW_PID"<<endl;
       //will take longer to reach the setPoint but has less chanse of an overshoot especially with slow feedback
       float vel = result.pd.cmdVel -linearVelocity;
       float setVel = result.pd.cmdVel;
@@ -296,27 +299,23 @@ void DriveController::ProcessData()
     }
     else if (result.PIDMode == CONST_PID)
     {
-		cout<<"CONST_PID"<<endl;
-		cout<<"result.pd.cmdVel="<<result.pd.cmdVel<<endl;
-		cout<<"linearVelocity="<<linearVelocity<<endl;
+      //vel is the same as fast PID however
+      //this setup takes a target angular velocity to constantly turn at instead of a target heading
       float vel = result.pd.cmdVel - linearVelocity;
       float angular = result.pd.cmdAngular - angularVelocity;
 
+      //cout << "Ang. Vel.  " << angularVelocity << "  Ang. Error" << angular << endl; //DEBUGGING CODE
 
       constPID(vel, angular ,result.pd.setPointVel, result.pd.setPointYaw);
     }
   }
-  cout <<"CPFAStatus: 2 Driver: result.wpts.waypoints size="<<result.wpts.waypoints.size()<<endl;
-    for(int i=0; i<result.wpts.waypoints.size(); i++)
-    {
-		cout<<"CPFAStatus: wpts.waypoint "<< i <<"= ["<< result.wpts.waypoints[i].x<<", "<<result.wpts.waypoints[i].y<<"]"<<endl;
-		}
 }
 
 
 void DriveController::fastPID(float errorVel, float errorYaw , float setPointVel, float setPointYaw)
 {
 
+  // cout << "PID FAST" << endl; //DEBUGGING CODE
 
   float velOut = fastVelPID.PIDOut(errorVel, setPointVel); //returns PWM target to try and get error vel to 0
   float yawOut = fastYawPID.PIDOut(errorYaw, setPointYaw); //returns PWM target to try and get yaw error to 0
@@ -325,7 +324,7 @@ void DriveController::fastPID(float errorVel, float errorYaw , float setPointVel
   int right = velOut + yawOut; //left and right are the same for vel output but opposite for yaw output
 
   //prevent combine output from going over tihs value
-  int sat = 180;
+  int sat = 180; 
   if (left  >  sat) {left  =  sat;}
   if (left  < -sat) {left  = -sat;}
   if (right >  sat) {right =  sat;}
@@ -336,6 +335,7 @@ void DriveController::fastPID(float errorVel, float errorYaw , float setPointVel
 
 void DriveController::slowPID(float errorVel,float errorYaw, float setPointVel, float setPointYaw)
 {
+  //cout << "PID SLOW" << endl; //DEBUGGING CODE
 
   float velOut = slowVelPID.PIDOut(errorVel, setPointVel);
   float yawOut = slowYawPID.PIDOut(errorYaw, setPointYaw);
@@ -356,7 +356,7 @@ void DriveController::slowPID(float errorVel,float errorYaw, float setPointVel, 
 void DriveController::constPID(float erroVel,float constAngularError, float setPointVel, float setPointYaw)
 {
 
-  cout << "PID CONST" << endl;
+  //cout << "PID CONST" << endl; //DEBUGGING CODE
 
   float velOut = constVelPID.PIDOut(erroVel, setPointVel);
   float yawOut = constYawPID.PIDOut(constAngularError, setPointYaw);
@@ -369,8 +369,7 @@ void DriveController::constPID(float erroVel,float constAngularError, float setP
   if (left  < -sat) {left  = -sat;}
   if (right >  sat) {right =  sat;}
   if (right < -sat) {right = -sat;}
- //cout<<"left="<<left<<endl;
- //cout<<"right="<<right<<endl;
+
   this->left = left;
   this->right = right;
 }
@@ -389,9 +388,9 @@ PIDConfig DriveController::fastVelConfig()
 {
   PIDConfig config;
 
-  config.Kp = 60;
+  config.Kp = 60; //proportional constant
   config.Ki = 10; //integral constant
-  config.Kd = 2;
+  config.Kd = 2; //derivative constant
   config.satUpper = 255; //upper limit for PID output
   config.satLower = -255; //lower limit for PID output
   config.antiWindup = config.satUpper; //prevent integral from acruing error untill proportional output drops below a certain limit

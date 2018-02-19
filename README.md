@@ -410,6 +410,7 @@ Assuming you have installed everything as the Swarmathon-ROS repository has inst
 In the ` ~/rover_workspace/CPFA_parameters/` directory you will see a set of files with a `.yaml` extension. Each file corresponds to the appropriate resource distribution and have been hand tuned to have parameters that will work for each of those distributions, albeit not optimally. 
 * `Result DoWork()`
 
+  Determines what action should be taken by the behaviour and returns
   that action in a `Result` struct. Note that no action is taken in
   this method, we just determine what needs to be done and pass it
   back to be executed by the `ROSAdapter`.
@@ -446,6 +447,7 @@ rosparam list | grep CPFA
 ### Logic Controller
 ```
 The logic controller manages all the other controllers in the
+behaviours package. There are two finite state machines at its core,
 one for the logic state and one for the process state
 `rosparam get <parameter name>` to see the value of the paramter to confirm. Some other useful ways to use this if you want to modify the
 The logic state state-machine has three states
@@ -483,8 +485,10 @@ respectively. Under each state the priority of the controllers
 changes. Check `LogicController::ProcessData()` to see the priorities
 (higher is higher priority, -1 is disabled). The manual state is a
 special state that is unreachable while the robot is in autonomous
+mode. The only active controller in the manual state is the manual
 waypoint controller.
 ```
+One more important function in the logic controller is
 `LogicController::controllerInterconnect()` which can be used to share
 data between controllers.
 ```
@@ -504,6 +508,7 @@ Example:
   instruct the swarmie to drive to a particular (x,y) coordinate. Only
   operates in manual mode.
 * `ObstacleController` Handles obstacle avoidance.
+* `PickUpController` Handles picking up a cube.
 * `RangeController` Prevents the swarmie from leaving a pre-defined
   foraging range.
 * `SearchController` Implements a correlated random walk as a basic
@@ -511,6 +516,7 @@ Example:
 ```
 ### PID
 ![Alt text](https://github.com/BCLab-UNM/CPFA-ROS/blob/documentation/readmeImages/debugging.png "Debugging")
+The PID class implements a generic proportional-integral-derivative
 controller that is configured using the `PIDConfig` struct. This
 struct is used to set the gains and the anti-windup parameters of the
 PID. The PID parameters can be tuned by modifying the config structs

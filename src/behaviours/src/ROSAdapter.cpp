@@ -48,6 +48,7 @@ public:
   ROSAdapterRangeShapeInvalidTypeException(std::string msg) {
     this->msg = msg;
   }
+  
   virtual const char* what() const throw()
   {
     std::string message = "Invalid RangeShape type provided: " + msg;
@@ -195,6 +196,7 @@ int main(int argc, char **argv) {
   
   gethostname(host, sizeof (host));
   string hostname(host);
+  
   if (argc >= 2) {
     publishedName = argv[1];
     cout << "Welcome to the world of tomorrow " << publishedName
@@ -203,6 +205,7 @@ int main(int argc, char **argv) {
     publishedName = hostname;
     cout << "No Name Selected. Default is: " << publishedName << endl;
   }
+  
   // NoSignalHandler so we can catch SIGINT ourselves and shutdown the node
   ros::init(argc, argv, (publishedName + "_BEHAVIOUR"), ros::init_options::NoSigintHandler);
   ros::NodeHandle mNH;
@@ -213,7 +216,6 @@ int main(int argc, char **argv) {
   modeSubscriber = mNH.subscribe((publishedName + "/mode"), 1, modeHandler);
   targetSubscriber = mNH.subscribe((publishedName + "/targets"), 10, targetHandler);
   odometrySubscriber = mNH.subscribe((publishedName + "/odom/filtered"), 10, odometryHandler);
-  
   mapSubscriber = mNH.subscribe((publishedName + "/odom/ekf"), 10, mapHandler);
   
   pheromoneTrailSubscriber = mNH.subscribe("/pheromones", 10, pheromoneTrailHandler);//qilu 12/2017
@@ -262,6 +264,7 @@ int main(int argc, char **argv) {
   timerStartTime = time(0);
   
   ros::spin();
+  
   return EXIT_SUCCESS;
 }
 
@@ -272,7 +275,6 @@ int main(int argc, char **argv) {
 // controllers in the abridge package.
 void behaviourStateMachine(const ros::TimerEvent&)
 {
- //cout<<"Pheromone: behaviourStateMachine..."<<endl;
   std_msgs::String stateMachineMsg;
   // time since timerStartTime was set to current time
   timerTimeElapsed = time(0) - timerStartTime;
@@ -282,6 +284,7 @@ void behaviourStateMachine(const ros::TimerEvent&)
   // auto mode but wont work in main goes here)
   if (!initilized)
   {
+
     if (timerTimeElapsed > startDelayInSeconds)
     {
 
@@ -327,12 +330,9 @@ void behaviourStateMachine(const ros::TimerEvent&)
   // Robot is in automode
   if (currentMode == 2 || currentMode == 3)
   {
-   cout<<"currentMode ..."<<endl;
+    
     humanTime();
     
-	if(distanceToCenter() > 0.75) {
-      centerUpdated = false; //qilu 12/2017 no reference, should be removed.
-    }
 
     if (logicController.layPheromone()) {
       swarmie_msgs::PheromoneTrail trail;
@@ -365,20 +365,11 @@ void behaviourStateMachine(const ros::TimerEvent&)
     //update center location
     logicController.SetCenterLocationOdom( updateCenterLocation() );
     
-    /*for(int i=0; result.wpts.waypoints.size(); i++){
-        cout<<"CPFAStatus: 1 ROSAdapter: result.wpts.waypoint=["<<result.wpts.waypoints[i].x<<endl;
-    }*/
-    
     //ask logic controller for the next set of actuator commands
     result = logicController.DoWork();
     
-    
-    /*for(int i=0; result.wpts.waypoints.size(); i++){
-        cout<<"CPFAStatus: 2 ROSAdapter: result.wpts.waypoint=["<<result.wpts.waypoints[i].x<<endl;
-    }*/
-    
-    
     bool wait = false;
+    
     //if a wait behaviour is thrown sit and do nothing untill logicController is ready
     if (result.type == behavior)
     {
@@ -458,7 +449,6 @@ void behaviourStateMachine(const ros::TimerEvent&)
       // input).
       sendDriveCommand(result.pd.left,result.pd.right);
     }
-    //cout << endl;
   }
 
   // publish state machine string for user, only if it has changed, though
@@ -482,12 +472,18 @@ void sendDriveCommand(double left, double right)
  *************************/
 
 void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& message) {
-  //CPFAState cpfa_state = logicController.GetCPFAState();
-  
+
+  // Don't pass April tag data to the logic controller if the robot is not in autonomous mode.
+  // This is to make sure autonomous behaviours are not triggered while the rover is in manual mode. 
+  if(currentMode == 0 || currentMode == 1) 
+  { 
+    return; 
+  }
+
   bool ignored_tag = false;
   // Number of resource tags
   int num_tags = 0;
-  
+
   if (message->detections.size() > 0) {
     vector<Tag> tags;
 
@@ -513,58 +509,18 @@ void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& messag
 							    tagPose.pose.orientation.y,
 							    tagPose.pose.orientation.z,
 							    tagPose.pose.orientation.w ) );
-      // While in a travel state ignore resource tags
-     /* switch(cpfa_state) {
-
-        case return_to_nest:
-        case travel_to_search_site:
-        case set_target_location:
-        case start_state:
-          {
-            if(loc.getID() == 0 && !ignored_tag)
-            {
-              ignored_tag = true;
-              cout << "ROSAdapter: targetHandler -> ignored a 0 tag!" << endl << endl;
-            }
-
-            if (loc.getID() == 0)
-            {
-              break;
-            }
-          }
-
-        default:
-          {*/
       tags.push_back(loc);
     }
-      //}
-      //if ((cpfa_state == return_to_nest || cpfa_state == travel_to_search_site || cpfa_state == set_target_location || cpfa_state == start_state) && loc.id == 0 ) {
-
-        //if(!ignored_tag) {
-          //ignored_tag = true;
-          //cout << "ROSAdapter: targetHandler -> ignored a 0 tag!" << endl << endl;
-        //}
-
-        //continue;
-      //} else {
-        //tags.push_back(loc);
-      //}
-    //}
+    
     logicController.SetAprilTags(tags);
-   /* if(cpfa_state == sense_local_resource_density) {
-      logicController.senseLocalResourceDensity(num_tags);
-  }*/
+  }
   
- 
 }
-else{
- //cout<<"PheromoneStatus: No tag is detected.."<<endl;
-}
-}
+
 void modeHandler(const std_msgs::UInt8::ConstPtr& message) {
   currentMode = message->data;
   if(currentMode == 2 || currentMode == 3) {
-	logicController.SetModeAuto();
+    logicController.SetModeAuto();
   }
   else {
     logicController.SetModeManual();
@@ -572,11 +528,13 @@ void modeHandler(const std_msgs::UInt8::ConstPtr& message) {
   sendDriveCommand(0.0, 0.0);
 }
 
-void sonarHandler(const sensor_msgs::Range::ConstPtr& sonarLeft, const sensor_msgs::Range::ConstPtr& sonarCenter, const sensor_msgs::Range::ConstPtr& sonarRight) {
+void sonarHandler(const sensor_msgs::Range::ConstPtr& sonarLeft, const sensor_msgs::Range::ConstPtr& sonarCenter, const sensor_msgs::Range::ConstPtr& sonarRight) 
+{  
   logicController.SetSonarData(sonarLeft->range, sonarCenter->range, sonarRight->range);
 }
 
-void arenaDimHandler(const std_msgs::Float32::ConstPtr& message){
+void arenaDimHandler(const std_msgs::Float32::ConstPtr& message)
+{
 	arena_dim = message->data;
 	}
 
@@ -584,14 +542,18 @@ void odometryHandler(const nav_msgs::Odometry::ConstPtr& message) {
   //Get (x,y) location directly from pose
   currentLocation.x = message->pose.pose.position.x;
   currentLocation.y = message->pose.pose.position.y;
+  
   //Get theta rotation by converting quaternion orientation to pitch/roll/yaw
   tf::Quaternion q(message->pose.pose.orientation.x, message->pose.pose.orientation.y, message->pose.pose.orientation.z, message->pose.pose.orientation.w);
   tf::Matrix3x3 m(q);
   double roll, pitch, yaw;
   m.getRPY(roll, pitch, yaw);
   currentLocation.theta = yaw;
+  
   linearVelocity = message->twist.twist.linear.x;
   angularVelocity = message->twist.twist.angular.z;
+  
+  
   Point currentLoc;
   currentLoc.x = currentLocation.x;
   currentLoc.y = currentLocation.y;
@@ -608,8 +570,8 @@ void virtualFenceHandler(const std_msgs::Float32MultiArray& message)
   // 0 = Disable the virtual fence
   // 1 = circle
   // 2 = rectangle
- 
   int shape_type = static_cast<int>(message.data[0]); // Shape type
+  
   if (shape_type == 0)
   {
     logicController.setVirtualFenceOff();
@@ -651,12 +613,14 @@ void mapHandler(const nav_msgs::Odometry::ConstPtr& message) {
   //Get (x,y) location directly from pose
   currentLocationMap.x = message->pose.pose.position.x;
   currentLocationMap.y = message->pose.pose.position.y;
+  
   //Get theta rotation by converting quaternion orientation to pitch/roll/yaw
   tf::Quaternion q(message->pose.pose.orientation.x, message->pose.pose.orientation.y, message->pose.pose.orientation.z, message->pose.pose.orientation.w);
   tf::Matrix3x3 m(q);
   double roll, pitch, yaw;
   m.getRPY(roll, pitch, yaw);
   currentLocationMap.theta = yaw;
+  
   linearVelocity = message->twist.twist.linear.x;
   angularVelocity = message->twist.twist.angular.z;
   

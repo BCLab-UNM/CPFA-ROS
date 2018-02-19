@@ -19,15 +19,11 @@ DropOffController::DropOffController() {
 
   countLeft = 0;
   countRight = 0;
+  pitches = 0.0;
 
   isPrecisionDriving = false;
   startWaypoint = false;
   timerTimeElapsed = -1;
-  
-  //qilu 11/2017
-  //site_fidelity_location.x = 0;
-  //site_fidelity_location.y = 0;
-  //site_fidelity_location.theta = 0;
  
   currentLocation.x = 0;
   currentLocation.y = 0;
@@ -42,8 +38,8 @@ double DropOffController::getPoissonCDF(const double lambda)
 {
   double sumAccumulator       = 1.0;
   double factorialAccumulator = 1.0;
-   cout <<"lambda="<<lambda<<endl;
-   cout <<"get Poisson CDF: local_resource_density="<<local_resource_density<<endl;
+   //cout <<"lambda="<<lambda<<endl;
+   //cout <<"get Poisson CDF: local_resource_density="<<local_resource_density<<endl;
   for (size_t i = 1; i <= local_resource_density; i++) {
     factorialAccumulator *= i;
     sumAccumulator += pow(lambda, i) / factorialAccumulator;
@@ -54,12 +50,11 @@ double DropOffController::getPoissonCDF(const double lambda)
 
 Result DropOffController::DoWork() {
 
-  cout << "DropOffController::DoWork() " << endl;
+  //cout << "DropOffController::DoWork() " << endl;
 
   int count = countLeft + countRight;
 
   if(timerTimeElapsed > -1) {
-    cout<<"time elapsed > -1..."<<endl;
     long int elapsed = current_time - returnTimer;
     timerTimeElapsed = elapsed/1e3; // Convert from milliseconds to seconds
   }
@@ -68,7 +63,6 @@ Result DropOffController::DoWork() {
   //to resart our search.
   if(reachedCollectionPoint)
   {
-    cout << "2 time is : "<< timerTimeElapsed << endl;
     if (timerTimeElapsed >= 5)
     {
       if (finalInterrupt)
@@ -88,12 +82,11 @@ Result DropOffController::DoWork() {
       else
       {
         finalInterrupt = true;
-        cout << "finalInterrupt, true" << endl;
+        //cout << "finalInterrupt, true" << endl;
       }
     }
     else if (timerTimeElapsed >= 0.1)
     {
-      cout << "gt 0.1" << endl;
       isPrecisionDriving = true;
       result.type = precisionDriving;
 
@@ -111,10 +104,10 @@ Result DropOffController::DoWork() {
 
   //check to see if we are driving to the center location or if we need to drive in a circle and look.
   if (distanceToCenter > collectionPointVisualDistance && !circularCenterSearching && (count == 0)) {
-    cout<<"distanceToCenter="<<distanceToCenter<<endl;
+    //cout<<"distanceToCenter="<<distanceToCenter<<endl;
     result.type = waypoint;
     result.wpts.waypoints.clear();
-    cout<<"wpts.waypoints insert"<<endl;
+    //cout<<"wpts.waypoints insert"<<endl;
     result.wpts.waypoints.push_back(this->centerLocation);
     startWaypoint = false;
     isPrecisionDriving = false;
@@ -155,7 +148,6 @@ Result DropOffController::DoWork() {
   bool left = (countLeft > 0);
   bool right = (countRight > 0);
   bool centerSeen = (right || left);
-
   //reset lastCenterTagThresholdTime timout timer to current time
   if ((!centerApproach && !seenEnoughCenterTags) || (count > 0 && !seenEnoughCenterTags)) {
 
@@ -166,7 +158,7 @@ Result DropOffController::DoWork() {
   if (count > 0 || seenEnoughCenterTags || prevCount > 0) //if we have a target and the center is located drive towards it.
   {
 
-    cout << "CPFAStatus: drive to center" << endl;
+    //cout << "CPFAStatus: drive to center" << endl;
     centerSeen = true;
 
     if (first_center && isPrecisionDriving)
@@ -178,46 +170,54 @@ Result DropOffController::DoWork() {
       return result;
     }
     isPrecisionDriving = true;
-
     if (seenEnoughCenterTags) //if we have seen enough tags
     {
-      if ((countLeft-5) > countRight) //and there are too many on the left
+	  if (pitches < -0.5) //turn to the left
       {
-        right = false; //then we say none on the right to cause us to turn right
-      }
-      else if ((countRight-5) > countLeft)
+		left = true;  
+        right = false; 
+        }
+      else if (pitches > 0.5)//turn to the right
       {
-        left = false; //or left in this case
-      }
+        left = false;
+        right = true;
+        }
     }
+    else //not seen enough tags, then drive forward
+    {
+		left = false;
+		right = false;
+		}
 
     float turnDirection = 1;
-    //float current_search_velocity = searchVelocity;
     
     //reverse tag rejection when we have seen enough tags that we are on a
     //trajectory in to the square we dont want to follow an edge.
     if (seenEnoughCenterTags) turnDirection = -3;
 
     result.type = precisionDriving;
-
+    
     //otherwise turn till tags on both sides of image then drive straight
-    if (left && right) {
-      result.pd.cmdVel = searchVelocity;
+    if (left && right) 
+    {
+	  result.pd.cmdVel = searchVelocity;
       result.pd.cmdAngularError = 0.0;
     }
-    else if (right) {
+    else if (right) 
+    {
+	  result.pd.cmdVel = -0.1 * turnDirection;
+      result.pd.cmdAngularError = centeringTurnRate*turnDirection;
+    }
+    else if (left)
+    {
       result.pd.cmdVel = -0.1 * turnDirection;
       result.pd.cmdAngularError = -centeringTurnRate*turnDirection;
-    }
-    else if (left){
-      result.pd.cmdVel = -0.1 * turnDirection;
-      result.pd.cmdAngularError = centeringTurnRate*turnDirection;
     }
     else
     {
       result.pd.cmdVel = searchVelocity;
       result.pd.cmdAngularError = 0.0;
-    }
+      }
 
     //must see greater than this many tags before assuming we are driving into the center and not along an edge.
     if (count > centerTagThreshold)
@@ -234,7 +234,8 @@ Result DropOffController::DoWork() {
     float timeSinceSeeingEnoughCenterTags = elapsed/1e3; // Convert from milliseconds to seconds
 
     //we have driven far enough forward to have passed over the circle.
-    if (count < 1 && seenEnoughCenterTags && timeSinceSeeingEnoughCenterTags > dropDelay) {
+    
+    if (count < 5 && seenEnoughCenterTags && timeSinceSeeingEnoughCenterTags > dropDelay) {
       centerSeen = false;
     }
     centerApproach = true;
@@ -247,19 +248,19 @@ Result DropOffController::DoWork() {
   //was on approach to center and did not seenEnoughCenterTags
   //for lostCenterCutoff seconds so reset.
   else if (centerApproach) {
-    cout<<"was on approach to center and did not seenEnoughCenterTags"<<endl;
+    //cout<<"was on approach to center and did not seenEnoughCenterTags"<<endl;
     long int elapsed = current_time - lastCenterTagThresholdTime;
     float timeSinceSeeingEnoughCenterTags = elapsed/1e3; // Convert from milliseconds to seconds
     if (timeSinceSeeingEnoughCenterTags > lostCenterCutoff)
     {
-      cout << "back to drive to center base location..." << endl;
+      //cout << "back to drive to center base location..." << endl;
       //go back to drive to center base location instead of drop off attempt
       reachedCollectionPoint = false;
       seenEnoughCenterTags = false;
       centerApproach = false;
 
       result.type = waypoint;
-      cout<<"wpts.waypoint to center"<<endl;
+      //cout<<"wpts.waypoint to center"<<endl;
       result.wpts.waypoints.push_back(this->centerLocation);
       if (isPrecisionDriving) {
         result.type = behavior;
@@ -282,7 +283,7 @@ Result DropOffController::DoWork() {
 
   if (!centerSeen && seenEnoughCenterTags)
   {
-   cout<<"not seen center and seen enough tags"<<endl;
+   //cout<<"not seen center and seen enough tags"<<endl;
     reachedCollectionPoint = true;
     centerApproach = false;
     returnTimer = current_time;
@@ -292,7 +293,7 @@ Result DropOffController::DoWork() {
 }
 
 void DropOffController::Reset() {
-	cout<<"DropOffController::Reset()"<<endl;
+	//cout<<"DropOffController::Reset()"<<endl;
   result.type = behavior;
   result.b = wait;
   result.pd.cmdVel = 0;
@@ -309,6 +310,7 @@ void DropOffController::Reset() {
 
   countLeft = 0;
   countRight = 0;
+  pitches = 0.0;
 
 
   //reset flags
@@ -336,6 +338,8 @@ void DropOffController::Reset() {
 void DropOffController::SetTagData(vector<Tag> tags) {
   countRight = 0;
   countLeft = 0;
+  pitches = 0.0;
+  yaws = 0.0;
 
   if(targetHeld) {
     // if a target is detected and we are looking for center tags
@@ -346,14 +350,20 @@ void DropOffController::SetTagData(vector<Tag> tags) {
         if (tags[i].getID() == 256) {
 
           // checks if tag is on the right or left side of the image
-          if (tags[i].getPositionX() + cameraOffsetCorrection > 0) {
+          if (tags[i].getPositionX() + cameraOffsetCorrection > 0) 
+          {
             countRight++;
-
-          } else {
+          } 
+          else 
+          {
             countLeft++;
           }
+          pitches += tags[i].calcPitch();
+          yaws += tags[i].calcYaw();
         }
       }
+      pitches /= (countLeft + countRight);
+      yaws /= (countLeft + countRight);
     }
   }
 
@@ -368,7 +378,7 @@ void DropOffController::ProcessData() {
 }
 
 bool DropOffController::ShouldInterrupt() {
-	cout<<"dropoff controller should interrupt..."<<endl;
+	//cout<<"dropoff controller should interrupt..."<<endl;
   ProcessData();
   if (startWaypoint && !interrupt) {
     interrupt = true;
@@ -400,7 +410,7 @@ bool DropOffController::HasWork() {
   if (circularCenterSearching && timerTimeElapsed < 2 && !isPrecisionDriving) {
     return false;
   }
-   cout <<"Dropoff has work..."<<(startWaypoint || isPrecisionDriving)<<endl;
+   //cout <<"Dropoff has work..."<<(startWaypoint || isPrecisionDriving)<<endl;
   return ((startWaypoint || isPrecisionDriving));
 }
 

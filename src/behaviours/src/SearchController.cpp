@@ -4,7 +4,6 @@
 using namespace std;
 
 SearchController::SearchController() {
-  //pheromones.clear(); //qilu 08/2017
   rng = new random_numbers::RandomNumberGenerator();
   currentLocation.x = 0;
   currentLocation.y = 0;
@@ -20,7 +19,7 @@ SearchController::SearchController() {
 }
 
 void SearchController::Reset() {
-	cout<<"SearchController::Reset()"<<endl;
+	//cout<<"SearchController::Reset()"<<endl;
   result.reset = false;
   //attemptCount = 0;
   result.wpts.waypoints.clear();
@@ -166,7 +165,7 @@ Result SearchController::DoWork() {
 	        first_waypoint = false;
 	        //searchLocation.theta = currentLocation.theta + M_PI;
 	       //cout<<"CPFAStatus: currentLocation.theta="<<currentLocation.theta<<"  "<<rng->uniformReal(-M_PI/2, M_PI/2)<<endl;
-	        searchLocation.theta = atan2(this->centerLocation.y - currentLocation.y, this->centerLocation.x - currentLocation.x);//this is the direction from center to the rover
+	        searchLocation.theta = atan2(currentLocation.y - this->centerLocation.y, currentLocation.x - this->centerLocation.x);//this is the direction from center to the rover
 	        
 	        searchLocation.theta += rng->uniformReal(-M_PI/2, M_PI/2); //sample an angle in this range based on the direction from the center to the rover, so rover will not collide with the collection disk when it travels in this direction
 	       //cout<<"CPFAStatus: searchLocation.theta="<<searchLocation.theta<<endl;
@@ -280,7 +279,7 @@ bool SearchController::ShouldInterrupt()
 	//cout<<"TestStatusSwitchStatus: result.cpfa_state="<<result.cpfa_state<<endl;
 	cout<<"SwitchStatus: cpfa_state="<<GetCPFAState()<<endl;
 	//cout<<"SwitchStatus: time="<< current_time <<", "<<current_time % 30000 <<endl;
-	if(current_time % 3000 <= 100) //check in every 10 seconds 
+	if(current_time % 3000 <= 100) //check in every 30 seconds 
 	{ 
 		if(GetCPFAState() == travel_to_search_site)
 		{

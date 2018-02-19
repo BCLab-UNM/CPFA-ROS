@@ -104,7 +104,7 @@ struct PrecisionDriving {
 };
 
 struct Waypoints {
-  std::vector<Point> waypoints;
+  vector<Point> waypoints;
 };
 
 struct Result {
