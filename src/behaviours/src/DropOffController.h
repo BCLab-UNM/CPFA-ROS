@@ -84,7 +84,7 @@ private:
   int countRight;
   
   float pitches;
-  float yaws;
+  //float yaws;
 
   //Center and current locations as of the last call to setLocationData
   Point centerLocation;

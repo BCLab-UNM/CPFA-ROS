@@ -167,7 +167,7 @@ Result SearchController::DoWork() {
 	       //cout<<"CPFAStatus: currentLocation.theta="<<currentLocation.theta<<"  "<<rng->uniformReal(-M_PI/2, M_PI/2)<<endl;
 	        searchLocation.theta = atan2(currentLocation.y - this->centerLocation.y, currentLocation.x - this->centerLocation.x);//this is the direction from center to the rover
 	        
-	        searchLocation.theta += rng->uniformReal(-M_PI/2, M_PI/2); //sample an angle in this range based on the direction from the center to the rover, so rover will not collide with the collection disk when it travels in this direction
+	        searchLocation.theta += rng->uniformReal(-M_PI/4, M_PI/4); //sample an angle in this range based on the direction from the center to the rover, so rover will not collide with the collection disk when it travels in this direction
 	       //cout<<"CPFAStatus: searchLocation.theta="<<searchLocation.theta<<endl;
 	        SetRandomSearchLocation();
 	        //result.cpfa_state = travel_to_search_site;

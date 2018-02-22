@@ -50,7 +50,7 @@ double DropOffController::getPoissonCDF(const double lambda)
 
 Result DropOffController::DoWork() {
 
-  //cout << "DropOffController::DoWork() " << endl;
+  cout << "DropOffController::DoWork() " << endl;
 
   int count = countLeft + countRight;
 
@@ -234,7 +234,9 @@ Result DropOffController::DoWork() {
     float timeSinceSeeingEnoughCenterTags = elapsed/1e3; // Convert from milliseconds to seconds
 
     //we have driven far enough forward to have passed over the circle.
-    
+    cout<<"DropStatus: count="<<count<<endl;
+    cout<<"DropStatus: seenEnoughCenterTags="<<seenEnoughCenterTags<<endl;
+    cout<<"DropStatus: timeSinceSeeingEnoughCenterTags="<<timeSinceSeeingEnoughCenterTags<<endl;
     if (count < 5 && seenEnoughCenterTags && timeSinceSeeingEnoughCenterTags > dropDelay) {
       centerSeen = false;
     }
@@ -339,7 +341,7 @@ void DropOffController::SetTagData(vector<Tag> tags) {
   countRight = 0;
   countLeft = 0;
   pitches = 0.0;
-  yaws = 0.0;
+  //yaws = 0.0;
 
   if(targetHeld) {
     // if a target is detected and we are looking for center tags
@@ -359,11 +361,11 @@ void DropOffController::SetTagData(vector<Tag> tags) {
             countLeft++;
           }
           pitches += tags[i].calcPitch();
-          yaws += tags[i].calcYaw();
+          //yaws += tags[i].calcYaw();
         }
       }
       pitches /= (countLeft + countRight);
-      yaws /= (countLeft + countRight);
+      //yaws /= (countLeft + countRight);
     }
   }
 

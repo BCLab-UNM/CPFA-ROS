@@ -27,20 +27,38 @@ void ObstacleController::Reset() {
 
 // Avoid crashing into objects detected by the ultraound
 void ObstacleController::avoidObstacle() {
-  
-    //always turn left to avoid obstacles
-   //cout<<"always turn left to avoid obstacles..."<<endl;
-    if (right < 0.8 || center < 0.8 || left < 0.8) {
-      result.type = precisionDriving;
-
-      result.pd.cmdAngular = -K_angular;
-
-      result.pd.setPointVel = 0.0;
-      double vel = rng->uniformReal(0, 0.5);
-            result.pd.cmdVel = vel;
-      //result.pd.cmdVel = 0.0;
-      result.pd.setPointYaw = 0;
+ 	cout<<"CollisionStatus: left="<<left<<", center="<<center<<", right="<<right<<endl;
+    if (left <= right && left <= center && left <triggerDistance) 
+    {  
+		cout<<"CollisionStatus: 1. turn to right"<<endl;
+      result.pd.cmdAngular = -K_angular; 
     }
+    else if (right < left && right < center && right < triggerDistance) //turn left
+    {
+		cout<<"CollisionStatus: 1. turn to left"<<endl;
+      result.pd.cmdAngular = K_angular;
+    }
+    else //the obstacle is in front 
+    {
+		double p = rng->uniformReal(0, 1.0);
+      if(p<=0.5) //turn left
+      {
+		  cout<<"CollisionStatus: 2. turn to left"<<endl;
+		result.pd.cmdAngular = K_angular;
+      }
+      else //turn right
+      {cout<<"CollisionStatus: 2. turn to right"<<endl;
+        result.pd.cmdAngular = -K_angular;
+	  }
+    }
+    result.type = precisionDriving;
+    result.pd.setPointVel = 0.0;
+    
+    double vel = rng->uniformReal(0.1, 0.5);
+    result.pd.cmdVel = vel;
+    //result.pd.cmdVel = 0.0;
+    result.pd.setPointYaw = 0;
+    
 }
 
 // A collection zone was seen in front of the rover and we are not carrying a target
@@ -53,11 +71,26 @@ void ObstacleController::avoidCollectionZone() {
 
     // Decide which side of the rover sees the most april tags and turn away
     // from that side
-    if(count_left_collection_zone_tags < count_right_collection_zone_tags) {
+    /*if(count_left_collection_zone_tags < count_right_collection_zone_tags) {
       result.pd.cmdAngular = K_angular;
     } else {
       result.pd.cmdAngular = -K_angular;
-    }
+    }*/
+    
+    if (pitches < 0) //turn to the right
+      {
+		  result.pd.cmdAngular = -K_angular;
+		  cout<<"CollisionStatus: avoid disk, turn to right"<<endl;
+		  
+        }
+      else //turn to the left
+      {
+		  result.pd.cmdAngular = K_angular;
+		  cout<<"CollisionStatus: avoid disk, turn to left"<<endl;
+		  
+        }
+        
+        
 
     result.pd.setPointVel = 0.0;
     //result.pd.cmdVel = 0.0;
@@ -183,7 +216,8 @@ void ObstacleController::SetTagData(vector<Tag> tags){
   collection_zone_seen = false;
   count_left_collection_zone_tags = 0;
   count_right_collection_zone_tags = 0;
-
+  pitches =0.0;
+  
   // this loop is to get the number of center tags
   if (!targetHeld) 
   {
@@ -200,23 +234,31 @@ void ObstacleController::SetTagData(vector<Tag> tags){
 
 bool ObstacleController::checkForCollectionZoneTags( vector<Tag> tags ) {
 
+  pitches =0.0;
   for ( auto & tag : tags ) { 
 
     // Check the orientation of the tag. If we are outside the collection zone the yaw will be positive so treat the collection zone as an obstacle. 
     //If the yaw is negative the robot is inside the collection zone and the boundary should not be treated as an obstacle. 
     //This allows the robot to leave the collection zone after dropping off a target.
     if ( tag.calcYaw() > 0 ) 
-      {
-	// checks if tag is on the right or left side of the image
-	if (tag.getPositionX() + camera_offset_correction > 0) {
-	  count_right_collection_zone_tags++;
-	  
-	} else {
-	  count_left_collection_zone_tags++;
-	}
-      }
+    {
+	  // checks if tag is on the right or left side of the image
+	  if (tag.getPositionX() + camera_offset_correction > 0) 
+	  {
+	    count_right_collection_zone_tags++;
+	  } 
+	  else 
+	  {
+	    count_left_collection_zone_tags++;
+	  }
+    }
+    //check the pitch of detected tags
+    
+    pitches += tag.calcPitch();
     
   }
+  pitches /= tags.size();
+      
 
 
   // Did any tags indicate that the robot is inside the collection zone?

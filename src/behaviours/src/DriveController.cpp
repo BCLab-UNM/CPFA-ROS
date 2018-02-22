@@ -138,7 +138,7 @@ Result DriveController::DoWork()
     // Calculate angle between currentLocation.theta and waypoints.front().theta
     // Rotate left or right depending on sign of angle
     // Stay in this state until angle is minimized
-    cout<<"TestStatus:: ROTATE..."<<endl;
+    //cout<<"TestStatus:: ROTATE..."<<endl;
     waypoints.back().theta = atan2(waypoints.back().y - currentLocation.y, waypoints.back().x - currentLocation.x);
 
     // Calculate the diffrence between current and desired heading in radians.
@@ -157,7 +157,7 @@ Result DriveController::DoWork()
     if (abs_error > rotateOnlyAngleTolerance)
     {
       // rotate but dont drive.
-      cout<<"TestStatus: rotate but dont drive"<<endl;
+      //cout<<"TestStatus: rotate but dont drive"<<endl;
       if (result.PIDMode == FAST_PID)
       {
         fastPID(0.0, errorYaw, result.pd.setPointVel, result.pd.setPointYaw);
@@ -181,7 +181,7 @@ Result DriveController::DoWork()
       // Drive forward
       // Stay in this state until angle is at least PI/2
 
-	 cout<<"TestStatus:: skid steer..."<<endl;
+	 //cout<<"TestStatus:: skid steer..."<<endl;
 	  //cout<<"CPFAStatus: before waypoint.back().x="<<waypoints.back().x<<endl;
       
       // calculate the distance between current and desired heading in radians
