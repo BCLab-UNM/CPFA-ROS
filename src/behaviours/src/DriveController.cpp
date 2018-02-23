@@ -113,6 +113,9 @@ Result DriveController::DoWork()
     //if we are out of waypoints then interupt and return to logic controller
     if (waypoints.empty())
     {
+		cout<<"TestStatus: Reach goal, Drive: waypoints size="<<waypoints.size()<<endl;
+		cout<<"TestStatus: wpts.waypoint size-"<<result.wpts.waypoints.size()<<endl;
+    
       stateMachineState = STATE_MACHINE_WAITING;
       //cout<<"stateMachineState: waiting"<<endl;
       result.type = behavior;

@@ -40,10 +40,6 @@ Result SiteFidelityController::DoWork()
     result.type = behavior;
     result.b = COMPLETED;
     cout <<"result.wpts.waypoints size="<<result.wpts.waypoints.size()<<endl;
-    for(int i=0; i<result.wpts.waypoints.size(); i++){
-		cout<<i<<".x= "<<result.wpts.waypoints[i].x<<endl;
-		}
-    
   } 
 
   else 

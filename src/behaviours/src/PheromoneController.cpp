@@ -57,7 +57,7 @@ void PheromoneController::DriveToPheromoneTrail()
 
 Result PheromoneController::DoWork()
 {
-	//cout<<"PheromoneStatus: PheromoneController::DoWork()"<<endl;
+  cout<<"PheromoneStatus: PheromoneController::DoWork()"<<endl;
   //cout<<"PheromoneStatus: targetHeld="<<targetHeld<<endl;
   //if (targetHeld)
   if(!sense_local_resource_density)

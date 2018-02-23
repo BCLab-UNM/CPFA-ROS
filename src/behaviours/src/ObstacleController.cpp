@@ -98,7 +98,7 @@ void ObstacleController::avoidCollectionZone() {
 
 
 Result ObstacleController::DoWork() {
- //cout<<"SwitchStatus: ObstacleController::DoWork()..."<<endl;
+ cout<<"SwitchStatus: ObstacleController::DoWork()..."<<endl;
   clearWaypoints = true;
   set_waypoint = true;
   result.PIDMode = CONST_PID;
