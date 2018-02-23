@@ -10,7 +10,7 @@ ObstacleController::ObstacleController()
   result.PIDMode = CONST_PID; //use the const PID to turn at a constant speed
   rng = new random_numbers::RandomNumberGenerator();
   
-  cout << "ObstacleController -> 0" << endl;
+  //cout << "ObstacleController -> 0" << endl;
 
 }
 
@@ -27,15 +27,15 @@ void ObstacleController::Reset() {
 
 // Avoid crashing into objects detected by the ultraound
 void ObstacleController::avoidObstacle() {
- 	cout<<"CollisionStatus: left="<<left<<", center="<<center<<", right="<<right<<endl;
+ 	//cout<<"CollisionStatus: left="<<left<<", center="<<center<<", right="<<right<<endl;
     if (left <= right && left <= center && left <triggerDistance) 
     {  
-		cout<<"CollisionStatus: 1. turn to right"<<endl;
+		//cout<<"CollisionStatus: 1. turn to right"<<endl;
       result.pd.cmdAngular = -K_angular; 
     }
     else if (right < left && right < center && right < triggerDistance) //turn left
     {
-		cout<<"CollisionStatus: 1. turn to left"<<endl;
+		//cout<<"CollisionStatus: 1. turn to left"<<endl;
       result.pd.cmdAngular = K_angular;
     }
     else //the obstacle is in front 
@@ -43,11 +43,12 @@ void ObstacleController::avoidObstacle() {
 		double p = rng->uniformReal(0, 1.0);
       if(p<=0.5) //turn left
       {
-		  cout<<"CollisionStatus: 2. turn to left"<<endl;
+		  //cout<<"CollisionStatus: 2. turn to left"<<endl;
 		result.pd.cmdAngular = K_angular;
       }
       else //turn right
-      {cout<<"CollisionStatus: 2. turn to right"<<endl;
+      {
+		  //cout<<"CollisionStatus: 2. turn to right"<<endl;
         result.pd.cmdAngular = -K_angular;
 	  }
     }
@@ -80,18 +81,13 @@ void ObstacleController::avoidCollectionZone() {
     if (pitches < 0) //turn to the right
       {
 		  result.pd.cmdAngular = -K_angular;
-		  cout<<"CollisionStatus: avoid disk, turn to right"<<endl;
-		  
-        }
+		  //cout<<"CollisionStatus: avoid disk, turn to right"<<endl;
+      }
       else //turn to the left
       {
 		  result.pd.cmdAngular = K_angular;
-		  cout<<"CollisionStatus: avoid disk, turn to left"<<endl;
-		  
-        }
-        
-        
-
+		  //cout<<"CollisionStatus: avoid disk, turn to left"<<endl;
+      }   
     result.pd.setPointVel = 0.0;
     //result.pd.cmdVel = 0.0;
 	double vel = rng->uniformReal(-0.5, 0);
@@ -124,8 +120,19 @@ Result ObstacleController::DoWork() {
     result.type = waypoint; 
     result.PIDMode = FAST_PID; //use fast pid for waypoints
     Point forward;            //waypoint is directly ahead of current heading
-    forward.x = currentLocation.x + (0.5 * cos(currentLocation.theta));
-    forward.y = currentLocation.y + (0.5 * sin(currentLocation.theta));
+    if(collection_zone_seen)// if seen collection zone, sample a further location
+    {
+		cout<<"TestStatus: sample a further location..."<<endl;
+		double stepSize = rng->uniformReal(1.0, 3.0);
+		forward.x = currentLocation.x + (stepSize * cos(currentLocation.theta));
+        forward.y = currentLocation.y + (stepSize * sin(currentLocation.theta));
+	}
+    else
+    {
+		forward.x = currentLocation.x + (0.5 * cos(currentLocation.theta));
+        forward.y = currentLocation.y + (0.5 * sin(currentLocation.theta));
+    }
+    cout<<"TestStatus: obstacleCTRL sampled waypoint=["<<forward.x<<","<<forward.y<<"]"<<endl;
     result.wpts.waypoints.clear();
     result.wpts.waypoints.push_back(forward);
   }

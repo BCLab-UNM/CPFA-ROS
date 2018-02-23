@@ -190,8 +190,7 @@ Result DriveController::DoWork()
     
       float distance = hypot(waypoints.back().x - currentLocation.x, waypoints.back().y - currentLocation.y);
     //cout << "Skid steer, Error yaw:  " << errorYaw << " target heading : " << waypoints.back().theta << " current heading : " << currentLocation.theta << " error distance : " << distance << endl; //DEBUGGING CODE
-    //cout << "Waypoint x : " << waypoints.back().x << " y : " << waypoints.back().y << " currentLoc x : " << currentLocation.x << " y : " << currentLocation.y << endl; //DEBUGGING CODE
-
+    //cout << "TestStatus: driver to Waypoint"<< endl; //DEBUGGING CODE
       // goal not yet reached drive while maintaining proper heading.
       if (fabs(errorYaw) < M_PI_2 &&  distance > waypointTolerance)
       {	
@@ -211,7 +210,7 @@ Result DriveController::DoWork()
 
         // move back to transform step
         //cout<<"CPFAStatus: waypoint.back().x="<<waypoints.back().x<<endl;
-       //cout<<"CPFAStatus: result.wpts.waypoint=["<<result.wpts.waypoints[0].x<<", "<< result.wpts.waypoints[0].y<<"]"<<endl;
+       
         stateMachineState = STATE_MACHINE_WAYPOINTS;
        cout<<"TestStatusSwitchStatus:: Reach goal..."<<endl;
         //result.cpfa_state = search_with_uninformed_walk;
@@ -269,13 +268,16 @@ void DriveController::ProcessData()
     result.b = noChange;
 
     if(result.reset) {
-	//	cout<<"reset result..."<<endl;
+		cout<<"TestStatus: reset result..."<<endl;
       waypoints.clear();
     }
 
+    cout<<"TestStatus: wpts.waypoint size..."<<result.wpts.waypoints.size()<<endl;
+    cout<<"TestStatus: driverCTRL waypoints size..."<<waypoints.size()<<endl;
     //add waypoints onto stack and change state to start following them
     if (!result.wpts.waypoints.empty()) {
-		cout<<"D: wpts.waypoint is not empty..."<<endl;
+	cout<<"TestStatus: result.wpts.waypoint[0]=["<<result.wpts.waypoints[0].x<<", "<<result.wpts.waypoints[0].y<<endl;
+    	
       waypoints.insert(waypoints.end(),result.wpts.waypoints.begin(), result.wpts.waypoints.end());
       stateMachineState = STATE_MACHINE_WAYPOINTS;
     }

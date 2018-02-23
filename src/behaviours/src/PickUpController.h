@@ -53,7 +53,7 @@ private:
   int nTargetsSeen;
   long int millTimer;
   long int target_timer;
-
+  
   //yaw error to target block
   double blockYawError;
 

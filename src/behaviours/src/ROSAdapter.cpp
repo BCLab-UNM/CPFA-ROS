@@ -347,7 +347,7 @@ void behaviourStateMachine(const ros::TimerEvent&)
       
       //cout << "*****logicController.GetCenterIdx() = "<<logicController.GetCenterIdx()<<endl;
       //cout << "*****current location = "<<currentLocation<<endl;
-      cout << "PheromoneStatus: pheromone_location = ("<<pheromone_location.x << ", "<< pheromone_location.y<< ")"<<endl;
+      cout << "TestStatus: pheromone_location = ("<<pheromone_location.x << ", "<< pheromone_location.y<< ")"<<endl;
       trail.waypoints.push_back(pheromone_location);
       //trail.centerIdx = logicController.GetCenterIdx();//this is for MPFA
       pheromoneTrailPublisher.publish(trail);

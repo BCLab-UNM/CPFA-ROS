@@ -211,12 +211,12 @@ void PheromoneController::UpdatePheromoneList()
     
     if(pheromones[i].isActive()) 
     {
-		cout<<"ParameterStatus: pheromones["<<i<<"].=("<<pheromones[i].getLocation().x<<","<<pheromones[i].getLocation().y<<")"<<endl;
+		cout<<"ParameterStatus: pheromones["<<i<<"]=("<<pheromones[i].getLocation().x<<","<<pheromones[i].getLocation().y<<")"<<endl;
       newPheromoneList.push_back(pheromones[i]);
     }
     else
     {
-		cout<<"ParameterStatus: the pheromone ["<<pheromones[i].getLocation().x<<","<<pheromones[i].getLocation().y<<"] is inactive"<<endl;
+		cout<<"TestStatus: the pheromone ["<<pheromones[i].getLocation().x<<","<<pheromones[i].getLocation().y<<"] is inactive"<<endl;
 		}
   }
   pheromones = newPheromoneList;

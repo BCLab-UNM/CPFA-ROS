@@ -120,7 +120,7 @@ Result DropOffController::DoWork() {
   else if (timerTimeElapsed >= 2)//spin search for center
   {
     Point nextSpinPoint;
-    cout<<"spin search for center...wpts.waypoint"<<endl;
+    cout<<"TestStatus: spin search for center..."<<endl;
     //sets a goal that is 60cm from the centerLocation and spinner
     //radians counterclockwise from being purly along the x-axis.
     nextSpinPoint.x = centerLocation.x + (initialSpinSize + spinSizeIncrease) * cos(spinner);

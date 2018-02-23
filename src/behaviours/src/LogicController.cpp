@@ -140,36 +140,36 @@ Result LogicController::DoWork() {
 		  {
 		       double followSiteFidelityRate = getPoissonCDF(CPFA_parameters.rate_of_following_site_fidelity);
 		       //double followSiteFidelityRate = 0.1;
-               cout <<"ParameterStatus: followSiteFidelityRate="<<followSiteFidelityRate<<endl;
+               cout <<"TestStatus: followSiteFidelityRate="<<followSiteFidelityRate<<endl;
                double r1 = rng->uniformReal(0, 1);
               //cout<<"TestStatus: r1 = "<< r1<<endl;
                if(r1 > followSiteFidelityRate || siteFidelityController.SiteFidelityInvalid())//informed search with pheromone waypoints or uninformed search
                {
 				   if(siteFidelityController.SiteFidelityInvalid())
 				   {
-					  cout<<"ParameterStatus: no site fidelity..."<<endl;
+					  cout<<"TestStatus: no site fidelity..."<<endl;
 				   }
 				   else
 				   {
-					  cout<<"ParameterStatus: has fidelity, but choose not follow..."<<endl;
+					  cout<<"TestStatus: has fidelity, but choose not follow..."<<endl;
 				   }
 				   if(pheromoneController.SelectPheromone())
 				   {
 		             //result.type = behavior;
                      //result.b = nextProcess;		    
                      processState = PROCESS_STATE_PHEROMONE; 
-                     cout <<"ParameterStatus: select a pheromone..."<<endl;
+                     cout <<"TestStatus: select a pheromone..."<<endl;
                    }
                    else
                    {
 				     processState = PROCCESS_STATE_SEARCHING; 
-                     cout <<"ParameterStatus: no pheromone trail selected ="<<processState<<"  uninformed search..."<<endl;
+                     cout <<"TestStatus: no pheromone trail selected ="<<processState<<"  uninformed search..."<<endl;
                      searchController.Reset();
 				   }
 			   }
 			   else
 			   {
-				   cout<<"ParameterStatus: follow site fidelity..."<<endl;
+				   cout<<"TestStatus: follow site fidelity..."<<endl;
 				   }
            }
 	     

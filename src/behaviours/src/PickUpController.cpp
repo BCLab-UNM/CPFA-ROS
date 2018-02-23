@@ -61,12 +61,13 @@ void PickUpController::SetTagData(vector<Tag> tags)
         // If the center is seen, then don't try to pick up the cube.
         if(tags[i].getID() == 256)
         {
-			cout <<"SwitchStatus: see collection disk..."<<endl;
+			//cout <<"TestStatus: see collection disk...do not pick up, attempt="<<attemptCount<<endl;
+			
           Reset();
 
           if (has_control)
           {
-            cout << "pickup reset return interupt free" << endl;
+            cout << "TestStatus: pickup reset return interupt free" << endl;
             release_control = true;
           }
 
