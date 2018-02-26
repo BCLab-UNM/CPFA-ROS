@@ -155,9 +155,7 @@ Result LogicController::DoWork() {
 				   }
 				   if(pheromoneController.SelectPheromone())
 				   {
-		             //result.type = behavior;
-                     //result.b = nextProcess;		    
-                     processState = PROCESS_STATE_PHEROMONE; 
+		             processState = PROCESS_STATE_PHEROMONE; 
                      cout <<"TestStatus: select a pheromone..."<<endl;
                    }
                    else
@@ -230,7 +228,7 @@ Result LogicController::DoWork() {
          //cout<<"SwitchStatus: driver controller interrupt...true"<<endl;
           if(processState == PROCCESS_STATE_SEARCHING)
           {
-		   //cout<<"TestStatusSwitchStatus: searchCtrl set reached..."<<endl;
+		   cout<<"TestStatusSwitchStatus: searchCtrl set reached..."<<endl;
 		    searchController.SetReachedWaypoint(true);
 		    /*if(searchController.GiveupSearch())
 		    {
@@ -439,17 +437,17 @@ void LogicController::controllerInterconnect()
 		if(searchController.GetCPFAState() == return_to_nest)
 		{
 			obstacleController.SetCPFAState(return_to_nest);
-		    cout<<"TestStatus: obstacle set to return to nest..."<<obstacleController.GetCPFAState()<<endl;
+		    //cout<<"TestStatus: obstacle set to return to nest..."<<obstacleController.GetCPFAState()<<endl;
 		}
 		else
 		{
 		    searchController.SetCPFAState(avoid_obstacle);
-             //cout<<"TestStatus: SearchCtrl set to avoid obstacle..."<<searchController.GetCPFAState()<<endl;			
+             cout<<"TestStatus: SearchCtrl set to avoid obstacle...CPFAStatus="<<searchController.GetCPFAState()<<endl;			
 			}
 	} 
 	if(obstacleController.GetCPFAState() == reached_nest)
 	{
-		cout<<"TestStatusSwitchStatus: interconnect, set reached_nest..."<<endl;
+		//cout<<"TestStatusSwitchStatus: interconnect, set reached_nest..."<<endl;
 		searchController.SetCPFAState(reached_nest);
 		//searchController.SetReachedWaypoint(true);
 		//obstacleController.SetCPFAState(start_state);
@@ -506,7 +504,7 @@ void LogicController::SetArenaSize(int size)
 // Recieves position in the world inertial frame (should rename to SetOdomPositionData)
 void LogicController::SetPositionData(Point currentLocation) 
 {
-	cout<<"set position data "<< currentLocation.x<<","<<currentLocation.y<<endl;
+	//cout<<"TestStatus: logicCTRL set current position=["<< currentLocation.x<<","<<currentLocation.y<<"]"<<endl;
   searchController.SetCurrentLocation(currentLocation);
   dropOffController.SetCurrentLocation(currentLocation);
   obstacleController.SetCurrentLocation(currentLocation);
@@ -559,6 +557,12 @@ void LogicController::SetCenterLocationOdom(Point centerLocationOdom)
 {
   searchController.SetCenterLocation(centerLocationOdom);
   dropOffController.SetCenterLocation(centerLocationOdom);
+  //pheromoneController.SetCenterLocation(centerLocationOdom);
+}
+
+void LogicController::SetRoverInitLocation(Point location) 
+{
+  pheromoneController.SetRoverInitLocation(location);
 }
 
 void LogicController::AddManualWaypoint(Point manualWaypoint, int waypoint_id)

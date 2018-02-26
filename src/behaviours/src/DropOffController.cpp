@@ -76,7 +76,7 @@ Result DropOffController::DoWork() {
         //result.wpts.waypoints.clear();
         //cout<<"Set site fidelity to be the waypoint..."<<endl;
         //result.wpts.waypoints.insert(result.wpts.waypoints.begin(), site_fidelity_location);
-    
+        targetHeld = false; //qilu 02/2018
         return result;       
       }
       else
@@ -107,7 +107,8 @@ Result DropOffController::DoWork() {
     //cout<<"distanceToCenter="<<distanceToCenter<<endl;
     result.type = waypoint;
     result.wpts.waypoints.clear();
-    //cout<<"wpts.waypoints insert"<<endl;
+    //cout<<"TestStatus: dropoffCTRL centerLocation=["<<this->centerLocation.x<<", "<<this->centerLocation.y<<"]"<<endl;
+ 
     result.wpts.waypoints.push_back(this->centerLocation);
     startWaypoint = false;
     isPrecisionDriving = false;
@@ -234,9 +235,9 @@ Result DropOffController::DoWork() {
     float timeSinceSeeingEnoughCenterTags = elapsed/1e3; // Convert from milliseconds to seconds
 
     //we have driven far enough forward to have passed over the circle.
-    cout<<"DropStatus: count="<<count<<endl;
-    cout<<"DropStatus: seenEnoughCenterTags="<<seenEnoughCenterTags<<endl;
-    cout<<"DropStatus: timeSinceSeeingEnoughCenterTags="<<timeSinceSeeingEnoughCenterTags<<endl;
+    //cout<<"DropStatus: count="<<count<<endl;
+    //cout<<"DropStatus: seenEnoughCenterTags="<<seenEnoughCenterTags<<endl;
+    //cout<<"DropStatus: timeSinceSeeingEnoughCenterTags="<<timeSinceSeeingEnoughCenterTags<<endl;
     if (count < 5 && seenEnoughCenterTags && timeSinceSeeingEnoughCenterTags > dropDelay) {
       centerSeen = false;
     }

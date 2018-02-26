@@ -67,7 +67,7 @@ void PickUpController::SetTagData(vector<Tag> tags)
 
           if (has_control)
           {
-            cout << "TestStatus: pickup reset return interupt free" << endl;
+            //cout << "TestStatus: pickup reset return interupt free" << endl;
             release_control = true;
           }
 
@@ -207,7 +207,7 @@ bool PickUpController::ShouldInterrupt(){
 
 Result PickUpController::DoWork()
 {
- //cout<<"CPFAStatus: PickUpController::DoWork()"<<endl;
+ cout<<"CPFAStatus: PickUpController::DoWork()"<<endl;
 
   has_control = true;
 
@@ -302,7 +302,7 @@ Result PickUpController::DoWork()
       {
       //cout << "CPFAStatus: reverse straight backwards without turning."<<endl;
         // The rover will reverse straight backwards without turning.
-        result.pd.cmdVel = -0.15;
+        result.pd.cmdVel = -0.25;
         result.pd.cmdAngularError= 0.0;
       }
     }
@@ -322,7 +322,7 @@ Result PickUpController::DoWork()
     {
     //cout << "CPFAStatus: lock it and slowly driving forward..."<<endl;
       lockTarget = true;
-      result.pd.cmdVel = 0.18;
+      result.pd.cmdVel = 0.25;
       result.pd.cmdAngularError= 0.0;
       timeOut = true;
       ignoreCenterSonar = true;

@@ -85,7 +85,7 @@ private:
 
   bool phys = false; // Physical obstacle
   bool collection_zone_seen = false; // The obstacle is the collection zone
-  
+  //bool haveAvoidCollectionZone = false; //have avoid the collection zone
   bool set_waypoint = false;
   bool can_set_waypoint = false;
   CPFAState cpfa_state = start_state;

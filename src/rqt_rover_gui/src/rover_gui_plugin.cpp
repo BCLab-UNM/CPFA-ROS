@@ -1785,7 +1785,7 @@ void RoverGUIPlugin::buildSimulationButtonEventHandler()
                                    /* indigo        */ QColor( 75,   0, 130) };
 
 
-	QPointF rover_positions[16] =
+	    QPointF rover_positions[16] =
         {
         /* cardinal rovers: North, East, South, West */
         QPointF(0.0,  2.0), // 2.0 = distance_from_center_to_edge_of_collection_zone
@@ -1809,7 +1809,7 @@ void RoverGUIPlugin::buildSimulationButtonEventHandler()
         QPointF(1.848, -0.765),
         QPointF(-0.765, -1.848),
         QPointF(-1.848, 0.765), 
-	};  
+	    };  
     /* In this case, the yaw is the value that turns rover "left" and "right" */
 // float rover_yaw[8] =
   //  {
@@ -1820,35 +1820,46 @@ void RoverGUIPlugin::buildSimulationButtonEventHandler()
     //  -2.356, // -0.75 * PI
     //   0.785  //  0.25 * PI
 //};
-          float rover_yaw[16] =
-    {
-      -1.571, //  -0.50 * PI
-       1.571, //  0.50 * PI
-       0.000, //  0.00 * PI
-       3.142, //  PI
+        float rover_yaw[16] =
+        {
+        -1.571, //  -0.50 * PI
+         1.571, //  0.50 * PI
+         0.000, //  0.00 * PI
+         3.142, //  PI
             
-      -0.785, //  -0.25 * PI
-      2.356, //  0.75 * PI
-       0.785, //  0.25 * PI
-      -2.356, //  -0.75 * PI
+        -0.785, //  -0.25 * PI
+        2.356, //  0.75 * PI
+        0.785, //  0.25 * PI
+        -2.356, //  -0.75 * PI
       
-       -2.749, //-0.875 * PI
-       1.963, // 0.625 * PI
-       0.393, // 0.125 * PI
-       -1.178, // -0.375 * PI 
+        -2.749, //-0.875 * PI
+        1.963, // 0.625 * PI
+        0.393, // 0.125 * PI
+        -1.178, // -0.375 * PI 
        
-       -1.963, // -0.625 * PI
-       2.749, // 0.875 * PI
-       1.178, // 0.375 * PI
-       -0.393, // -0.125 * PI
-       
-    };
-      
-
+        -1.963, // -0.625 * PI
+        2.749, // 0.875 * PI
+        1.178, // 0.375 * PI
+        -0.393, // -0.125 * PI  
+        };
+         
+        rover_publisher = nh.advertise<swarmie_msgs::RoverInfo>("/rovers", 10, this); 
+        swarmie_msgs::RoverInfo msg_rover;
+        //std_msgs::string roverName;
+        geometry_msgs::Pose2D pos;
+        
         // Add rovers to the simulation and start the associated ROS nodes
         for (int i = 0; i < n_rovers; i++)
         {
-            // add the global offset for sim rovers
+			
+			pos.x = rover_positions[i].x();
+	        pos.y = rover_positions[i].y(); 
+        
+        
+			msg_rover.names.push_back(rovers[i].toStdString());
+			msg_rover.positions.push_back(pos);
+			
+			// add the global offset for sim rovers
             ui.map_frame->SetGlobalOffsetForRover(rovers[i].toStdString(), rover_positions[i].x(), rover_positions[i].y());
             ui.map_frame->SetUniqueRoverColor(rovers[i].toStdString(), rover_colors[i]);
 
@@ -1868,6 +1879,7 @@ void RoverGUIPlugin::buildSimulationButtonEventHandler()
               sleep(rover_load_delay); // Gives plugins enough time to finish loading
             }
         }
+        rover_publisher.publish(msg_rover);
     }
     else
     {

@@ -52,6 +52,7 @@ public:
   void SetMapVelocityData(float linearVelocity, float angularVelocity);
   void SetCenterLocationOdom(Point centerLocationOdom);
   void SetCenterLocationMap(Point centerLocationMap);
+  void SetRoverInitLocation(Point location);
   void SetArenaSize(int size);
   
   int getCollisionCalls();

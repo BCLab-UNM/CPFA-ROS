@@ -44,13 +44,13 @@ Result SearchController::DoWork() {
   if (!result.wpts.waypoints.empty()) 
   {
 	  
-	cout<<"TestStatusCPFAStatus: waypoint is ["<<result.wpts.waypoints[0].x<<", "<<result.wpts.waypoints[0].y<<"]"<<endl;
+	cout<<"TestStatusCPFAStatus: SearchCTRL dowork(); waypoint is ["<<result.wpts.waypoints[0].x<<", "<<result.wpts.waypoints[0].y<<"]"<<endl;
     cout<<"TestStatusCPFAStatus: currentLocation=["<<currentLocation.x<<","<<currentLocation.y<<"]" <<endl;
     //cout<<"TestStatus: GetCPFAState()="<<GetCPFAState()<<endl;
     
     if(ReachedWaypoint())
     {
-		cout<<"TestStatusSwitchStatus: reach waypoint..."<<endl;
+		cout<<"TestStatusSwitchStatus: SearchCTRL, reach waypoint..."<<endl;
 	    if(GetCPFAState() == avoid_obstacle)
         {
 			if(attemptCount<3)
@@ -64,8 +64,8 @@ Result SearchController::DoWork() {
 		    {
 				cout<<"TestStatus: Give up to go to previous location"<<endl;
 				result.wpts.waypoints.clear();	
-          SetReachedWaypoint(false);
-          attemptCount = 0;
+                SetReachedWaypoint(false);
+                attemptCount = 0;
 		    }
 	        	  	
         }
@@ -201,7 +201,7 @@ Result SearchController::DoWork() {
     result.wpts.waypoints.clear();
     result.wpts.waypoints.insert(result.wpts.waypoints.begin(), searchLocation);
 
-   //cout<<"TestStatusSwitchStatus: sampled wp=["<<searchLocation.x<<","<<searchLocation.y<<"]"<<endl;
+   cout<<"TestStatusSwitchStatus: info/uninfo sampled wp=["<<searchLocation.x<<","<<searchLocation.y<<"]"<<endl;
 		
     
     return result;
@@ -209,11 +209,11 @@ Result SearchController::DoWork() {
 
 void SearchController::SetRandomSearchLocation() 
 {	
-	cout<<"searchLocation.theta="<<searchLocation.theta<<endl;
+	//cout<<"searchLocation.theta="<<searchLocation.theta<<endl;
 	//float pos_x;
 	if(cos(searchLocation.theta)<0)
 	{
-		searchLocation.x = rng->uniformReal(-arena_size/2, -arena_size/4);
+		searchLocation.x = rng->uniformReal(-arena_size*(3.0/4), -arena_size/2);
 		//searchLocation.x = pos_x - currentLocation.x;
 		//searchLocation.y = pos_x * tan(searchLocation.theta) - currentLocation.y;
 		//cout<<"TestStatus...1. pos_x="<<searchLocation.x<<endl;
@@ -221,11 +221,11 @@ void SearchController::SetRandomSearchLocation()
     else
     {
 		//searchLocation.x = arena_size/2 - 4*cos(searchLocation.theta);
-		searchLocation.x = rng->uniformReal(arena_size/4, arena_size/2);
+		searchLocation.x = rng->uniformReal(arena_size*(3.0/4), arena_size/2);
 		//cout<<"TestStatus...2. pos_x="<<searchLocation.x<<endl;
 		}
 	searchLocation.y = searchLocation.x * tan(searchLocation.theta);
-    cout<<"TestStatus: searchLocation.y="<<searchLocation.y<<endl;
+    //cout<<"TestStatus: searchLocation.y="<<searchLocation.y<<endl;
     
 	if(searchLocation.y >= arena_size/2) 
 	{
@@ -430,12 +430,11 @@ void SearchController::SetCenterLocation(Point centerLocation) {
   this->centerLocation = centerLocation;
   if (!result.wpts.waypoints.empty())
   {
-	  //cout<<"SwitchStatus: before reset:["<<result.wpts.waypoints.back().x<<", "<<result.wpts.waypoints.back().y<<"]"<<endl;
+	  //cout<<"TestStatus: SearchCTRL waypoint reset:["<<result.wpts.waypoints.back().x<<", "<<result.wpts.waypoints.back().y<<"]"<<endl;
   
   result.wpts.waypoints.back().x -= diffX;
   result.wpts.waypoints.back().y -= diffY;
- //cout<<"SwitchStatus: diffX="<<diffX<<endl;
-  }
+   }
   
 }
 

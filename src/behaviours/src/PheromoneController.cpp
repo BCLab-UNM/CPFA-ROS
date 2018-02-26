@@ -178,8 +178,9 @@ Result PheromoneController::DoWork()
 	 
 	  cout<<"TestStatus: selected_pheromone=["<<selected_pheromone.x<<", "<<selected_pheromone.y<<"]"<<endl;
       //cout<<"PheromoneStatus: current_location.x="<<current_location.x<<endl;
-	  if (hypot(selected_pheromone.x - current_location.x, selected_pheromone.y - current_location.y) < 0.15) 
+	  if (hypot(selected_pheromone.x - current_location.x, selected_pheromone.y - current_location.y) < 0.15 || attemptCount>=5) 
 	  {
+		  attemptCount=0;
           drive_to_pheromone= false;
           sense_local_density_completed  = false;
           //cout <<"TestStatus: sense_local_density_completed="<<sense_local_density_completed<<endl;
@@ -188,9 +189,11 @@ Result PheromoneController::DoWork()
 		  result.b = COMPLETED;
 		  //targetHeld =true;
 	  } 
-	  else 
+	  else if(attemptCount<5)
 	  {
-          cout <<"TestStatus: travel to pheromone_waypoint, "<<selected_pheromone.x<<endl;
+		  attemptCount++;
+          cout <<"TestStatus: travel to pheromone_waypoint ["<<selected_pheromone.x<<", "<<selected_pheromone.y<<"]"<<endl;
+          cout<<"TestStatus: pw attemptCount="<<attemptCount<<endl;
 		  result.type = waypoint;
 		  result.PIDMode = FAST_PID;
 		  result.wpts.waypoints.insert(result.wpts.waypoints.begin(), selected_pheromone);
@@ -211,7 +214,7 @@ void PheromoneController::UpdatePheromoneList()
     
     if(pheromones[i].isActive()) 
     {
-		cout<<"ParameterStatus: pheromones["<<i<<"]=("<<pheromones[i].getLocation().x<<","<<pheromones[i].getLocation().y<<")"<<endl;
+		//cout<<"ParameterStatus: pheromones["<<i<<"]=("<<pheromones[i].getLocation().x<<","<<pheromones[i].getLocation().y<<")"<<endl;
       newPheromoneList.push_back(pheromones[i]);
     }
     else
@@ -222,9 +225,30 @@ void PheromoneController::UpdatePheromoneList()
   pheromones = newPheromoneList;
 }
 
+
+void PheromoneController::SetCenterLocation(Point centerLocation) {
+  
+  float diffX = this->centerLocation.x - centerLocation.x;
+  float diffY = this->centerLocation.y - centerLocation.y;
+  this->centerLocation = centerLocation;
+  if (!result.wpts.waypoints.empty())
+  {
+  result.wpts.waypoints.back().x -= diffX;
+  result.wpts.waypoints.back().y -= diffY;
+   }
+}
+
+void PheromoneController::SetRoverInitLocation(Point location) 
+{
+  roverInitLocation = location;
+  cout<<"TestStatus: rover init location=["<<roverInitLocation.x<<","<<roverInitLocation.y<<"]"<<endl;
+}
+
+
+
 bool PheromoneController::SelectPheromone()
 {
-	//cout << "TestStatus: Selectinhing pheromone..." << endl;
+	//cout << "TestStatus: Selecting pheromone..." << endl;
   double maxStrength = 0.0;
   double randomWeight = 0.0;
   bool isPheromoneSet = false;
@@ -256,8 +280,13 @@ bool PheromoneController::SelectPheromone()
       //target_location = pheromones[i].getLocation();
       
       selected_pheromone = pheromones[i].getLocation();
-      //cout << "PheromoneStatus: pheromoneLocation x: " <<selected_pheromone.x << " y: " << selected_pheromone.y << endl;
-
+      //cout << "TestStatus: selected pheromoneLocation=[" <<selected_pheromone.x << ", " << selected_pheromone.y<<"]"<< endl;
+      //cout<<"TestStatus: centerLocation=["<<centerLocation.x <<", "<<centerLocation.y<<"]"<<endl;
+      //cout<<"TestStatus: roverInitLocation=["<<roverInitLocation.x <<", "<<roverInitLocation.y<<"]"<<endl;
+      
+      selected_pheromone.x -= roverInitLocation.x;
+      selected_pheromone.y -= roverInitLocation.y;
+      
 // TrailToFollow = pheromones[i].GetTrail();
       isPheromoneSet = true;
       //If we pick a pheromone, break out of this loop. 

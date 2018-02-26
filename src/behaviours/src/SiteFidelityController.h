@@ -39,5 +39,6 @@ private:
     bool target_picked_up = false;
     Point site_fidelity_location;
     Point current_location;
+    int attemptCount=0;
 };
 #endif // end header define

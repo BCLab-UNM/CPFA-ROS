@@ -25,7 +25,8 @@ public:
   bool SensingLocalDensity();
   bool SenseCompleted();
 
-
+  void SetCenterLocation(Point centerLocation);
+  void SetRoverInitLocation(Point location);
   void SetCurrentTimeInMilliSecs( long int time ) { current_time = time; }
   void SetTargetPickedUp() { targetHeld = true; }
   void SetCurrentLocation (Point location) { current_location = location; }
@@ -58,7 +59,9 @@ private:
 
   long int current_time;
 
+  Point roverInitLocation;
   Point current_location;
+  Point centerLocation;
   Point selected_pheromone;
   //bool targetHeld = false;
   bool targetHeld = true;//qilu 12/2017
@@ -78,6 +81,7 @@ private:
   std::vector<float> detect_resource_angle;
   int resource_density = 0;
   int total_resource = 0;
+  int attemptCount=0;
 
 };
 

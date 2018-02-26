@@ -33,25 +33,28 @@ Result SiteFidelityController::DoWork()
   cout <<"SF: site_fidelity_location="<<site_fidelity_location.x<<", "<<site_fidelity_location.y<<endl;
   cout <<"SF: current_location="<<current_location.x<<", "<<current_location.y<<endl;
           
-  if (hypot(site_fidelity_location.x - current_location.x, site_fidelity_location.y - current_location.y) < 0.15) 
+  if (hypot(site_fidelity_location.x - current_location.x, site_fidelity_location.y - current_location.y) < 0.15 || attemptCount>=5) 
   {
 	  cout <<"TestStatusCPFAStatus: SF: Reached site fidelity"<<endl;
+	  attemptCount=0;
 	SiteFidelityReset();  
     result.type = behavior;
     result.b = COMPLETED;
     cout <<"result.wpts.waypoints size="<<result.wpts.waypoints.size()<<endl;
   } 
 
-  else 
+  else if(attemptCount<5)
   {
-	  cout <<"CPFAStatus: SF: travel to site fidelity, wpts.waypoint="<<site_fidelity_location.x<<endl;
+	  attemptCount++;
+	  cout<<"TestStatusCPFAStatus: SF: travel to site fidelity"<<endl;
+	  cout<<"TestStatus: SF attemptCount="<<attemptCount<<endl;
     result.type = waypoint;
     result.PIDMode = FAST_PID;
     result.wpts.waypoints.insert(result.wpts.waypoints.begin(), site_fidelity_location);
-    cout <<"result.wpts.waypoints size="<<result.wpts.waypoints.size()<<endl;
+    /*cout <<"TestStatus: result.wpts.waypoints size="<<result.wpts.waypoints.size()<<endl;
     for(int i=0; i<result.wpts.waypoints.size(); i++){
-		cout<<i<<".x= "<<result.wpts.waypoints[i].x<<endl;
-		}
+		cout<<"TestStatus: result wpts wp["<<i<<"]="<<result.wpts.waypoints[i].x<<", "<<result.wpts.waypoints[i].y<<"]"<<endl;
+		}*/
   }
 
   return result;

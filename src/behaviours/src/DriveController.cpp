@@ -113,9 +113,12 @@ Result DriveController::DoWork()
     //if we are out of waypoints then interupt and return to logic controller
     if (waypoints.empty())
     {
-		cout<<"TestStatus: Reach goal, Drive: waypoints size="<<waypoints.size()<<endl;
-		cout<<"TestStatus: wpts.waypoint size-"<<result.wpts.waypoints.size()<<endl;
-    
+		cout<<"TestStatus: Reach goal and exit driveCTRL, Drive: waypoints size="<<waypoints.size()<<endl;
+		//cout<<"TestStatus: wpts.waypoint size="<<result.wpts.waypoints.size()<<endl;
+		
+      result.wpts.waypoints.clear();//qilu 02/2018
+      //cout<<"TestStatus: clear result.wpts.waypoint..."<<endl;
+      //cout<<"TestStatus: ***********************"<<endl;
       stateMachineState = STATE_MACHINE_WAITING;
       //cout<<"stateMachineState: waiting"<<endl;
       result.type = behavior;
@@ -215,7 +218,7 @@ Result DriveController::DoWork()
         //cout<<"CPFAStatus: waypoint.back().x="<<waypoints.back().x<<endl;
        
         stateMachineState = STATE_MACHINE_WAYPOINTS;
-       cout<<"TestStatusSwitchStatus:: Reach goal..."<<endl;
+       cout<<"TestStatusSwitchStatus:: DriveCTRL, Reach goal..."<<endl;
         //result.cpfa_state = search_with_uninformed_walk;
        //cout<<"CPFAStatus: result.wpts.waypoint size="<<result.wpts.waypoints.size()<<endl;
        //cout<<"cpfa_state  = "<<GetCPFAState() <<endl;
@@ -270,16 +273,15 @@ void DriveController::ProcessData()
     result.type = behavior;
     result.b = noChange;
 
-    if(result.reset) {
-		cout<<"TestStatus: reset result..."<<endl;
+    //if(result.reset) {
+		cout<<"TestStatus: reset driver waypoints..."<<endl;
       waypoints.clear();
-    }
+    //}
 
-    cout<<"TestStatus: wpts.waypoint size..."<<result.wpts.waypoints.size()<<endl;
-    cout<<"TestStatus: driverCTRL waypoints size..."<<waypoints.size()<<endl;
+    //cout<<"TestStatus: driverCTRL waypoints size..."<<waypoints.size()<<endl;
     //add waypoints onto stack and change state to start following them
     if (!result.wpts.waypoints.empty()) {
-	cout<<"TestStatus: result.wpts.waypoint[0]=["<<result.wpts.waypoints[0].x<<", "<<result.wpts.waypoints[0].y<<endl;
+	//cout<<"TestStatus: DriveCTRL result.wpts.waypoint[0]=["<<result.wpts.waypoints[0].x<<", "<<result.wpts.waypoints[0].y<<endl;
     	
       waypoints.insert(waypoints.end(),result.wpts.waypoints.begin(), result.wpts.waypoints.end());
       stateMachineState = STATE_MACHINE_WAYPOINTS;
