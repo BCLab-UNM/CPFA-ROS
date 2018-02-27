@@ -376,7 +376,7 @@ void behaviourStateMachine(const ros::TimerEvent&)
       
       //cout << "*****logicController.GetCenterIdx() = "<<logicController.GetCenterIdx()<<endl;
       //cout << "*****current location = "<<currentLocation<<endl;
-      cout << "TestStatus: transformed pheromone_location = ("<<pheromone_location.x << ", "<< pheromone_location.y<< ")"<<endl;
+      //cout << "TestStatus: transformed pheromone_location = ("<<pheromone_location.x << ", "<< pheromone_location.y<< ")"<<endl;
       trail.waypoints.push_back(pheromone_location);
       //trail.centerIdx = logicController.GetCenterIdx();//this is for MPFA
       pheromoneTrailPublisher.publish(trail);
@@ -548,12 +548,13 @@ void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& messag
     }
     if(num_center_tags >= 5)// reset the location of the center
     {
-		centerLocationMap.x = currentLocationMap.x + 1.414*cos(currentLocationMap.theta);
-        centerLocationMap.y = currentLocationMap.y + 1.414*sin(currentLocationMap.theta);
-        centerLocationOdom.x = currentLocation.x + 1.414*cos(currentLocation.theta);
-        centerLocationOdom.y = currentLocation.y + + 1.414*sin(currentLocation.theta);  
-        cout<<"TestStatus: centerLocationMap=["<<centerLocationMap.x<<", "<<centerLocationMap.y<<"]"<<endl;
-        cout<<"TestStatus: centerLocationOdom=["<<centerLocationOdom.x<<", "<<centerLocationOdom.y<<"]"<<endl;
+		//cout<<"TestStatusA: currentLocation=["<<currentLocation.x<<", "<<currentLocation.y<<"]"<<endl;
+		centerLocationMap.x = currentLocationMap.x + 1.0*cos(currentLocationMap.theta);
+        centerLocationMap.y = currentLocationMap.y + 1.0*sin(currentLocationMap.theta);
+        centerLocationOdom.x = currentLocation.x + 1.0*cos(currentLocation.theta);
+        centerLocationOdom.y = currentLocation.y + + 1.0*sin(currentLocation.theta);  
+        //cout<<"TestStatusA: centerLocationMap=["<<centerLocationMap.x<<", "<<centerLocationMap.y<<"]"<<endl;
+        //cout<<"TestStatusA: centerLocationOdom=["<<centerLocationOdom.x<<", "<<centerLocationOdom.y<<"]"<<endl;
 	}
     
         

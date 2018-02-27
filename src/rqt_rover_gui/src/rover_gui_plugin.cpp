@@ -530,8 +530,8 @@ set<string> RoverGUIPlugin::findConnectedRovers()
 void RoverGUIPlugin::statusEventHandler(const ros::MessageEvent<std_msgs::String const> &event)
 {
     const ros::M_string& header = event.getConnectionHeader();
-    ros::Time receipt_time = ros::Time::now();
-
+    //ros::Time receipt_time = ros::Time::now();
+    ros::Time receipt_time = event.getReceiptTime();
     // Extract rover name from the message source
 
     // This method is used rather than reading the publisher name to accomodate teams that changed the node name.

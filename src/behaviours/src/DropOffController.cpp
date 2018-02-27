@@ -11,7 +11,7 @@ DropOffController::DropOffController() {
   result.reset = false;
   interrupt = false;
 
- // circularCenterSearching = false;
+ circularCenterSearching = false;
   spinner = 0;
   centerApproach = false;
   seenEnoughCenterTags = false;
@@ -342,7 +342,6 @@ void DropOffController::SetTagData(vector<Tag> tags) {
   countRight = 0;
   countLeft = 0;
   pitches = 0.0;
-  //yaws = 0.0;
 
   if(targetHeld) {
     // if a target is detected and we are looking for center tags
@@ -362,11 +361,9 @@ void DropOffController::SetTagData(vector<Tag> tags) {
             countLeft++;
           }
           pitches += tags[i].calcPitch();
-          //yaws += tags[i].calcYaw();
         }
       }
       pitches /= (countLeft + countRight);
-      //yaws /= (countLeft + countRight);
     }
   }
 

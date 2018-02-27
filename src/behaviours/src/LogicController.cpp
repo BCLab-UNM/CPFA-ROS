@@ -18,7 +18,7 @@ LogicController::~LogicController() {}
 
 void LogicController::Reset() {
 
-  std::cout << "LogicController.Reset()" << std::endl;
+  cout << "LogicController.Reset()" << std::endl;
   logicState = LOGIC_STATE_INTERRUPT;
   processState = PROCCESS_STATE_SEARCHING;
  //cout<<"logicState="<<logicState<<endl;
@@ -338,8 +338,7 @@ void LogicController::ProcessData() {
       PrioritizedController{1, (Controller*)(&dropOffController)},
       PrioritizedController{-1, (Controller*)(&obstacleController)},
       PrioritizedController{-1, (Controller*)(&searchController)},
-      PrioritizedController{-1, (Controller*)(&pickUpController)},
-      PrioritizedController{-1, (Controller*)(&dropOffController)}
+      PrioritizedController{-1, (Controller*)(&pickUpController)}
     };
   }
   else if (processState == PROCESS_STATE_SITE_FIDELITY)

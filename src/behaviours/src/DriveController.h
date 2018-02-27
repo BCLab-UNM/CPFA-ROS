@@ -4,7 +4,6 @@
 #include "PID.h"
 #include "Controller.h"
 #include <angles/angles.h>
-//#include <random_numbers/random_numbers.h>
 #include "CPFAParameters.h"
 
 class DriveController : virtual Controller
@@ -30,9 +29,6 @@ public:
 private:
 
   Result result;
-
-  //random_numbers::RandomNumberGenerator* rng;
-  //double rndNum;
   
   CPFAParameters CPFA_parameters;
   //MAX PWM is 255

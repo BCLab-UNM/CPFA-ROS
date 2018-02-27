@@ -11,8 +11,6 @@ DriveController::DriveController() {
 
   constVelPID.SetConfiguration(constVelConfig());
   constYawPID.SetConfiguration(constYawConfig());
-  //rng = new random_numbers::RandomNumberGenerator();
-
 }
 
 DriveController::~DriveController() {}
@@ -273,10 +271,10 @@ void DriveController::ProcessData()
     result.type = behavior;
     result.b = noChange;
 
-    //if(result.reset) {
+    if(result.reset) {
 		cout<<"TestStatus: reset driver waypoints..."<<endl;
       waypoints.clear();
-    //}
+    }
 
     //cout<<"TestStatus: driverCTRL waypoints size..."<<waypoints.size()<<endl;
     //add waypoints onto stack and change state to start following them

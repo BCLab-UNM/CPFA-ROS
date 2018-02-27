@@ -23,13 +23,11 @@ void ObstacleController::Reset() {
   obstacleInterrupt = false;
   delay = current_time;
   SetCPFAState(start_state);
-  //haveAvoidCollectionZone = false;
-  //cout<<"TestStatus: reset haveAvoidCollectionZone..."<<endl;
 }
 
 // Avoid crashing into objects detected by the ultraound
 void ObstacleController::avoidObstacle() {
-	cout<<"TestStatus: avoidObstacle..."<<endl;
+	cout<<"TestStatusA: avoidObstacle..."<<endl;
  	//cout<<"CollisionStatus: left="<<left<<", center="<<center<<", right="<<right<<endl;
     if (left <= right && left <= center && left <triggerDistance) 
     {  
@@ -58,7 +56,7 @@ void ObstacleController::avoidObstacle() {
     result.type = precisionDriving;
     result.pd.setPointVel = 0.0;
     
-    double vel = rng->uniformReal(0.1, 0.3);
+    double vel = rng->uniformReal(0.05, 0.2);
     result.pd.cmdVel = vel;
     //result.pd.cmdVel = 0.0;
     result.pd.setPointYaw = 0;
@@ -68,7 +66,7 @@ void ObstacleController::avoidObstacle() {
 // A collection zone was seen in front of the rover and we are not carrying a target
 // so avoid running over the collection zone and possibly pushing cubes out.
 void ObstacleController::avoidCollectionZone() {
- cout<<"TestStatus: avoid collection zone..."<<endl;
+ cout<<"TestStatusA: avoid collection zone..."<<endl;
     result.type = precisionDriving;
 
     //result.pd.cmdVel = 0.0;
@@ -93,7 +91,7 @@ void ObstacleController::avoidCollectionZone() {
       }   
     result.pd.setPointVel = 0.0;
     //result.pd.cmdVel = 0.0;
-	double vel = rng->uniformReal(0.05, 0.15);
+	double vel = rng->uniformReal(0.05, 0.1);
       
     result.pd.cmdVel = vel; //qilu 02/2018
     result.pd.setPointYaw = 0;
@@ -101,7 +99,7 @@ void ObstacleController::avoidCollectionZone() {
 
 
 Result ObstacleController::DoWork() {
- cout<<"TestStatus: ObstacleController::DoWork()..."<<endl;
+ cout<<"TestStatusA: ObstacleController::DoWork()..."<<endl;
   clearWaypoints = true;
   set_waypoint = true;
   result.PIDMode = CONST_PID;
@@ -109,12 +107,12 @@ Result ObstacleController::DoWork() {
   if(collection_zone_seen){
     avoidCollectionZone();
     //haveAvoidCollectionZone = true;
-    //cout<<"TestStatus: set haveAvoidCollectionZone="<<haveAvoidCollectionZone<<endl;
+    //cout<<"TestStatusA: set haveAvoidCollectionZone="<<haveAvoidCollectionZone<<endl;
   }
   else {
     avoidObstacle();
   }
-   //cout<<"TestStatus: haveAvoidCollectionZone"<<haveAvoidCollectionZone<<endl;
+   //cout<<"TestStatusA: haveAvoidCollectionZone="<<haveAvoidCollectionZone<<endl;
   //if an obstacle has been avoided
   if (can_set_waypoint) {
     can_set_waypoint = false; //only one waypoint is set
@@ -124,21 +122,20 @@ Result ObstacleController::DoWork() {
     result.type = waypoint; 
     result.PIDMode = FAST_PID; //use fast pid for waypoints
     Point forward;            //waypoint is directly ahead of current heading
-    /*if(collection_zone_seen)// if seen collection zone in the past and avoid it now, sample a further location
+    /*if(haveAvoidCollectionZone)// if seen collection zone in the past and avoid it now, sample a further location
     {
-		cout<<"TestStatus: ****sample a further location..."<<endl;
-		double stepSize = rng->uniformReal(1.0, 3.0);
+		cout<<"TestStatusA: ****sample a further location..."<<endl;
+		double stepSize = rng->uniformReal(1.0, 2.0);
 		forward.x = currentLocation.x + (stepSize * cos(currentLocation.theta));
         forward.y = currentLocation.y + (stepSize * sin(currentLocation.theta));
-        //haveAvoidCollectionZone = false;
-        
 	}
-    else*/
-    {
+    else
+    {*/
 		forward.x = currentLocation.x + (0.5 * cos(currentLocation.theta));
         forward.y = currentLocation.y + (0.5 * sin(currentLocation.theta));
-    }
-    cout<<"TestStatus: obstacleCTRL sampled waypoint=["<<forward.x<<","<<forward.y<<"]"<<endl;
+    //}
+    //haveAvoidCollectionZone = false;
+    //cout<<"TestStatusA: obstacleCTRL sampled waypoint=["<<forward.x<<","<<forward.y<<"]"<<endl;
     result.wpts.waypoints.clear();
     result.wpts.waypoints.push_back(forward);
   }
@@ -147,7 +144,8 @@ Result ObstacleController::DoWork() {
 }
 
 
-void ObstacleController::SetSonarData(float sonarleft, float sonarcenter, float sonarright) {
+void ObstacleController::SetSonarData(float sonarleft, float sonarcenter, float sonarright) 
+{
   left = sonarleft;
   right = sonarright;
   center = sonarcenter;
@@ -178,18 +176,22 @@ void ObstacleController::ProcessData() {
   }
 
   //If we are ignoring the center sonar
-  if(ignore_center_sonar){
+  if(ignore_center_sonar)
+  {
     //If the center distance is longer than the reactivation threshold 
-    if(center > reactivate_center_sonar_threshold){
+    if(center > reactivate_center_sonar_threshold)
+    {
       //ignore_center_sonar = false; //look at sonar again beacuse center ultrasound has gone long
       //ignore_center_sonar = false; //look at sonar again beacuse center ultrasound has gone long
-  }
-    else{
+    }
+    else
+    {
       //set the center distance to "max" to simulated no obstacle
       center = 3;
     }
   }
-  else {
+  else 
+  {
     //this code is to protect against a held block causing a false short distance
     //currently pointless due to above code
     if (center < 3.0) {

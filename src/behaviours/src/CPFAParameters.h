@@ -53,7 +53,7 @@ struct CPFAParameters {
   // Reduce these to increase probability
   const float rate_of_following_site_fidelity = 2.3; //0.3; original is 0.3; range [0, 20]; 0 -> 1; 20 -> 0
   const float rate_of_laying_pheromone = 3; //range [0, 20]; 0 -> 1; 20 -> 0
-  const float rate_of_pheromone_decay = 0.015; //range [0, 1];
+  const float rate_of_pheromone_decay = 0.01; //range [0, 1];
   
   
 };

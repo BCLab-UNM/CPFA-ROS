@@ -256,7 +256,7 @@ Result PickUpController::DoWork()
     float grasp_time_begin = 1.5;
     float raise_time_begin = 2.0;
     float lower_gripper_time_begin = 4.0;
-    float target_reaquire_begin= 4.2;
+	float target_reaquire_begin= 4.2;
     float target_pickup_task_time_limit = 4.8;
 
     float done_center_begin_reversing = 1.0;
