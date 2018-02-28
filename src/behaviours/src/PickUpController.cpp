@@ -167,7 +167,8 @@ void PickUpController::ProcessData()
 }
 
 
-bool PickUpController::ShouldInterrupt(){
+bool PickUpController::ShouldInterrupt()
+{
 
   ProcessData();
 
