@@ -42,7 +42,7 @@ void ObstacleController::avoidObstacle() {
     else //the obstacle is in front 
     {
 		double p = rng->uniformReal(0, 1.0);
-      if(p<=0.5) //turn left
+      if(p <= 0.5) //turn left
       {
     //obstacle on right side
 		result.pd.cmdAngular = K_angular;
