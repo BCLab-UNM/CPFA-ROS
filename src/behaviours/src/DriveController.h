@@ -38,8 +38,8 @@ private:
 
   bool interupt = false; //hold if interupt has occured yet
 
-  float rotateOnlyAngleTolerance = 0.01;  //The original is 0.05.
-  float finalRotationTolerance = 0.1;
+  float rotateOnlyAngleTolerance = 0.05;  //May be too low?
+  float finalRotationTolerance = 0.1; //dead code not used
   const float waypointTolerance = 0.15; //15 cm tolerance.
 
   //0.65 MAX value

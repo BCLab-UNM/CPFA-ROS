@@ -19,7 +19,6 @@ SearchController::SearchController() {
 }
 
 void SearchController::Reset() {
-	//cout<<"SearchController::Reset()"<<endl;
   result.reset = false;
   //attemptCount = 0;
   result.wpts.waypoints.clear();

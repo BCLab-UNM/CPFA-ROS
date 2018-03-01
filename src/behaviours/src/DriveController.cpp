@@ -107,7 +107,6 @@ Result DriveController::DoWork()
         tooClose = false;
       }
     }
-    //cout<<"Drive: waypoints size="<<waypoints.size()<<endl;
     //if we are out of waypoints then interupt and return to logic controller
     if (waypoints.empty())
     {
@@ -148,6 +147,8 @@ Result DriveController::DoWork()
     // Calculate the diffrence between current and desired heading in radians.
     float errorYaw = angles::shortest_angular_distance(currentLocation.theta, waypoints.back().theta);
 
+    //cout << "ROTATE Error yaw:  " << errorYaw << " target heading : " << waypoints.back().theta << " current heading : " << currentLocation.theta << endl; //DEBUGGING CODE
+    //cout << "Waypoint x : " << waypoints.back().x << " y : " << waypoints.back().y << " currentLoc x : " << currentLocation.x << " y : " << currentLocation.y << endl; //DEBUGGING CODE
 
     result.pd.setPointVel = 0.0;
     //Calculate absolute value of angle
@@ -191,10 +192,12 @@ Result DriveController::DoWork()
       // calculate the distance between current and desired heading in radians
       waypoints.back().theta = atan2(waypoints.back().y - currentLocation.y, waypoints.back().x - currentLocation.x);
       float errorYaw = angles::shortest_angular_distance(currentLocation.theta, waypoints.back().theta);
+    float distance = hypot(waypoints.back().x - currentLocation.x, waypoints.back().y - currentLocation.y);
     
-      float distance = hypot(waypoints.back().x - currentLocation.x, waypoints.back().y - currentLocation.y);
     //cout << "Skid steer, Error yaw:  " << errorYaw << " target heading : " << waypoints.back().theta << " current heading : " << currentLocation.theta << " error distance : " << distance << endl; //DEBUGGING CODE
-    //cout << "TestStatus: driver to Waypoint"<< endl; //DEBUGGING CODE
+    //cout << "Waypoint x : " << waypoints.back().x << " y : " << waypoints.back().y << " currentLoc x : " << currentLocation.x << " y : " << currentLocation.y << endl; //DEBUGGING CODE
+    //result.pd.setPointYaw = waypoints.back().theta;
+    //cout << "Skid steer, Error yaw:  " << errorYaw << " target heading : " << waypoints.back().theta << " current heading : " << currentLocation.theta << " error distance : " << distance << endl; //DEBUGGING CODE
       // goal not yet reached drive while maintaining proper heading.
       if (fabs(errorYaw) < M_PI_2 &&  distance > waypointTolerance)
       {	
@@ -202,40 +205,31 @@ Result DriveController::DoWork()
           result.pd.setPointVel = searchVelocity;
           if (result.PIDMode == FAST_PID)
           {
-            // goal is reached but desired heading is still wrong turn only
-            fastPID((searchVelocity-linearVelocity) ,errorYaw, result.pd.setPointVel, result.pd.setPointYaw);
-          }
-	  }
-      else 
-      {
-        // stop no change
-        left = 0.0;
-        right = 0.0;
-
-        // move back to transform step
-        //cout<<"CPFAStatus: waypoint.back().x="<<waypoints.back().x<<endl;
-       
-        stateMachineState = STATE_MACHINE_WAYPOINTS;
-       cout<<"TestStatusSwitchStatus:: DriveCTRL, Reach goal..."<<endl;
-        //result.cpfa_state = search_with_uninformed_walk;
-       //cout<<"CPFAStatus: result.wpts.waypoint size="<<result.wpts.waypoints.size()<<endl;
-       //cout<<"cpfa_state  = "<<GetCPFAState() <<endl;
+    // goal is reached but desired heading is still wrong turn only
+        fastPID((searchVelocity-linearVelocity) ,errorYaw, result.pd.setPointVel, result.pd.setPointYaw);
       }
-      /*float abs_error = fabs(errorYaw);
-      if(abs_error > rotateOnlyAngleTolerance && current_time % 1000 <= 100)//qilu, adjust angle every 10 seconds on the way to the target 
-      {
-		  cout<<"TestStatus: adjust..."<<endl;
-		  stateMachineState = STATE_MACHINE_ROTATE;
-		  }*/
-     //cout<<"1...."<<endl;
-      break;
+    }
+    else 
+	{
+      // stopno change
+      left = 0.0;
+      right = 0.0;
+
+      // move back to transform step
+      stateMachineState = STATE_MACHINE_WAYPOINTS;
+    }
+
+    break;
   }
 
   default:
   {
     break;
   }
- }
+
+
+  }
+
   //package data for left and right values into result struct for use in ROSAdapter
   result.pd.right = right;
   result.pd.left = left;
@@ -287,6 +281,7 @@ void DriveController::ProcessData()
   }
   else if (result.type == precisionDriving)
   {
+
     //calculate inputs into the PIDS for precision driving
     if (result.PIDMode == FAST_PID)
     {

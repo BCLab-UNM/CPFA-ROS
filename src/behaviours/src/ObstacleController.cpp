@@ -44,7 +44,7 @@ void ObstacleController::avoidObstacle() {
 		double p = rng->uniformReal(0, 1.0);
       if(p<=0.5) //turn left
       {
-		  //cout<<"CollisionStatus: 2. turn to left"<<endl;
+    //obstacle on right side
 		result.pd.cmdAngular = K_angular;
       }
       else //turn right
@@ -56,9 +56,9 @@ void ObstacleController::avoidObstacle() {
     result.type = precisionDriving;
     result.pd.setPointVel = 0.0;
     
-    double vel = rng->uniformReal(0.05, 0.2);
-    result.pd.cmdVel = vel;
-    //result.pd.cmdVel = 0.0;
+    //double vel = rng->uniformReal(0.05, 0.2);
+    //result.pd.cmdVel = vel;
+    result.pd.cmdVel = 0.0;
     result.pd.setPointYaw = 0;
     
 }
@@ -90,10 +90,10 @@ void ObstacleController::avoidCollectionZone() {
 		  //cout<<"CollisionStatus: avoid disk, turn to left"<<endl;
       }   
     result.pd.setPointVel = 0.0;
-    //result.pd.cmdVel = 0.0;
-	double vel = rng->uniformReal(0.05, 0.1);
+    result.pd.cmdVel = 0.0;
+	//double vel = rng->uniformReal(0.05, 0.1);
       
-    result.pd.cmdVel = vel; //qilu 02/2018
+    //result.pd.cmdVel = vel; //qilu 02/2018
     result.pd.setPointYaw = 0;
 }
 
@@ -168,11 +168,11 @@ void ObstacleController::ProcessData() {
 	  //cout<<"TestStatus: set collection_zone_seen to false; "<<collection_zone_seen<<endl;
     collection_zone_seen = false; 
     phys= false;
-    if (!obstacleAvoided)
-    {
+    //if (!obstacleAvoided)
+    //{
 		cout<<"TestStatus: obstacle not avoid..."<<endl;
       can_set_waypoint = true;
-    }
+    //}
   }
 
   //If we are ignoring the center sonar

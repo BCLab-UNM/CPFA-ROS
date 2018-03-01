@@ -24,6 +24,7 @@ public:
   void SetTargetHeld();
 
   // Checks if a target is held and if so resets the state of the obestacle controller otherwise does nothing
+  //Asked by logiccontroller to determine if drive controller should have its waypoints cleared
   void SetTargetHeldClear();
   bool GetShouldClearWaypoints() {bool tmp = clearWaypoints; clearWaypoints = false; return tmp;}
   void SetCPFAState(CPFAState state) override;
@@ -45,7 +46,7 @@ private:
   // and are those AprilTags oriented towards or away from the camera.
   bool checkForCollectionZoneTags( vector<Tag> );
   
-  const float K_angular = 1.2; //origin is 1.0; radians a second turn rate to avoid obstacles
+  const float K_angular = 1.0; //origin is 1.2; radians a second turn rate to avoid obstacles
   const float reactivate_center_sonar_threshold = 0.8; //reactive center sonar if it goes back above this distance, assuming it is deactivated
   const int targetCountPivot = 6; ///unused variable
   const float obstacleDistancePivot = 0.2526; ///unused variable
@@ -59,12 +60,12 @@ private:
   
   bool obstacleInterrupt; //records if obstacle has interupted
   bool obstacleDetected;  //records if an obstacle has been detected
-  bool obstacleAvoided; //record if an obstacle has been avoided
+  bool obstacleAvoided; //record if an obstacke has been avoided
   bool clearWaypoints = false;  //record if drivecontrollers waypoints should be cleared
 
-  float left = 10; //distance on left ultrasound
-  float center = 10; //distance on center ultrasound
-  float right = 10; //distance on right ultrasound
+  float left = 0; //distance on left ultrasound
+  float center = 0; //distance on center ultrasound
+  float right = 0; //distance on right ultrasound
   
   float pitches = 0.0;
 
@@ -85,7 +86,7 @@ private:
 
   bool phys = false; // Physical obstacle
   bool collection_zone_seen = false; // The obstacle is the collection zone
-  //bool haveAvoidCollectionZone = false; //have avoid the collection zone
+  
   bool set_waypoint = false;
   bool can_set_waypoint = false;
   CPFAState cpfa_state = start_state;

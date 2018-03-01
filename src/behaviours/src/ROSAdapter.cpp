@@ -199,8 +199,8 @@ void publishHeartBeatTimerEventHandler(const ros::TimerEvent& event);
 void sonarHandler(const sensor_msgs::Range::ConstPtr& sonarLeft, const sensor_msgs::Range::ConstPtr& sonarCenter, const sensor_msgs::Range::ConstPtr& sonarRight);
 
 // Converts the time passed as reported by ROS (which takes Gazebo simulation rate into account) into milliseconds as an integer.
-long int getROSTimeInMilliSecs();        
-        
+long int getROSTimeInMilliSecs();
+
 int main(int argc, char **argv) {
   
   gethostname(host, sizeof (host));
@@ -221,6 +221,7 @@ int main(int argc, char **argv) {
   
   // Register the SIGINT event handler so the node can shutdown properly
   signal(SIGINT, sigintEventHandler);
+  
   joySubscriber = mNH.subscribe((publishedName + "/joystick"), 10, joyCmdHandler);
   modeSubscriber = mNH.subscribe((publishedName + "/mode"), 1, modeHandler);
   targetSubscriber = mNH.subscribe((publishedName + "/targets"), 10, targetHandler);
@@ -287,10 +288,10 @@ void behaviourStateMachine(const ros::TimerEvent&)
 {
   int roverIdx=0;
   std_msgs::String stateMachineMsg;
+  
   // time since timerStartTime was set to current time
   timerTimeElapsed = time(0) - timerStartTime;
- //cout<<"Pheromone: timerTimeElapsed="<<timerTimeElapsed<<endl;
-  //cout<<"Pheromone: time in milliSecs="<<getROSTimeInMilliSecs()<<endl;
+  
   // init code goes here. (code that runs only once at start of
   // auto mode but wont work in main goes here)
   if (!initilized)
@@ -406,20 +407,25 @@ void behaviourStateMachine(const ros::TimerEvent&)
         wait = true;
       }
     }
+    
     //do this when wait behaviour happens
     if (wait)
     {
       sendDriveCommand(0.0,0.0);
       std_msgs::Float32 angle;
+      
       angle.data = prevFinger;
       fingerAnglePublisher.publish(angle);
       angle.data = prevWrist;
       wristAnglePublisher.publish(angle);
     }
+    
     //normally interpret logic controllers actuator commands and deceminate them over the appropriate ROS topics
     else
     {
+      
       sendDriveCommand(result.pd.left,result.pd.right);
+      
 
       //Alter finger and wrist angle is told to reset with last stored value if currently has -1 value
       std_msgs::Float32 angle;
@@ -501,8 +507,7 @@ void sendDriveCommand(double left, double right)
 
 void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& message) {
 
-
-   // Don't pass April tag data to the logic controller if the robot is not in autonomous mode.
+  // Don't pass April tag data to the logic controller if the robot is not in autonomous mode.
   // This is to make sure autonomous behaviours are not triggered while the rover is in manual mode. 
   if(currentMode == 0 || currentMode == 1) 
   { 
@@ -521,7 +526,7 @@ void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& messag
 
       // Package up the ROS AprilTag data into our own type that does not rely on ROS.
       Tag loc;
-      loc.setID( message->detections[i].id);
+      loc.setID( message->detections[i].id );
 
       if (loc.getID() == 0) 
       {
@@ -534,11 +539,10 @@ void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& messag
 	  
       // Pass the position of the AprilTag
       geometry_msgs::PoseStamped tagPose = message->detections[i].pose;
-      //cout<<"tagPose.pose.position=("<<tagPose.pose.position.x << ","<<tagPose.pose.position.y<< ","<<tagPose.pose.position.z<<")"<<endl;
       loc.setPosition( make_tuple( tagPose.pose.position.x,
 				   tagPose.pose.position.y,
 				   tagPose.pose.position.z ) );
-      //cout <<"PheromoneStatus: tag location={"<<tagPose.pose.position.x<<","<<tagPose.pose.position.y<<","<< tagPose.pose.position.z<<"}"<<endl;
+
       // Pass the orientation of the AprilTag
       loc.setOrientation( ::boost::math::quaternion<float>( tagPose.pose.orientation.x,
 							    tagPose.pose.orientation.y,
@@ -576,7 +580,7 @@ void modeHandler(const std_msgs::UInt8::ConstPtr& message) {
 }
 
 void sonarHandler(const sensor_msgs::Range::ConstPtr& sonarLeft, const sensor_msgs::Range::ConstPtr& sonarCenter, const sensor_msgs::Range::ConstPtr& sonarRight) 
-{  
+{ 
   logicController.SetSonarData(sonarLeft->range, sonarCenter->range, sonarRight->range);
 }
 

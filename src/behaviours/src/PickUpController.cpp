@@ -145,6 +145,9 @@ void PickUpController::ProcessData()
 
   //cout << "distance : " << blockDistanceFromCamera << " time is : " << Td << endl;
 
+  // If the block is very close to the camera then the robot has
+  // successfully lifted a target. Enter the target held state to
+  // return to the center.
   if (blockDistanceFromCamera < 0.14 && Td < 3.9)
   {
     //cout << "CPFAStatus: picked up target..."<<endl;
@@ -194,6 +197,7 @@ bool PickUpController::ShouldInterrupt()
 
   else if (!targetFound && interupted) // switch to obstacle or range controller
   {
+    // had a cube in sight but lost it, interrupt again to release control
     interupted = false;
     has_control = false;
    //cout<<"P: true d3"<<endl;

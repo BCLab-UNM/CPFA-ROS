@@ -740,6 +740,7 @@ void MapFrame::mouseMoveEvent(QMouseEvent *event)
         // by the given translate speed to keep the map lined up with mouse movement
         translate_x += translate_speed * (previous_clicked_position.x() - mouse_event->pos().x()) / max_width;
         translate_y += translate_speed * (previous_clicked_position.y() - mouse_event->pos().y()) / max_height;
+        
         // debug info log messages
         // emit sendInfoLogMessage("MapFrame: mouse move: translate_x: " + QString::number(translate_x) + " translate_y: " + QString::number(translate_y) + "\n");
         // emit sendInfoLogMessage("MapFrame: mouse move: frame_width: " + QString::number(this->width()) + " frame_height: " + QString::number(this->height()));

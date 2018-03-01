@@ -85,9 +85,9 @@ enum ResultType {
 
 enum BehaviorTrigger {
   wait, //used by logic controller to indicate to ROSAdapter indicate when nothing should happen
-  prevProcess,
+  prevProcess, //when the process state should revert to the previouse state according to the controller
   noChange, //guard used by logic controller against faulty configurations
-  nextProcess, // deprecated, will be removed later
+  nextProcess, //when the process state should advance tot he next state according to the controller
   COMPLETED,
   FAILED //giveup search and return to nest
 };
