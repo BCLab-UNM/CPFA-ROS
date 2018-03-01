@@ -42,7 +42,7 @@ void ObstacleController::avoidObstacle() {
     else //the obstacle is in front 
     {
 		double p = rng->uniformReal(0, 1.0);
-      if(p<=0.5) //turn left
+      if(p <= 0.5) //turn left
       {
 		  //cout<<"CollisionStatus: 2. turn to left"<<endl;
 		result.pd.cmdAngular = K_angular;
@@ -56,9 +56,9 @@ void ObstacleController::avoidObstacle() {
     result.type = precisionDriving;
     result.pd.setPointVel = 0.0;
     
-    double vel = rng->uniformReal(0.05, 0.2);
-    result.pd.cmdVel = vel;
-    //result.pd.cmdVel = 0.0;
+    //double vel = rng->uniformReal(0.05, 0.2);
+    //result.pd.cmdVel = vel;
+    result.pd.cmdVel = 0.0;
     result.pd.setPointYaw = 0;
     
 }
@@ -91,9 +91,9 @@ void ObstacleController::avoidCollectionZone() {
       }   
     result.pd.setPointVel = 0.0;
     //result.pd.cmdVel = 0.0;
-	double vel = rng->uniformReal(0.05, 0.1);
+	//double vel = rng->uniformReal(0.05, 0.1);
       
-    result.pd.cmdVel = vel; //qilu 02/2018
+    //result.pd.cmdVel = vel; //qilu 02/2018
     result.pd.setPointYaw = 0;
 }
 
