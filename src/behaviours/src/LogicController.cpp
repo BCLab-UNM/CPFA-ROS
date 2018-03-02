@@ -607,7 +607,7 @@ void LogicController::SetCenterLocationOdom(Point centerLocationOdom)
   //pheromoneController.SetCenterLocation(centerLocationOdom);
 }
 
-void LogicController::SetRoverInitLocation(Point location) 
+void LogicController::SetRoverInitLocation(Point location) //for mapping the locations of pheromone trails to other rovers.
 {
   pheromoneController.SetRoverInitLocation(location);
 }

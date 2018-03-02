@@ -790,7 +790,7 @@ border-color: rgb(255, 255, 255);</string>
         <string notr="true">color: rgb(255, 255, 255);</string>
        </property>
        <property name="text">
-        <string>Preliminary</string>
+        <string>Preliminary (8X8)</string>
        </property>
        <property name="checked">
         <bool>true</bool>
@@ -4084,4 +4084,3 @@ border: 1px solid white;
  <resources/>
  <connections/>
 </ui>
-
