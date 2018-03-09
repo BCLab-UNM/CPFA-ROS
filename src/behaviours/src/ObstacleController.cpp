@@ -114,7 +114,7 @@ Result ObstacleController::DoWork() {
   }
    //cout<<"TestStatusA: haveAvoidCollectionZone="<<haveAvoidCollectionZone<<endl;
   //if an obstacle has been avoided
-  /*if (can_set_waypoint) {
+  if (can_set_waypoint) {
     can_set_waypoint = false; //only one waypoint is set
     set_waypoint = false;
     clearWaypoints = false;
@@ -132,14 +132,14 @@ Result ObstacleController::DoWork() {
 	}
     else
     {
-		forward.x = currentLocation.x + (0.5 * cos(currentLocation.theta));
-        forward.y = currentLocation.y + (0.5 * sin(currentLocation.theta));
+		forward.x = currentLocation.x + (0.3 * cos(currentLocation.theta));
+        forward.y = currentLocation.y + (0.3 * sin(currentLocation.theta));
     }
     //haveAvoidCollectionZone = false;
     //cout<<"TestStatusA: obstacleCTRL sampled waypoint=["<<forward.x<<","<<forward.y<<"]"<<endl;
     result.wpts.waypoints.clear();
     result.wpts.waypoints.push_back(forward);
-  }*/
+  }
 
   return result;
 }

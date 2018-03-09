@@ -1517,10 +1517,10 @@ void RoverGUIPlugin::allAutonomousButtonEventHandler()
         }
     }
      score_data_filename += "_"+to_string((int)getMinutes(current_simulated_time_in_seconds))+"_"+to_string((int)getSeconds(current_simulated_time_in_seconds))+".txt";
-        score_data.open(score_data_filename);
+        score_data.open("results/"+score_data_filename);
         
         collision_data_filename += "_"+to_string((int)getMinutes(current_simulated_time_in_seconds))+"_"+to_string((int)getSeconds(current_simulated_time_in_seconds))+".txt";
-        collision_data.open(collision_data_filename);
+        collision_data.open("results/"+collision_data_filename);
 
     // Experiment Timer END
 }
