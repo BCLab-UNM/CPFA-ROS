@@ -58,7 +58,7 @@ void ObstacleController::avoidObstacle() {
     
     //double vel = rng->uniformReal(0.05, 0.2);
     //result.pd.cmdVel = vel;
-    result.pd.cmdVel = 0.0;
+    result.pd.cmdVel = -0.05;
     result.pd.setPointYaw = 0;
     
 }
@@ -90,7 +90,7 @@ void ObstacleController::avoidCollectionZone() {
 		  //cout<<"CollisionStatus: avoid disk, turn to left"<<endl;
       }   
     result.pd.setPointVel = 0.0;
-    result.pd.cmdVel = 0.0;
+    result.pd.cmdVel = -0.05;
 	//double vel = rng->uniformReal(0.05, 0.1);
       
     //result.pd.cmdVel = vel; //qilu 02/2018
@@ -127,8 +127,8 @@ Result ObstacleController::DoWork() {
     {
 		cout<<"TestStatusA: ****sample another location to avoid collection disk..."<<endl;
 		double stepSize = rng->uniformReal(1.0, 2.0);
-		forward.x = currentLocation.x + (stepSize * cos((3*M_PI/4 + currentLocation.theta)));
-        forward.y = currentLocation.y + (stepSize * sin((3*M_PI/4 + currentLocation.theta)));
+		forward.x = currentLocation.x + (stepSize * cos((M_PI + currentLocation.theta)));
+        forward.y = currentLocation.y + (stepSize * sin((M_PI + currentLocation.theta)));
 	}
     else
     {
