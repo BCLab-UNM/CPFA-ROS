@@ -103,8 +103,6 @@ const float status_publish_interval = 1;
 const float heartbeat_publish_interval = 2;
 const float waypointTolerance = 0.1; //10 cm tolerance.
 
-// Center location has been updated
-bool centerUpdated = false; //qilu 12/2017 no reference, should be removed.
 
 // used for calling code once but not in main
 bool initilized = false;
@@ -206,11 +204,14 @@ int main(int argc, char **argv) {
   gethostname(host, sizeof (host));
   string hostname(host);
   
-  if (argc >= 2) {
+  if (argc >= 2) 
+  {
     publishedName = argv[1];
     cout << "Welcome to the world of tomorrow " << publishedName
          << "!  Behaviour turnDirectionule started." << endl;
-  } else {
+  } 
+  else 
+  {
     publishedName = hostname;
     cout << "No Name Selected. Default is: " << publishedName << endl;
   }
@@ -273,7 +274,6 @@ int main(int argc, char **argv) {
   }
 
   timerStartTime = time(0);
-  
   ros::spin();
   
   return EXIT_SUCCESS;

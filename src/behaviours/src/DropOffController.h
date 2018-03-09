@@ -46,13 +46,13 @@ private:
 
   const float cameraOffsetCorrection = 0.020; //meters
   const float centeringTurnRate = 0.15; //radians
-  const int centerTagThreshold = 3;//original is 8. Rovers move back and forth repeatedly if we set it to be a larger number;
+  const int centerTagThreshold = 1;//original is 8. Rovers move back and forth repeatedly if we set it to be a larger number;
   const int lostCenterCutoff = 4; //seconds before giving up on drop off beacuse center cannot be seen anymore
   const float collectionPointVisualDistance = 0.2; //in meters
   const float initialSpinSize = 0.05; //in meters aka 10cm
   const float spinSizeIncrement = 0.50; //in meters
   const float searchVelocity = 0.15; //in meters per second
-  const float dropDelay = 0.4; //delay in seconds for dropOff
+  const float dropDelay = 0.5; //delay in seconds for dropOff
   
   int local_resource_density = 0;
   random_numbers::RandomNumberGenerator* rng;

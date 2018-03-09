@@ -168,11 +168,11 @@ void ObstacleController::ProcessData() {
 	  //cout<<"TestStatus: set collection_zone_seen to false; "<<collection_zone_seen<<endl;
     collection_zone_seen = false; 
     phys= false;
-    //if (!obstacleAvoided)
-    //{
+    if (!obstacleAvoided)
+    {
 		cout<<"TestStatus: obstacle not avoid..."<<endl;
       can_set_waypoint = true;
-    //}
+    }
   }
 
   //If we are ignoring the center sonar

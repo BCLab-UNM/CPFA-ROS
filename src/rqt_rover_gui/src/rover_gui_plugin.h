@@ -53,6 +53,7 @@
 #include <ublox_msgs/NavSOL.h>
 #include "swarmie_msgs/Waypoint.h" // For waypoint commands
 #include "swarmie_msgs/RoverInfo.h"
+#include <fstream>
 
 //ROS msg types
 //#include "rover_onboard_target_detection/ATag.h"
@@ -273,6 +274,18 @@ namespace rqt_rover_gui {
     double getMinutes(double seconds);
     double getSeconds(double seconds);
 
+    int previous_collected_tags =0;
+    int current_collected_tags = 0;
+    string score_data_filename = "score_data";
+    ofstream score_data; 
+    double foragingElapsed = 0;
+    double lastCollisionElapsedTime = 0;
+    
+    
+    int previous_collisions =0;
+    int current_collisions = 0;
+    string collision_data_filename = "collision_data";
+    ofstream collision_data; 
     bool display_sim_visualization;
 
     // Object clearance. These values are used to quickly determine where objects can be placed in the simulation

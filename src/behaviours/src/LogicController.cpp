@@ -112,7 +112,7 @@ Result LogicController::DoWork()
 
       //ask for the procces state to change to the next state or loop around to the begining
       if(result.b == nextProcess) {
-		 //cout<<"next process..."<<endl;
+		 cout<<"TestStatus: next process..."<<endl;
         if (processState == _LAST - 1) {
           processState = _FIRST;
         }
@@ -305,9 +305,8 @@ double LogicController::getPoissonCDF(const double lambda)
 {
   double sumAccumulator       = 1.0;
   double factorialAccumulator = 1.0;
-   //cout <<"CPFAStatus: lambda="<<lambda<<endl;
-   //cout <<"LayStatus: get Poisson CDF: local_resource_density="<<local_resource_density<<endl;
-  for (size_t i = 1; i <= local_resource_density; i++) {
+  for (size_t i = 1; i <= local_resource_density; i++) 
+  {
     factorialAccumulator *= i;
     sumAccumulator += pow(lambda, i) / factorialAccumulator;
   }
@@ -487,7 +486,7 @@ void LogicController::controllerInterconnect()
 	} 
 	if(obstacleController.GetCPFAState() == reached_nest)
 	{
-		//cout<<"TestStatusSwitchStatus: interconnect, set reached_nest..."<<endl;
+		cout<<"TestStatusSwitchStatus: interconnect, set reached_nest..."<<endl;
 		searchController.SetCPFAState(reached_nest);
 		//searchController.SetReachedWaypoint(true);
 		//obstacleController.SetCPFAState(start_state);
