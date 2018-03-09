@@ -64,7 +64,8 @@ Result DropOffController::DoWork() {
   cout << "DropOffController::DoWork() " << endl;
   // Getting the total tag count from the left and the right side of the rover
   int count = countLeft + countRight;
-
+   //cout<<"TestStatusA: timerTimeElapsed="<<timerTimeElapsed<<endl;
+   //cout<<"TestStatusA: reachedCollectionPoint="<<reachedCollectionPoint<<endl;
   // If the timer has started
   if(timerTimeElapsed > -1) {
     // Calcuate the elapsed time from the current time and the time since
@@ -243,10 +244,10 @@ Result DropOffController::DoWork() {
       seenEnoughCenterTags = true; //we have driven far enough forward to be in and aligned with the circle.
       lastCenterTagThresholdTime = current_time;
     }
-    if (count > 0) // Reset gaurd to prevent drop offs due to loosing tracking on tags for a frame or 2.
+    /*if (count > 0) // Reset guard to prevent drop offs due to loosing tracking on tags for a frame or 2.
     {
       lastCenterTagThresholdTime = current_time;
-    }
+    }*/
     //time since we dropped below countGuard tags
     long int elapsed = current_time - lastCenterTagThresholdTime;
     float timeSinceSeeingEnoughCenterTags = elapsed/1e3; // Convert from milliseconds to seconds

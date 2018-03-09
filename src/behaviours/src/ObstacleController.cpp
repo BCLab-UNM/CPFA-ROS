@@ -122,18 +122,19 @@ Result ObstacleController::DoWork() {
     result.type = waypoint; 
     result.PIDMode = FAST_PID; //use fast pid for waypoints
     Point forward;            //waypoint is directly ahead of current heading
-    /*if(haveAvoidCollectionZone)// if seen collection zone in the past and avoid it now, sample a further location
+    //if(haveAvoidCollectionZone)// if seen collection zone in the past and avoid it now, sample a further location
+    if(collection_zone_seen)
     {
-		cout<<"TestStatusA: ****sample a further location..."<<endl;
+		cout<<"TestStatusA: ****sample another location to avoid collection disk..."<<endl;
 		double stepSize = rng->uniformReal(1.0, 2.0);
-		forward.x = currentLocation.x + (stepSize * cos(currentLocation.theta));
-        forward.y = currentLocation.y + (stepSize * sin(currentLocation.theta));
+		forward.x = currentLocation.x + (stepSize * cos((3*M_PI/4 + currentLocation.theta)));
+        forward.y = currentLocation.y + (stepSize * sin((3*M_PI/4 + currentLocation.theta)));
 	}
     else
-    {*/
+    {
 		forward.x = currentLocation.x + (0.5 * cos(currentLocation.theta));
         forward.y = currentLocation.y + (0.5 * sin(currentLocation.theta));
-    //}
+    }
     //haveAvoidCollectionZone = false;
     //cout<<"TestStatusA: obstacleCTRL sampled waypoint=["<<forward.x<<","<<forward.y<<"]"<<endl;
     result.wpts.waypoints.clear();
