@@ -64,8 +64,8 @@ Result DropOffController::DoWork() {
   cout << "DropOffController::DoWork() " << endl;
   // Getting the total tag count from the left and the right side of the rover
   int count = countLeft + countRight;
-   //cout<<"TestStatusA: timerTimeElapsed="<<timerTimeElapsed<<endl;
-   //cout<<"TestStatusA: reachedCollectionPoint="<<reachedCollectionPoint<<endl;
+   cout<<"TestStatusA: timerTimeElapsed="<<timerTimeElapsed<<endl;
+   cout<<"TestStatusA: reachedCollectionPoint="<<reachedCollectionPoint<<endl;
   // If the timer has started
   if(timerTimeElapsed > -1) {
     // Calcuate the elapsed time from the current time and the time since
@@ -81,25 +81,22 @@ Result DropOffController::DoWork() {
     {
       if (finalInterrupt)
       {
-	    //result.lay_pheromone = true; 
-        result.type = behavior;
+		  cout<<"TestStatusA: to next process"<<endl;
+	    result.type = behavior;
         result.b = nextProcess;
         result.reset = true;
-        //informed_search = true;
-        //result.wpts.waypoints.clear();
-        //cout<<"Set site fidelity to be the waypoint..."<<endl;
-        //result.wpts.waypoints.insert(result.wpts.waypoints.begin(), site_fidelity_location);
         targetHeld = false; //qilu 02/2018
         return result;       
       }
       else
       {
         finalInterrupt = true;
-        //cout << "finalInterrupt, true" << endl;
+        cout << "finalInterrupt, true" << endl;
       }
     }
     else if (timerTimeElapsed >= 0.1)
     {
+		cout<<"TestStatusA: dropoff cube..."<<endl;
       isPrecisionDriving = true;
       result.type = precisionDriving;
 
@@ -169,7 +166,7 @@ Result DropOffController::DoWork() {
 
   //reset lastCenterTagThresholdTime timout timer to current time
   if ((!centerApproach && !seenEnoughCenterTags) || (count > 0 && !seenEnoughCenterTags)) {
-
+     cout<<"reset time 1"<<endl;
     lastCenterTagThresholdTime = current_time;
 
   }
@@ -177,7 +174,7 @@ Result DropOffController::DoWork() {
   if (count > 0 || seenEnoughCenterTags || prevCount > 0) //if we have a target and the center is located drive towards it.
   {
 
-    //cout << "CPFAStatus: drive to center" << endl;
+    cout << "CPFAStatus: drive to center" << endl;
     centerSeen = true;
 
     if (first_center && isPrecisionDriving)
@@ -252,9 +249,11 @@ Result DropOffController::DoWork() {
     long int elapsed = current_time - lastCenterTagThresholdTime;
     float timeSinceSeeingEnoughCenterTags = elapsed/1e3; // Convert from milliseconds to seconds
 
+    cout<<"cout="<<count<<"; timeSinceSeeingEnoughCenterTags="<<timeSinceSeeingEnoughCenterTags<<endl;
     //we have driven far enough forward to have passed over the circle.
     if (count < 5 && seenEnoughCenterTags && timeSinceSeeingEnoughCenterTags > dropDelay) {
       centerSeen = false;
+      cout<<"not seen center"<<endl;
     }
     centerApproach = true;
     prevCount = count;
@@ -271,7 +270,7 @@ Result DropOffController::DoWork() {
     float timeSinceSeeingEnoughCenterTags = elapsed/1e3; // Convert from milliseconds to seconds
     if (timeSinceSeeingEnoughCenterTags > lostCenterCutoff)
     {
-      //cout << "back to drive to center base location..." << endl;
+      cout << "back to drive to center base location..." << endl;
       //go back to drive to center base location instead of drop off attempt
       reachedCollectionPoint = false;
       seenEnoughCenterTags = false;
@@ -297,9 +296,10 @@ Result DropOffController::DoWork() {
     return result;
 
   }
-
+  cout<<"2 centerSeen="<<centerSeen<<endl;
   if (!centerSeen && seenEnoughCenterTags)
   {
+	  cout<<"TestStatusA: reach nest..."<<endl;
     reachedCollectionPoint = true;
     centerApproach = false;
     returnTimer = current_time;
@@ -392,16 +392,16 @@ bool DropOffController::ShouldInterrupt() {
   if (startWaypoint && !interrupt) {
     interrupt = true;
     precisionInterrupt = false;
-    //cout<<"D: true d1"<<endl;
+    cout<<"D: true d1"<<endl;
     return true;
   }
   else if (isPrecisionDriving && !precisionInterrupt) {
     precisionInterrupt = true;
-    //cout<<"D: true d2"<<endl;
+    cout<<"D: true d2"<<endl;
     return true;
   }
   if (finalInterrupt) {
-	  //cout<<"D: true d3"<<endl;
+	  cout<<"D: true d3"<<endl;
     return true;
   }
 }
