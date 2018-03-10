@@ -51,7 +51,7 @@ enum CPFAState
   sense_local_resource_density,
   avoid_obstacle,//8
   return_to_nest,//9
-  reached_nest//10
+  reached_nest,//10
 };
 
 /**

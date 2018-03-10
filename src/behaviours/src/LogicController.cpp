@@ -455,10 +455,10 @@ void LogicController::controllerInterconnect()
     {
       obstacleController.SetIgnoreCenterSonar();
     }
-    if(pickUpController.GetTargetFound())
+    /*if(pickUpController.GetTargetFound())
     {
 		searchController.SetCPFAState(switched_to_search);
-		}
+		}*/
     
     // Pickup controller anounces it has picked up a target.
     if(pickUpController.GetTargetHeld())

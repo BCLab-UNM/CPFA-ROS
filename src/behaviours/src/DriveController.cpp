@@ -36,7 +36,7 @@ Result DriveController::DoWork()
   
   ///WARNING waypoint input must use FAST_PID at this point in time failure to set fast pid will result in no movment
 
- //cout <<"CPFAStatus: DriveController::DoWork()"<<endl;
+ cout <<"CPFAStatus: DriveController::DoWork()"<<endl;
  
   if(result.type == behavior)
   {

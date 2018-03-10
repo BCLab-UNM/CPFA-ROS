@@ -58,7 +58,7 @@ void ObstacleController::avoidObstacle() {
     
     //double vel = rng->uniformReal(0.05, 0.2);
     //result.pd.cmdVel = vel;
-    result.pd.cmdVel = -0.05;
+    result.pd.cmdVel = 0;
     result.pd.setPointYaw = 0;
     
 }
@@ -90,7 +90,7 @@ void ObstacleController::avoidCollectionZone() {
 		  //cout<<"CollisionStatus: avoid disk, turn to left"<<endl;
       }   
     result.pd.setPointVel = 0.0;
-    result.pd.cmdVel = -0.05;
+    result.pd.cmdVel = 0;
 	//double vel = rng->uniformReal(0.05, 0.1);
       
     //result.pd.cmdVel = vel; //qilu 02/2018
@@ -126,14 +126,14 @@ Result ObstacleController::DoWork() {
     if(collection_zone_seen)
     {
 		cout<<"TestStatusA: ****sample another location to avoid collection disk..."<<endl;
-		double stepSize = rng->uniformReal(1.0, 2.0);
-		forward.x = currentLocation.x + (stepSize * cos((M_PI + currentLocation.theta)));
-        forward.y = currentLocation.y + (stepSize * sin((M_PI + currentLocation.theta)));
+		//double stepSize = rng->uniformReal(1.0, 2.0);
+		forward.x = currentLocation.x + (0.1 * cos((M_PI + currentLocation.theta)));
+        forward.y = currentLocation.y + (0.1 * sin((M_PI + currentLocation.theta)));
 	}
     else
     {
-		forward.x = currentLocation.x + (0.3 * cos(currentLocation.theta));
-        forward.y = currentLocation.y + (0.3 * sin(currentLocation.theta));
+		forward.x = currentLocation.x + (0.5 * cos(currentLocation.theta));
+        forward.y = currentLocation.y + (0.5 * sin(currentLocation.theta));
     }
     //haveAvoidCollectionZone = false;
     //cout<<"TestStatusA: obstacleCTRL sampled waypoint=["<<forward.x<<","<<forward.y<<"]"<<endl;

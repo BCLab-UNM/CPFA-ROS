@@ -39,6 +39,7 @@ DropOffController::DropOffController() {
   currentLocation.x = 0;
   currentLocation.y = 0;
   currentLocation.theta = 0; 
+  returnTimer = 0;
 }
 
 DropOffController::~DropOffController() {
@@ -64,15 +65,29 @@ Result DropOffController::DoWork() {
   cout << "DropOffController::DoWork() " << endl;
   // Getting the total tag count from the left and the right side of the rover
   int count = countLeft + countRight;
-   cout<<"TestStatusA: timerTimeElapsed="<<timerTimeElapsed<<endl;
-   cout<<"TestStatusA: reachedCollectionPoint="<<reachedCollectionPoint<<endl;
+   cout<<"TestTimeout:TestStatusA: timerTimeElapsed="<<timerTimeElapsed<<endl;
+   cout<<"TestTimeout: current_time="<<current_time <<endl;
+   //cout<<"TestStatusA: reachedCollectionPoint="<<reachedCollectionPoint<<endl;
   // If the timer has started
   if(timerTimeElapsed > -1) {
     // Calcuate the elapsed time from the current time and the time since
     long int elapsed = current_time - returnTimer;
     timerTimeElapsed = elapsed/1e3; // Convert from milliseconds to seconds
   }
-
+  else
+  {
+	  returnTimer = current_time;
+	  timerTimeElapsed = 0;
+	  }
+  cout<<"TestTimeout: seenEnoughCenterTags="<<seenEnoughCenterTags<<endl;
+  if(timerTimeElapsed > 60 && !seenEnoughCenterTags)//timeout the dropoff. If the rover can not find the collection disk in certain time, then give up. 
+  {
+	reachedCollectionPoint = true;
+	//returnTimer = current_time;  
+	finalInterrupt = true;
+	
+	cout<<"TestTimeout: give up dropoff...."<<endl;
+  }
   //if we are in the routine for exiting the circle once we have dropped a block off and reseting all our flags
   //to resart our search.
   if(reachedCollectionPoint)
@@ -81,7 +96,7 @@ Result DropOffController::DoWork() {
     {
       if (finalInterrupt)
       {
-		  cout<<"TestStatusA: to next process"<<endl;
+		  cout<<"TestTimeout:TestStatusA: to next process"<<endl;
 	    result.type = behavior;
         result.b = nextProcess;
         result.reset = true;
@@ -155,8 +170,8 @@ Result DropOffController::DoWork() {
     //center since we have a block with us and the above point is
     //greater than collectionPointVisualDistance from the center.
 
-    returnTimer = current_time;
-    timerTimeElapsed = 0;
+    //returnTimer = current_time; //qilu 03/2018 comment out for timeout of the dropoff
+    //timerTimeElapsed = 0; //qilu 03/2018
 
   }
 
@@ -329,7 +344,7 @@ void DropOffController::Reset() {
   countRight = 0;
   pitches = 0.0;
 
-
+  returnTimer = 0;//qilu 03/2018
   //reset flags
   reachedCollectionPoint = false;
   seenEnoughCenterTags = false;
@@ -340,6 +355,8 @@ void DropOffController::Reset() {
   targetHeld = false;
   startWaypoint = false;
   first_center = true;
+  
+  
 
 }
 
