@@ -123,7 +123,7 @@ Result ObstacleController::DoWork() {
     result.PIDMode = FAST_PID; //use fast pid for waypoints
     Point forward;            //waypoint is directly ahead of current heading
     //if(haveAvoidCollectionZone)// if seen collection zone in the past and avoid it now, sample a further location
-    if(collection_zone_seen)
+    if(GetCPFAState() == reached_nest)
     {
 		cout<<"TestStatusA: ****sample another location to avoid collection disk..."<<endl;
 		//double stepSize = rng->uniformReal(1.0, 2.0);

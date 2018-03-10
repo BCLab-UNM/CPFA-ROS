@@ -478,11 +478,17 @@ void LogicController::controllerInterconnect()
 			obstacleController.SetCPFAState(return_to_nest);
 		   cout<<"TestStatus: obstacle set to return to nest..."<<obstacleController.GetCPFAState()<<endl;
 		}
+		else if(dropOffController.GetCPFAState() == reached_nest)
+		{
+			obstacleController.SetCPFAState(reached_nest);
+			}
 		else
 		{
 		    searchController.SetCPFAState(avoid_obstacle);
              cout<<"TestStatus: SearchCtrl set to avoid obstacle...CPFAStatus="<<searchController.GetCPFAState()<<endl;			
 			}
+			
+			
 	} 
 	if(obstacleController.GetCPFAState() == reached_nest)
 	{
