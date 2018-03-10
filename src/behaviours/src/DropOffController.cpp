@@ -65,9 +65,7 @@ Result DropOffController::DoWork() {
   cout << "DropOffController::DoWork() " << endl;
   // Getting the total tag count from the left and the right side of the rover
   int count = countLeft + countRight;
-   cout<<"TestTimeout:TestStatusA: timerTimeElapsed="<<timerTimeElapsed<<endl;
-   cout<<"TestTimeout: current_time="<<current_time <<endl;
-   //cout<<"TestStatusA: reachedCollectionPoint="<<reachedCollectionPoint<<endl;
+   
   // If the timer has started
   if(timerTimeElapsed > -1) {
     // Calcuate the elapsed time from the current time and the time since
@@ -79,6 +77,7 @@ Result DropOffController::DoWork() {
 	  returnTimer = current_time;
 	  timerTimeElapsed = 0;
 	  }
+  cout<<"TestTimeout:TestStatusA: timerTimeElapsed="<<timerTimeElapsed<<endl;
   cout<<"TestTimeout: seenEnoughCenterTags="<<seenEnoughCenterTags<<endl;
   if(timerTimeElapsed > 60 && !seenEnoughCenterTags)//timeout the dropoff. If the rover can not find the collection disk in certain time, then give up. 
   {
@@ -98,7 +97,14 @@ Result DropOffController::DoWork() {
       {
 		  cout<<"TestTimeout:TestStatusA: to next process"<<endl;
 	    result.type = behavior;
-        result.b = nextProcess;
+	    if(!seenEnoughCenterTags)
+	    {
+			result.b = FAILED;
+		}
+		else
+		{
+		    result.b = nextProcess;
+		}
         result.reset = true;
         targetHeld = false; //qilu 02/2018
         return result;       

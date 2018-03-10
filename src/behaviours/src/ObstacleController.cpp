@@ -127,8 +127,8 @@ Result ObstacleController::DoWork() {
     {
 		cout<<"TestStatusA: ****sample another location to avoid collection disk..."<<endl;
 		//double stepSize = rng->uniformReal(1.0, 2.0);
-		forward.x = currentLocation.x + (0.1 * cos((M_PI + currentLocation.theta)));
-        forward.y = currentLocation.y + (0.1 * sin((M_PI + currentLocation.theta)));
+		forward.x = currentLocation.x + (0.1 * cos(currentLocation.theta));
+        forward.y = currentLocation.y + (0.1 * sin(currentLocation.theta));
 	}
     else
     {
@@ -305,7 +305,7 @@ bool ObstacleController::ShouldInterrupt() {
       //cout<<"TestStatus: obstacle interrupt: GetCPFAState()="<<GetCPFAState()<<endl;
       if(GetCPFAState() == return_to_nest)
       {
-		  //cout<<"TestStatus: Obstacle avoid and set to reach nest... interrupt...true"<<endl;
+		  cout<<"TestStatus: Obstacle avoid and set to reach nest... interrupt...true"<<endl;
 		  SetCPFAState(reached_nest);
 		  }
       

@@ -455,10 +455,10 @@ void LogicController::controllerInterconnect()
     {
       obstacleController.SetIgnoreCenterSonar();
     }
-    /*if(pickUpController.GetTargetFound())
+    if(pickUpController.GetTargetFound())
     {
 		searchController.SetCPFAState(switched_to_search);
-		}*/
+		}
     
     // Pickup controller anounces it has picked up a target.
     if(pickUpController.GetTargetHeld())
@@ -476,7 +476,7 @@ void LogicController::controllerInterconnect()
 		if(searchController.GetCPFAState() == return_to_nest)
 		{
 			obstacleController.SetCPFAState(return_to_nest);
-		    //cout<<"TestStatus: obstacle set to return to nest..."<<obstacleController.GetCPFAState()<<endl;
+		   cout<<"TestStatus: obstacle set to return to nest..."<<obstacleController.GetCPFAState()<<endl;
 		}
 		else
 		{
