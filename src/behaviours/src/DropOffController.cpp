@@ -72,21 +72,22 @@ Result DropOffController::DoWork() {
     long int elapsed = current_time - returnTimer;
     timerTimeElapsed = elapsed/1e3; // Convert from milliseconds to seconds
   }
-  else
+  /*else
   {
 	  returnTimer = current_time;
 	  timerTimeElapsed = 0;
-	  }
-  cout<<"TestTimeout:TestStatusA: timerTimeElapsed="<<timerTimeElapsed<<endl;
-  cout<<"TestTimeout: seenEnoughCenterTags="<<seenEnoughCenterTags<<endl;
-  if(timerTimeElapsed > 60 && !seenEnoughCenterTags)//timeout the dropoff. If the rover can not find the collection disk in certain time, then give up. 
+	  }*/
+  //cout<<"TestTimeout:TestStatusA: timerTimeElapsed="<<timerTimeElapsed<<endl;
+  //cout<<"TestTimeout: seenEnoughCenterTags="<<seenEnoughCenterTags<<endl;
+  //cout<<"TestTimeout: count="<<count<<endl;
+  /*(if(timerTimeElapsed > 60 && !seenEnoughCenterTags)//timeout the dropoff. If the rover can not find the collection disk in certain time, then give up. 
   {
 	reachedCollectionPoint = true;
 	//returnTimer = current_time;  
-	finalInterrupt = true;
+	//finalInterrupt = true;
 	
-	cout<<"TestTimeout: give up dropoff...."<<endl;
-  }
+	//cout<<"TestTimeout: give up dropoff...."<<endl;
+  }*/
   //if we are in the routine for exiting the circle once we have dropped a block off and reseting all our flags
   //to resart our search.
   if(reachedCollectionPoint)
@@ -97,14 +98,9 @@ Result DropOffController::DoWork() {
       {
 		  cout<<"TestTimeout:TestStatusA: to next process"<<endl;
 	    result.type = behavior;
-	    if(!seenEnoughCenterTags)
-	    {
-			result.b = FAILED;
-		}
-		else
-		{
+	    
 		    result.b = nextProcess;
-		}
+		    //cout<<"TestTimeout: next..."<<endl;
         result.reset = true;
         targetHeld = false; //qilu 02/2018
         return result;       
@@ -112,12 +108,12 @@ Result DropOffController::DoWork() {
       else
       {
         finalInterrupt = true;
-        cout << "finalInterrupt, true" << endl;
+        cout << "TestTimeout: finalInterrupt, true" << endl;
       }
     }
     else if (timerTimeElapsed >= 0.1)
     {
-		cout<<"TestStatusA: dropoff cube..."<<endl;
+		//cout<<"TestTimeout: dropoff cube..."<<endl;
       isPrecisionDriving = true;
       result.type = precisionDriving;
 
@@ -133,7 +129,7 @@ Result DropOffController::DoWork() {
 
   // Calculates the shortest distance to the center location from the current location
   double distanceToCenter = hypot(this->centerLocation.x - this->currentLocation.x, this->centerLocation.y - this->currentLocation.y);
-
+   cout<<"TestTimeout: distanceToCenter="<<distanceToCenter<<endl;
   //check to see if we are driving to the center location or if we need to drive in a circle and look.
   if (distanceToCenter > collectionPointVisualDistance && !circularCenterSearching && (count == 0)) {
     // Sets driving mode to waypoint
@@ -152,8 +148,9 @@ Result DropOffController::DoWork() {
     return result;
 
   }
-  else if (timerTimeElapsed >= 2)//spin search for center
+  else if (timerTimeElapsed >= 2)//spin search for centerve up dropoff....
   {
+	  cout<<"TestTimeout: spin search for center"<<endl;
     Point nextSpinPoint;
 
     //sets a goal that is 60cm from the centerLocation and spinner
@@ -176,7 +173,7 @@ Result DropOffController::DoWork() {
     //center since we have a block with us and the above point is
     //greater than collectionPointVisualDistance from the center.
 
-    //returnTimer = current_time; //qilu 03/2018 comment out for timeout of the dropoff
+    returnTimer = current_time; //qilu 03/2018 comment out for timeout of the dropoff
     //timerTimeElapsed = 0; //qilu 03/2018
 
   }
@@ -187,7 +184,7 @@ Result DropOffController::DoWork() {
 
   //reset lastCenterTagThresholdTime timout timer to current time
   if ((!centerApproach && !seenEnoughCenterTags) || (count > 0 && !seenEnoughCenterTags)) {
-     cout<<"reset time 1"<<endl;
+     //cout<<"reset time 1"<<endl;
     lastCenterTagThresholdTime = current_time;
 
   }
@@ -270,7 +267,7 @@ Result DropOffController::DoWork() {
     long int elapsed = current_time - lastCenterTagThresholdTime;
     float timeSinceSeeingEnoughCenterTags = elapsed/1e3; // Convert from milliseconds to seconds
 
-    cout<<"cout="<<count<<"; timeSinceSeeingEnoughCenterTags="<<timeSinceSeeingEnoughCenterTags<<endl;
+    //cout<<"cout="<<count<<"; timeSinceSeeingEnoughCenterTags="<<timeSinceSeeingEnoughCenterTags<<endl;
     //we have driven far enough forward to have passed over the circle.
     if (count < 5 && seenEnoughCenterTags && timeSinceSeeingEnoughCenterTags > dropDelay) {
       centerSeen = false;

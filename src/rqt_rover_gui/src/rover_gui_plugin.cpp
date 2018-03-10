@@ -1829,10 +1829,10 @@ void RoverGUIPlugin::buildSimulationButtonEventHandler()
 	    QPointF rover_positions[16] =
         {
         /* cardinal rovers: North, East, South, West */
-        QPointF(0.0,  2.0), // 2.0 = distance_from_center_to_edge_of_collection_zone
-        QPointF(0.0, -2.0),          
-        QPointF(-2.0,  0.0),           
-        QPointF(2.0,  0.0), 
+        QPointF(0.01,  2.0), // 2.0 = distance_from_center_to_edge_of_collection_zone
+        QPointF(0.01, -2.0),          
+        QPointF(-2.0,  0.01),           
+        QPointF(2.0,  0.01), 
         
         /* corner rovers: Northeast, Northwest, Southwest, Southeast */
         QPointF(-1.414, 1.414), //the distance to the center is still 2.0

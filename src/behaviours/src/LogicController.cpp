@@ -131,7 +131,7 @@ Result LogicController::DoWork()
       }
       if(result.b == FAILED)
       {  
-		 //cout<<"SwitchStatus: switch to site fidelity"<<endl;
+		 cout<<"SwitchStatus: switch to site fidelity"<<endl;
 		  processState = PROCESS_STATE_SITE_FIDELITY;
 		  }
       
