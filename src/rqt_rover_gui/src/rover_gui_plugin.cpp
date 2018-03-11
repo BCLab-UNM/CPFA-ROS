@@ -88,7 +88,7 @@ namespace rqt_rover_gui
     barrier_clearance = 0.5; // Used to prevent targets being placed to close to walls
 
     map_data = new MapData();
-    rng = new random_numbers::RandomNumberGenerator();
+    
   }
 
   void RoverGUIPlugin::initPlugin(qt_gui_cpp::PluginContext& context)
@@ -1517,12 +1517,19 @@ void RoverGUIPlugin::allAutonomousButtonEventHandler()
             ui.simulation_timer_combobox->setStyleSheet("color: grey; border:2px solid grey;");
         }
     }
-     score_data_filename += "_"+to_string((int)getMinutes(current_simulated_time_in_seconds))+"_"+to_string((int)getSeconds(current_simulated_time_in_seconds))+"_"+to_string((int)rng->uniformReal(0.0, 10000))+".txt";
-        score_data.open("results/"+score_data_filename);
-        
-        collision_data_filename += "_"+to_string((int)getMinutes(current_simulated_time_in_seconds))+"_"+to_string((int)getSeconds(current_simulated_time_in_seconds))+"_"+to_string((int)rng->uniformReal(0.0, 10000))+".txt";
-        collision_data.open("results/"+collision_data_filename);
+    /* initialize random seed: */
+    srand (time(NULL));
 
+    /* generate number between 0 and 1000: */
+    int randNum = rand() % 5000;
+  
+    score_data_filename += "_"+to_string(randNum)+".txt";
+    score_data.open("results/"+score_data_filename);
+        
+    collision_data_filename += "_"+to_string(randNum)+".txt";
+    collision_data.open("results/"+collision_data_filename);
+        
+        
     // Experiment Timer END
 }
 

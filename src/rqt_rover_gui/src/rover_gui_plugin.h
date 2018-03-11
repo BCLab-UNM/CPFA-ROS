@@ -54,7 +54,6 @@
 #include "swarmie_msgs/Waypoint.h" // For waypoint commands
 #include "swarmie_msgs/RoverInfo.h"
 #include <fstream>
-#include <random_numbers/random_numbers.h>
 
 //ROS msg types
 //#include "rover_onboard_target_detection/ATag.h"
@@ -309,8 +308,6 @@ namespace rqt_rover_gui {
     ros::Duration disconnect_threshold;
 
     MapData* map_data;
-    random_numbers::RandomNumberGenerator* rng;
-  
 
     // Limit the length of log messages in characters to prevent slowdowns when lots of data is added
     size_t max_info_log_length;
