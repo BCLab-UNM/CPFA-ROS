@@ -99,7 +99,7 @@ void ObstacleController::avoidCollectionZone() {
 
 
 Result ObstacleController::DoWork() {
- cout<<"TestStatusA: ObstacleController::DoWork()..."<<endl;
+ //cout<<"TestStatusA: ObstacleController::DoWork()..."<<endl;
   clearWaypoints = true;
   set_waypoint = true;
   result.PIDMode = CONST_PID;
@@ -123,7 +123,7 @@ Result ObstacleController::DoWork() {
     result.PIDMode = FAST_PID; //use fast pid for waypoints
     Point forward;            //waypoint is directly ahead of current heading
     //if(haveAvoidCollectionZone)// if seen collection zone in the past and avoid it now, sample a further location
-    if(GetCPFAState() == reached_nest)
+    if(GetCPFAState() == return_to_nest)
     {
 		cout<<"TestStatusA: ****sample another location to avoid collection disk..."<<endl;
 		//double stepSize = rng->uniformReal(1.0, 2.0);

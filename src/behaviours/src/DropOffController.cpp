@@ -130,13 +130,9 @@ Result DropOffController::DoWork() {
 
   // Calculates the shortest distance to the center location from the current location
   double distanceToCenter = hypot(this->centerLocation.x - this->currentLocation.x, this->centerLocation.y - this->currentLocation.y);
-   cout<<"TestTimeout: distanceToCenter="<<distanceToCenter<<endl;
-   if(distanceToCenter < 1.5)
-   {
-	   SetCPFAState(reached_nest);
-	   }
+   cout<<"TestTimeout: distanceToCenter="<<distanceToCenter<<endl; 
 	   
-  if(timerTimeElapsed > 30)
+  if(timerTimeElapsed > 30 && !seenEnoughCenterTags)
   {
 	  cout<<"TestStatusA: timeout and reset to center *****"<<endl;
 	  Point centerPoint;
@@ -175,7 +171,8 @@ Result DropOffController::DoWork() {
     isPrecisionDriving = false;
     // Reset elapsed time
     timerTimeElapsed = 0;
-
+    SetCPFAState(return_to_nest);
+    cout<<"TestStatusA: dropoff: set status to reached nest..."<<endl;
     return result;
 
   }
