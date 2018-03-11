@@ -140,8 +140,8 @@ Result DropOffController::DoWork() {
   {
 	  cout<<"TestStatusA: timeout and reset to center *****"<<endl;
 	  Point centerPoint;
-	  centerPoint.x = 0;
-      centerPoint.y = 0;
+	  centerPoint.x = 2.0 * cos(currentLocation.theta);
+      centerPoint.y = 2.0 * sin(currentLocation.theta);    
 	  
 	  returnTimer = current_time;
 	  
@@ -356,6 +356,13 @@ Result DropOffController::DoWork() {
 
   return result;
 }
+
+void DropOffController::SetRoverInitLocation(Point location) 
+{
+  roverInitLocation = location;
+  cout<<"TestStatus: rover init location=["<<roverInitLocation.x<<","<<roverInitLocation.y<<"]"<<endl;
+}
+
 
 // Reset to default values
 void DropOffController::Reset() {

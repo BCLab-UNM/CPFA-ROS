@@ -24,7 +24,8 @@ public:
   void SetCenterLocation(Point center);
   void SetCurrentLocation(Point current);
   void SetTargetPickedUp();
-
+  void SetRoverInitLocation(Point location);
+  
   void SetBlockBlockingUltrasound(bool blockBlock);
   void SetTagData(std::vector<Tag> tags);
   bool HasTarget() {return targetHeld;}
@@ -88,6 +89,8 @@ private:
   Point centerLocation;
   Point currentLocation;
   //Point site_fidelity_location; //11/2017
+  
+  Point roverInitLocation;
   
   //Time since modeTimer was started, in seconds
   float timerTimeElapsed;
