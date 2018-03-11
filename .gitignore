@@ -2,6 +2,7 @@
 \#*#
 build
 devel
+results
 **/CMakeLists.txt.user*
 *.swp
 logs

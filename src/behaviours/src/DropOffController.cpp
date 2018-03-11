@@ -156,6 +156,7 @@ Result DropOffController::DoWork() {
     isPrecisionDriving = false;
     // Reset elapsed time
     timerTimeElapsed = 0;
+    circularCenterSearching = true;
 
     return result;	  
   }
