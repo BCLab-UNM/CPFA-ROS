@@ -72,13 +72,14 @@ Result DropOffController::DoWork() {
     long int elapsed = current_time - returnTimer;
     timerTimeElapsed = elapsed/1e3; // Convert from milliseconds to seconds
   }
-  /*else
+  else
   {
 	  returnTimer = current_time;
 	  timerTimeElapsed = 0;
-	  }*/
-  //cout<<"TestTimeout:TestStatusA: timerTimeElapsed="<<timerTimeElapsed<<endl;
-  //cout<<"TestTimeout: seenEnoughCenterTags="<<seenEnoughCenterTags<<endl;
+	  }
+  cout<<"TestTimeout:TestStatusA: timerTimeElapsed="<<timerTimeElapsed<<endl;
+  
+    //cout<<"TestTimeout: seenEnoughCenterTags="<<seenEnoughCenterTags<<endl;
   //cout<<"TestTimeout: count="<<count<<endl;
   /*(if(timerTimeElapsed > 60 && !seenEnoughCenterTags)//timeout the dropoff. If the rover can not find the collection disk in certain time, then give up. 
   {
@@ -134,6 +135,31 @@ Result DropOffController::DoWork() {
    {
 	   SetCPFAState(reached_nest);
 	   }
+	   
+  if(timerTimeElapsed > 25)
+  {
+	  cout<<"TestStatusA: timeout and reset to center *****"<<endl;
+	  Point centerPoint;
+	  centerPoint.x = 0;
+      centerPoint.y = 0;
+	  
+	  returnTimer = current_time;
+	  
+	  result.type = waypoint;
+    // Clears all the waypoints in the vector
+    result.wpts.waypoints.clear();
+    // Adds the current location's point into the waypoint vector
+    result.wpts.waypoints.push_back(centerPoint);
+    // Do not start following waypoints
+    startWaypoint = false;
+    // Disable precision driving
+    isPrecisionDriving = false;
+    // Reset elapsed time
+    timerTimeElapsed = 0;
+
+    return result;	  
+  }
+
   //check to see if we are driving to the center location or if we need to drive in a circle and look.
   if (distanceToCenter > collectionPointVisualDistance && !circularCenterSearching && (count == 0)) {
     // Sets driving mode to waypoint
