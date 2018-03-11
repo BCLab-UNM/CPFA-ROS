@@ -136,7 +136,7 @@ Result DropOffController::DoWork() {
 	   SetCPFAState(reached_nest);
 	   }
 	   
-  if(timerTimeElapsed > 25)
+  if(timerTimeElapsed > 30)
   {
 	  cout<<"TestStatusA: timeout and reset to center *****"<<endl;
 	  Point centerPoint;
@@ -204,7 +204,7 @@ Result DropOffController::DoWork() {
     //center since we have a block with us and the above point is
     //greater than collectionPointVisualDistance from the center.
 
-    returnTimer = current_time; //qilu 03/2018 comment out for timeout of the dropoff
+    //returnTimer = current_time; //qilu 03/2018 comment out for timeout of the dropoff
     //timerTimeElapsed = 0; //qilu 03/2018
 
   }
