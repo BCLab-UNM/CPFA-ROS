@@ -172,7 +172,7 @@ Result DropOffController::DoWork() {
     // Reset elapsed time
     timerTimeElapsed = 0;
     SetCPFAState(return_to_nest);
-    cout<<"TestStatusA: dropoff: set status to reached nest..."<<endl;
+    cout<<"TestStatusA: dropoff: set status to return to nest..."<<endl;
     return result;
 
   }
@@ -393,6 +393,7 @@ void DropOffController::Reset() {
   targetHeld = false;
   startWaypoint = false;
   first_center = true;
+  cpfa_state = start_state;
   
   
 

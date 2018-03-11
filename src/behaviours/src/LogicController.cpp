@@ -343,9 +343,9 @@ void LogicController::ProcessData() {
     PrioritizedController{-1, (Controller*)(&obstacleController)}  
     };
   }
-  else if(processState == PROCESS_STATE_SENSE_DENSITY)
+  else if(processState == PROCESS_STATE_RETURN_NEST)
   {
-	  cout<<"PROCESS_STATE_SENSE_DENSITY..."<<endl;
+	  cout<<"PROCESS_STATE_RETURN_NEST..."<<endl;
 	  prioritizedControllers = {
     PrioritizedController{10, (Controller*)(&obstacleController)},
     PrioritizedController{5, (Controller*)(&rangeController)},
@@ -476,13 +476,8 @@ void LogicController::controllerInterconnect()
 		if(searchController.GetCPFAState() == return_to_nest)
 		{
 			obstacleController.SetCPFAState(return_to_nest);
-		   cout<<"TestStatus: obstacle set to return to nest..."<<obstacleController.GetCPFAState()<<endl;
+		   cout<<"TestStatusA: obstacle set to return to nest..."<<obstacleController.GetCPFAState()<<endl;
 		}
-		else if(dropOffController.GetCPFAState() == return_to_nest)
-		{
-			obstacleController.SetCPFAState(return_to_nest);
-			cout<<"TestStatusA: obstacle set to return to nest by dropoff..."<<endl;
-			}
 		else
 		{
 		    searchController.SetCPFAState(avoid_obstacle);
@@ -496,11 +491,24 @@ void LogicController::controllerInterconnect()
 		cout<<"TestStatusSwitchStatus: interconnect, set reached_nest..."<<endl;
 		searchController.SetCPFAState(reached_nest);
 		//searchController.SetReachedWaypoint(true);
-		//obstacleController.SetCPFAState(start_state);
+		obstacleController.SetCPFAState(start_state);
 	}
     
   }
   
+  if (processState == PROCESS_STATE_RETURN_NEST)
+  {
+	  if(dropOffController.GetCPFAState() == return_to_nest)
+	  {
+		  if(obstacleController.HasWork()) 
+		  {
+			  obstacleController.SetCPFAState(return_to_nest);
+		      cout<<"TestStatusA: obstacle set to return to nest by dropoff..."<<endl;
+		  }
+		
+	  }
+  }		
+			
   if(pheromoneController.SenseCompleted())
   {
 	  local_resource_density = pheromoneController.GetResourceDensity();

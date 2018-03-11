@@ -18,11 +18,12 @@ ObstacleController::ObstacleController()
 //note, not a full reset as this could cause a bad state
 //resets the interupt and knowledge of an obstacle or obstacle avoidance only.
 void ObstacleController::Reset() {
+	cout<<"TestStatusA: ObstacleCTRL Reset()"<<endl;
   obstacleAvoided = true;
   obstacleDetected = false;
   obstacleInterrupt = false;
   delay = current_time;
-  SetCPFAState(start_state);
+  //SetCPFAState(start_state);
 }
 
 // Avoid crashing into objects detected by the ultraound
@@ -114,6 +115,8 @@ Result ObstacleController::DoWork() {
   }
    //cout<<"TestStatusA: haveAvoidCollectionZone="<<haveAvoidCollectionZone<<endl;
   //if an obstacle has been avoided
+  cout<<"TestStatusA: GetCPFAState()="<<GetCPFAState()<<endl;
+  cout<<"TestStatusA: can_set_waypoint="<<can_set_waypoint<<endl;
   if (can_set_waypoint) {
     can_set_waypoint = false; //only one waypoint is set
     set_waypoint = false;
@@ -123,15 +126,16 @@ Result ObstacleController::DoWork() {
     result.PIDMode = FAST_PID; //use fast pid for waypoints
     Point forward;            //waypoint is directly ahead of current heading
     //if(haveAvoidCollectionZone)// if seen collection zone in the past and avoid it now, sample a further location
-    if(GetCPFAState() == return_to_nest)
+    if(GetCPFAState() == return_to_nest || GetCPFAState() == reached_nest)
     {
 		cout<<"TestStatusA: ****sample another location to avoid collection disk..."<<endl;
 		//double stepSize = rng->uniformReal(1.0, 2.0);
-		forward.x = currentLocation.x + (0.1 * cos(currentLocation.theta));
-        forward.y = currentLocation.y + (0.1 * sin(currentLocation.theta));
+		forward.x = currentLocation.x + (0.2 * cos(currentLocation.theta));
+        forward.y = currentLocation.y + (0.2 * sin(currentLocation.theta));
 	}
     else
     {
+		cout<<"TestStatusA: ****normal sample wpt..."<<endl;
 		forward.x = currentLocation.x + (0.5 * cos(currentLocation.theta));
         forward.y = currentLocation.y + (0.5 * sin(currentLocation.theta));
     }
@@ -171,7 +175,7 @@ void ObstacleController::ProcessData() {
     phys= false;
     if (!obstacleAvoided)
     {
-		cout<<"TestStatus: obstacle not avoid..."<<endl;
+		cout<<"TestStatusA: obstacle not avoid..."<<endl;
       can_set_waypoint = true;
     }
   }
@@ -214,6 +218,8 @@ void ObstacleController::ProcessData() {
   //if physical obstacle or collection zone visible
   if (collection_zone_seen || phys)
   {
+	  cout<<"TestStatusA: collection_zone_seen"<<collection_zone_seen<<endl;
+	  cout<<"TestStatusA: phys="<<phys<<endl;
     obstacleDetected = true;
     obstacleAvoided = false;
     can_set_waypoint = false;
@@ -305,9 +311,9 @@ bool ObstacleController::ShouldInterrupt() {
       //cout<<"TestStatus: obstacle interrupt: GetCPFAState()="<<GetCPFAState()<<endl;
       if(GetCPFAState() == return_to_nest)
       {
-		  cout<<"TestStatus: Obstacle avoid and set to reach nest... interrupt...true"<<endl;
+		  cout<<"TestStatusA: Obstacle avoid and set to reach nest... interrupt...true"<<endl;
 		  SetCPFAState(reached_nest);
-		  }
+	  }
       
       
     return true;
