@@ -22,22 +22,14 @@ public:
   //internal state and data
   virtual Result DoWork() = 0;
 
-  /*
-     * The base UpdataData() method should not be called- it serves as a
-     * reference for the interface each derived Controller must implement.
-     *
-     * Your Controller must define one or more UpdateData methods that
-     * take at least one parameter used in updating its internal state.
-     *
-     * void UpdateData(...) { <Set internal variables> }
-     */
-
   //Returns whether or not an interrupt must be thrown
   virtual bool ShouldInterrupt() = 0;
 
   //Returns whether or not a controller should be polled for a Result
   virtual bool HasWork() = 0;
 
+  virtual void SetCPFAState(CPFAState state) = 0;
+  virtual CPFAState GetCPFAState() = 0;
 protected:
 
   //Looks at external data and determines if an interrupt must be thrown
@@ -46,3 +38,4 @@ protected:
 };
 
 #endif // CONTROLLER_H
+

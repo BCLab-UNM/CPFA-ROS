@@ -1,44 +1,83 @@
 #include "PID.h"
 
-PID::PID() {
+using namespace std;
 
-}
+PID::PID() {   }
 
-PID::PID(PIDConfig config){
+PID::PID(PIDConfig config)
+{
   this->config = config;
   integralErrorHistArray.resize(config.integralErrorHistoryLength, 0.0);
 }
 
-float PID::PIDOut(float calculatedError, float setPoint) {
+float PID::PIDOut(float calculatedError, float setPoint)
+{
 
-  if (Error.size() >= config.errorHistLength) {
+  //cout << "ErrorSize:  " << Error.size() << endl;
+
+  if (Error.size() >= config.errorHistLength)
+  {
     Error.pop_back();
   }
+
   Error.insert(Error.begin(), calculatedError); //insert new error into vector for history purposes.
 
   float P = 0; //proportional yaw output
   float I = 0; //Integral yaw output
   float D = 0; //Derivative yaw output
 
-  if (setPoint != prevSetPoint && config.resetOnSetpoint) {
+  if (setPoint != prevSetPoint && config.resetOnSetpoint)
+  {
     Error.clear();
     integralErrorHistArray.clear();
     prevSetPoint = setPoint;
     step = 0;
     integralErrorHistArray.resize(config.integralErrorHistoryLength, 0.0);
   }
+
   //feed forward
-  float FF = config.feedForwardMultiplier * setPoint;
+  //float FF = config.feedForwardMultiplier * setPoint;
+    float FF = (pow(setPoint, 3) * config.feedForwardMultiplier) + (setPoint * (config.feedForwardMultiplier / 4.6));
+
+    if (!config.alwaysIntegral && Error.size() > 1)
+    {
+        //check the change of sign to see if the rover overshot its goal
+        float sign_change = Error[0] / Error[1];
+        //if the sign has changed between the previous error and the current error
+        if(sign_change < 0)
+        {
+            //reset the integral history and values
+            integralErrorHistArray.clear();
+            integralErrorHistArray.resize(config.integralErrorHistoryLength, 0.0);
+            I = 0;
+            step = 0;
+
+
+            //Store error zero into temp variable
+            float error_zero = Error[0];
+
+            //clear the error history in order to prevent movement in the incorrect direction because of the sign change
+            Error.clear();
+
+            //put back into vector
+            Error.push_back(error_zero);
+        }
+    }
+
+
 
   //error averager
   float avgError = 0;
-  if (Error.size() >= config.errorHistLength) {
-    for (int i = 0; i < config.errorHistLength; i++) {
+  if (Error.size() >= config.errorHistLength)
+  {
+    for (int i = 0; i < config.errorHistLength; i++)
+    {
       avgError += Error[i];
     }
     avgError /= config.errorHistLength;//config.errorHistLength;
   }
-  else {
+  else
+  {
     avgError = calculatedError;
   }
 
@@ -102,23 +141,33 @@ float PID::PIDOut(float calculatedError, float setPoint) {
   }
 
   //Derivative
-  if (fabs(P) < config.antiWindup)
+  if (Error.size() < 4 )//(fabs(P) < config.antiWindup)
   {
     float avgPrevError = 0;
-    for (int i = 1; i < Error.size(); i++) {
+    for (int i = 1; i < Error.size(); i++)
+    {
       avgPrevError += Error[i];
     }
-    if (Error.size() > 1) {
+    if (Error.size() > 1)
+    {
       avgPrevError /= Error.size()-1;
     }
-    else {
+    else
+    {
       avgPrevError = Error[0];
     }
 
-    D = config.Kd * (((1-config.derivativeAlpha)*Error[0]) - (config.derivativeAlpha * avgPrevError));
+
+    D = config.Kd * ((Error[0]+Error[1])/2 - (Error[2]+Error[3])/2) * hz;
+
+    //cout << "PID Error[0]:  " << Error[0] << ", Error[1]:  " << Error[1] << ", Error[2]:  " << Error[2] << ", Error[3]:  " << Error[3] << endl;
+
   }
 
   float PIDOut = P + I + D + FF;
+
+  //cout << "PID P:  " << P << ",  I:  " << I << ", D:  " << D << ", FF:  " << FF << endl;
+
   if (PIDOut > config.satUpper) //cap vel command
   {
     PIDOut = config.satUpper;
