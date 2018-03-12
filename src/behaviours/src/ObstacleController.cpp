@@ -130,8 +130,8 @@ Result ObstacleController::DoWork() {
     {
 		cout<<"TestStatusA: ****sample another location to avoid collection disk..."<<endl;
 		//double stepSize = rng->uniformReal(1.0, 2.0);
-		forward.x = currentLocation.x + (0.1 * cos(currentLocation.theta));
-        forward.y = currentLocation.y + (0.1 * sin(currentLocation.theta));
+		forward.x = currentLocation.x + (0.2 * cos(currentLocation.theta));
+        forward.y = currentLocation.y + (0.2 * sin(currentLocation.theta));
 	}
     else
     {
