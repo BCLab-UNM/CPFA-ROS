@@ -136,8 +136,8 @@ Result DropOffController::DoWork() {
   {
 	  cout<<"TestStatusA: timeout and reset to center *****"<<endl;
 	  Point centerPoint;
-	  centerPoint.x = 2.0 * cos(currentLocation.theta);
-      centerPoint.y = 2.0 * sin(currentLocation.theta);    
+	  centerPoint.x = 2.0 * cos(roverInitLocation.theta);
+      centerPoint.y = 2.0 * sin(roverInitLocation.theta);    
 	  
 	  returnTimer = current_time;
 	  
