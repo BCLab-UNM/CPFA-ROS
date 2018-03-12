@@ -343,9 +343,9 @@ void LogicController::ProcessData() {
     PrioritizedController{-1, (Controller*)(&obstacleController)}  
     };
   }
-  else if(processState == PROCESS_STATE_RETURN_NEST)
+  else if(processState == PROCCESS_STATE_RETURN_NEST)
   {
-	  cout<<"PROCESS_STATE_RETURN_NEST..."<<endl;
+	  cout<<"PROCCESS_STATE_RETURN_NEST..."<<endl;
 	  prioritizedControllers = {
     PrioritizedController{10, (Controller*)(&obstacleController)},
     PrioritizedController{5, (Controller*)(&rangeController)},
@@ -496,7 +496,7 @@ void LogicController::controllerInterconnect()
     
   }
   
-  if (processState == PROCESS_STATE_RETURN_NEST)
+  if (processState == PROCCESS_STATE_RETURN_NEST)
   {
 	  if(dropOffController.GetCPFAState() == return_to_nest)
 	  {
