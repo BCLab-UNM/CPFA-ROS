@@ -17,10 +17,6 @@ JoystickGripperInterface::JoystickGripperInterface(const JoystickGripperInterfac
     this->gripperWristAnglePublisher        = source.gripperWristAnglePublisher;
     this->gripperFingerAnglePublisher       = source.gripperFingerAnglePublisher;
 
-    // QTimer state
-    this->joystickGripperWristControlTimer  = source.joystickGripperWristControlTimer;
-    this->joystickGripperFingerControlTimer = source.joystickGripperFingerControlTimer;
-
     // Wrist state
     this->wristAngle                        = source.wristAngle;
     this->wristAngleChangeRate              = source.wristAngleChangeRate;
@@ -36,8 +32,8 @@ JoystickGripperInterface::JoystickGripperInterface(const JoystickGripperInterfac
     this->fingerJoystickVector              = source.fingerJoystickVector;
 
     // Other
-    this->commandReapplyRate                = source.commandReapplyRate;
-    this->stickCenterTolerance              = source.stickCenterTolerance;
+    //this->commandReapplyRate                = source.commandReapplyRate;
+    //this->stickCenterTolerance              = source.stickCenterTolerance;
 
     this->nh                                = source.nh;
 }
@@ -48,14 +44,6 @@ JoystickGripperInterface::JoystickGripperInterface(ros::NodeHandle nh, string ro
     ready = false;
 
     this->nh = nh;
-
-    // Joystick auto repeat for gripper control
-    joystickGripperWristControlTimer = new QTimer(this);
-    joystickGripperFingerControlTimer = new QTimer(this);
-
-    // Connect the command timers to their handlers
-    connect(joystickGripperWristControlTimer, SIGNAL(timeout()), this, SLOT(joystickGripperWristControlTimerEventHandler()));
-    connect(joystickGripperFingerControlTimer, SIGNAL(timeout()), this, SLOT(joystickGripperFingerControlTimerEventHandler()));
 
     // Initialize gripper angles in radians
     wristAngle = 0;
@@ -79,9 +67,9 @@ JoystickGripperInterface::JoystickGripperInterface(ros::NodeHandle nh, string ro
     fingerJoystickVector = 0.0;
     wristJoystickVector = 0.0;
 
-    commandReapplyRate = 100; // in milliseconds
+    //commandReapplyRate = 100; // in milliseconds
 
-    stickCenterTolerance = 0.05; // How close to zero does output from the joystick have to be for
+    //stickCenterTolerance = 0.05; // How close to zero does output from the joystick have to be for
     // us to consider the user to have centered the stick
 
     // Setup the gripper angle command publishers
@@ -103,42 +91,14 @@ void JoystickGripperInterface::moveWrist(float vec) {
 
     // Check whether the stick is near the center deadzone - if so stop issuing movement commands
     // if not apply the movement indicated by vec
-    if (fabs(wristJoystickVector) < stickCenterTolerance) {
-        joystickGripperWristControlTimer->stop();
+/*    if (fabs(wristJoystickVector) < stickCenterTolerance) {
+
+        emit sendJoystickGripperWristControlTimerStop();
     } else {
         // The event handler calculates the new angle for the wrist and sends it to the gripper wrist control topic
-        joystickGripperWristControlTimer->start(commandReapplyRate);
-    }
+        emit sendJoystickGripperWristControlTimerStart(commandReapplyRate);
 
-
-}
-
-
-// Receives input from the joystick representing the direction and speed with which to move the fingers
-// Records that desired motion and begins the command timer that cacluates and sends the movement commands
-// to the appropriate ROS topics.
-void JoystickGripperInterface::moveFingers(float vec){
-    if (!ready) throw JoystickGripperInterfaceNotReadyException();
-
-    fingerJoystickVector = vec;
-
-    // Check whether the stick is near the center deadzone - if so stop issuing movement commands
-    // if not apply the movement indicated by vec
-    if (fabs(fingerJoystickVector) < stickCenterTolerance) {
-        joystickGripperFingerControlTimer->stop();
-    } else {
-        // The event handler calculates the new angle for the wrist and sends it to the gripper wrist control topic
-        joystickGripperFingerControlTimer->start(commandReapplyRate);
-    }
-
-
-}
-
-// Update and broadcast gripper wrist commands
-// Called by event timer so the commands continue to be generated even when the joystick
-// is not moving
-void JoystickGripperInterface::joystickGripperWristControlTimerEventHandler(){
-
+    }*/
     // Calculate the new wrist angle to request
     wristAngle += wristJoystickVector*wristAngleChangeRate;
 
@@ -156,11 +116,36 @@ void JoystickGripperInterface::joystickGripperWristControlTimerEventHandler(){
 
 }
 
+
+// Receives input from the joystick representing the direction and speed with which to move the fingers
+// Records that desired motion and begins the command timer that cacluates and sends the movement commands
+// to the appropriate ROS topics.
+void JoystickGripperInterface::moveFingers(float vec){
+    if (!ready) throw JoystickGripperInterfaceNotReadyException();
+
+    fingerJoystickVector = vec;
+    // Calculate the new wrist angle to request
+    fingerAngle += fingerJoystickVector*fingerAngleChangeRate;
+
+    // Don't exceed the min and max angles
+    if (fingerAngle > fingerAngleMax) fingerAngle = fingerAngleMax;
+    else if (fingerAngle < fingerAngleMin) fingerAngle = fingerAngleMin;
+
+    // If the finger angle is small enough to use negative exponents set to zero
+    // negative exponents confuse the downstream conversion to string
+    if (fabs(fingerAngle) < 0.001) fingerAngle = 0.0f;
+
+    // Publish the finger angle commands
+    std_msgs::Float32 angleMsg;
+    angleMsg.data = fingerAngle;
+    gripperFingerAnglePublisher.publish(angleMsg);
+}
+
 void JoystickGripperInterface::changeRovers(string roverName)
 {
    ready = false;
-    joystickGripperWristControlTimer->stop();
-    joystickGripperFingerControlTimer->stop();
+    //joystickGripperWristControlTimer->stop();
+    //joystickGripperFingerControlTimer->stop();
 
     gripperWristAnglePublisher.shutdown();
     gripperFingerAnglePublisher.shutdown();
@@ -185,7 +170,7 @@ void JoystickGripperInterface::changeRovers(string roverName)
 // Update and broadcast gripper commands for the fingers
 // Called by event timer so the commands continue to be generated even when the joystick
 // is not moving
-void JoystickGripperInterface::joystickGripperFingerControlTimerEventHandler(){
+/*void JoystickGripperInterface::joystickGripperFingerControlTimerEventHandler(){
     // Calculate the new wrist angle to request
     fingerAngle += fingerJoystickVector*fingerAngleChangeRate;
 
@@ -203,14 +188,14 @@ void JoystickGripperInterface::joystickGripperFingerControlTimerEventHandler(){
     angleMsg.data = fingerAngle;
     gripperFingerAnglePublisher.publish(angleMsg);
 
-}
+}*/
 
 // Clean up the publishers when this object is destroyed
 JoystickGripperInterface::~JoystickGripperInterface(){
     ready = false;
 
-    if(joystickGripperWristControlTimer) delete joystickGripperWristControlTimer;
-    if(joystickGripperFingerControlTimer) delete joystickGripperFingerControlTimer;
+    //if(joystickGripperWristControlTimer) delete joystickGripperWristControlTimer;
+    //if(joystickGripperFingerControlTimer) delete joystickGripperFingerControlTimer;
 
     gripperWristAnglePublisher.shutdown();
     gripperFingerAnglePublisher.shutdown();

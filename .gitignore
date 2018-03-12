@@ -2,7 +2,12 @@
 \#*#
 build
 devel
+results
 **/CMakeLists.txt.user*
 *.swp
 logs
-.catkin_tools/*
+
+.catkin_tools
+
+
+
