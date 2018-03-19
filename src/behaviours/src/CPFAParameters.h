@@ -44,7 +44,7 @@ struct CPFAParameters {
   const float rate_of_pheromone_decay = 0.0025; //range [0, 1];
   */
   //For clustered
-  const float probability_of_switching_to_searching = 0.015;
+  const float probability_of_switching_to_searching = 0.01;
   const float probability_of_returning_to_nest = 0.01;
   // In radians
   const float uninformed_search_variation = 0.1; //range [0, pi]
