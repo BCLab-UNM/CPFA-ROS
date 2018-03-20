@@ -197,7 +197,8 @@ padding: 1px;</string>
       </rect>
      </property>
      <property name="styleSheet">
-      <string notr="true">border-color: rgb(255, 255, 255);</string>
+      <string notr="true">border-color: rgb(255, 255, 255);
+background-color: rgb(255, 255, 255);</string>
      </property>
      <property name="frameShape">
       <enum>QFrame::StyledPanel</enum>
