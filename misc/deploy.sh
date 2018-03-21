@@ -94,7 +94,7 @@ Unpack_Run()
 		sleep 2;			
 		echo 'Starting ROS nodes on swarmie at $roverIP with master at $hostName';
 		sleep 2;
-		cd $dirName/misc/;
+		cd /UNM_Research/$dirName/misc/;
                 ./rover_onboard_node_launch.sh $hostName $calFile;
 		exit 1;
 		/bin/bash;' exec $SHELL"
@@ -108,7 +108,7 @@ Run()
 	#ssh and run script from rover --WORKS
 	gnome-terminal --tab -x bash -c "echo -n -e '\033]0;$roverIP\007';
 		ssh -t swarmie@$roverIP 'echo 'Running $roverIP';
-    cd $dirName/misc;
+    cd ~/UNM_Research/CPFA-ROS/misc;
 		./rover_onboard_node_launch.sh $hostName $calFile;
 		exit 1;
 		exit 1;
@@ -242,12 +242,12 @@ if [ "$2" == "-S" ]; then
                             echo ""
                             Run
                             needsReboot=false
-                            sleep 10
+                            sleep 15
                     else
                             #Transfer/Unpack/Run
                             Transfer
                             Unpack_Run
-                            sleep 10
+                            sleep 15
                     fi
             #if not on the network
             else
@@ -289,13 +289,13 @@ if [ "$2" == "-S" ]; then
                         echo ""
                         Run
                         needsReboot=false
-                        sleep 10
+                        sleep 15
                     else
                         #Transfer/Unpack/Run
                         cd ~
                         Transfer
                         Unpack_Run
-                        sleep 10
+                        sleep 15
                         cd -
                     fi
 
@@ -333,11 +333,11 @@ if [ "$2" == "-S" ]; then
                     Reboot
                     echo ""
                     Run
-                    sleep 10
+                    sleep 15
                     needsReboot=false
                 else
                     Run
-                    sleep 10
+                    sleep 15
                 fi
 
             #if not on the network
@@ -448,12 +448,12 @@ elif [ $OPTION == "-G" ]; then
 					echo ""
 					Run
 					needsReboot=false
-					sleep 10
+					sleep 15
 				else
 					#Transfer/Unpack/Run
 					Transfer
 					Unpack_Run
-					sleep 10	
+					sleep 15	
 				fi	
 			#if not on the network
 			else
@@ -553,12 +553,12 @@ elif [ $OPTION == "-L" ]; then
 						echo ""
 						Run
 						needsReboot=false
-						sleep 10
+						sleep 15
 					else
 						#Transfer/Unpack/Run
 						Transfer
 						Unpack_Run
-						sleep 10
+						sleep 15
 					fi
 	
 				#if not on the network
@@ -648,11 +648,11 @@ elif [ $OPTION == "-R" ]; then
 						Reboot
 						echo ""
 						Run
-						sleep 10
+						sleep 15
 						needsReboot=false
 					else
 						Run
-						sleep 10
+						sleep 15
 					fi
 	
 				#if not on the network
