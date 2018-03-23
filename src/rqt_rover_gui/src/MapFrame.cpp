@@ -69,7 +69,7 @@ void MapFrame::CreatePopoutWindow( MapData * map_data )
   central_widget->setLayout(layout);
 
   popout_window->setGeometry(QRect(10, 10, 500, 500));
-  popout_window->setStyleSheet("background-color: rgb(0, 0, 0); border-color: rgb(255, 255, 255);");
+  popout_window->setStyleSheet("background-color: rgb(255, 255, 255); border-color: rgb(255, 255, 255);");
   popout_window->setCentralWidget(central_widget);
 
   connect(this, SIGNAL(delayedUpdate()), popout_mapframe, SLOT(update()), Qt::QueuedConnection);
@@ -86,7 +86,7 @@ void MapFrame::paintEvent(QPaintEvent* event)
 {
   // Begin drawing the map
   QPainter painter(this);
-  painter.setPen(Qt::white);
+  painter.setPen(Qt::black);
   QFont font = painter.font();
   qreal font_size = font.pointSizeF();
   QFontMetrics fm(font);
@@ -261,7 +261,7 @@ void MapFrame::paintEvent(QPaintEvent* event)
   painter.setPen(Qt::gray);
   painter.drawLine(QPoint(rover_origin_x, map_origin_y), QPoint(rover_origin_x, map_height));
   painter.drawLine(QPoint(map_origin_x, rover_origin_y), QPoint(map_width, rover_origin_y));
-  painter.setPen(Qt::white);
+  painter.setPen(Qt::black);
 
   int n_ticks = 6;
   float tick_length = 5;
@@ -393,7 +393,7 @@ void MapFrame::paintEvent(QPaintEvent* event)
     painter.setPen(Qt::gray);
     painter.drawLine(QPoint(rover_origin_x, map_origin_y), QPoint(rover_origin_x, map_height));
     painter.drawLine(QPoint(map_origin_x, rover_origin_y), QPoint(map_width, rover_origin_y));
-    painter.setPen(Qt::white);
+    painter.setPen(Qt::black);
 
     QPainterPath scaled_ekf_rover_path;
     for(std::vector< pair<float,float> >::iterator it = map_data->getEKFPath(rover_to_display)->begin(); it < map_data->getEKFPath(rover_to_display)->end(); ++it)
@@ -450,7 +450,7 @@ void MapFrame::paintEvent(QPaintEvent* event)
     if (display_gps_data) painter.drawPoints(&scaled_gps_rover_points[0], scaled_gps_rover_points.size());
     // if (display_gps_data) painter.drawPath(scaled_gps_rover_path);
 
-    if(!display_unique_rover_colors) painter.setPen(Qt::white);
+    if(!display_unique_rover_colors) painter.setPen(Qt::black);
 
     if (display_ekf_data) painter.drawPath(scaled_ekf_rover_path);
 
@@ -543,7 +543,7 @@ void MapFrame::paintEvent(QPaintEvent* event)
 
     hardware_rover_color_index = (hardware_rover_color_index + 1) % 8;
 
-    painter.setPen(Qt::white);
+    painter.setPen(Qt::black);
   } // End rover display list set iteration
 
   map_data->unlock();
