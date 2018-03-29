@@ -122,7 +122,7 @@ Result result;
 
 std_msgs::String msg;
 
-float arena_dim =0.0; //qilu 01/2018
+float arena_dim =8.0; //qilu 03/2018
 
 vector<Point> roverPositions;
 vector<string> roverNames;
@@ -305,8 +305,8 @@ void behaviourStateMachine(const ros::TimerEvent&)
       initilized = true;
       //TODO: this just sets center to 0 over and over and needs to change
       Point centerOdom;
-      centerOdom.x = 2.0 * cos(currentLocation.theta);
-      centerOdom.y = 2.0 * sin(currentLocation.theta);
+      centerOdom.x = 0.7 * cos(currentLocation.theta);
+      centerOdom.y = 0.7 * sin(currentLocation.theta);
       //centerOdom.x = 2.0 * cos(currentLocation.theta);
       //centerOdom.y = 2.0 * sin(currentLocation.theta);
       //cout<<"TestStatus: centerOdom=["<<centerOdom.x<<", "<<centerOdom.y<<"]"<<endl;
@@ -314,8 +314,8 @@ void behaviourStateMachine(const ros::TimerEvent&)
       logicController.SetCenterLocationOdom(centerOdom);
       
       Point centerMap;
-      centerMap.x = currentLocationMap.x + (2 * cos(currentLocationMap.theta));
-      centerMap.y = currentLocationMap.y + (2 * sin(currentLocationMap.theta));
+      centerMap.x = currentLocationMap.x + (0.7 * cos(currentLocationMap.theta));
+      centerMap.y = currentLocationMap.y + (0.7 * sin(currentLocationMap.theta));
       //centerMap.x = currentLocationMap.x + (2.0 * cos(currentLocationMap.theta));
       //centerMap.y = currentLocationMap.y + (2.0 * sin(currentLocationMap.theta));
       centerMap.theta = centerLocationMap.theta;
@@ -349,37 +349,29 @@ void behaviourStateMachine(const ros::TimerEvent&)
 
     if (logicController.layPheromone()) 
     {
-  	  for(int i=0; i<roverNames.size(); i++)
+  	  /*for(int i=0; i<roverNames.size(); i++)
       {
 		if(roverNames[i] == publishedName)
 		{
 			roverIdx = i;
 			break;
 		}
-	  }
-	  
-      logicController.SetRoverInitLocation(roverPositions[roverIdx]);
+	  }*/
+	  Point pos(0, 0, 0);  
+      logicController.SetRoverInitLocation(pos);
        
       swarmie_msgs::PheromoneTrail trail;
       Point pheromone_location_point = logicController.GetCurrentLocation();//qilu 12/2017
-      //cout<<"TestStatus: ROSAdapter, GetCurrentLocation()=["<<logicController.GetCurrentLocation().x<<", "<<logicController.GetCurrentLocation().y<<"]"<<endl;
-      //cout<<"TestStatus: centerLocation=["<<centerLocation.x<<", "<<centerLocation.y<<"]"<<endl;
-      //cout<<"TestStatus: centerLocationOdom=["<<centerLocationOdom.x<<", "<<centerLocationOdom.y<<"]"<<endl;
-      //cout<<"TestStatus: Rover "<<roverNames[roverIdx]<<" position=["<<roverPositions[roverIdx].x<<", "<<roverPositions[roverIdx].y<<"]"<<endl;
       geometry_msgs::Pose2D pheromone_location;
       pheromone_location.x = pheromone_location_point.x - centerLocation.x;
       pheromone_location.y = pheromone_location_point.y - centerLocation.y;
       
       //map to the global location related to the center 
-      pheromone_location.x += roverPositions[roverIdx].x;   
-      pheromone_location.y += roverPositions[roverIdx].y;
+      //pheromone_location.x += roverPositions[roverIdx].x;   
+      //pheromone_location.y += roverPositions[roverIdx].y;
       
       
-      //cout << "*****logicController.GetCenterIdx() = "<<logicController.GetCenterIdx()<<endl;
-      //cout << "*****current location = "<<currentLocation<<endl;
-      //cout << "TestStatus: transformed pheromone_location = ("<<pheromone_location.x << ", "<< pheromone_location.y<< ")"<<endl;
       trail.waypoints.push_back(pheromone_location);
-      //trail.centerIdx = logicController.GetCenterIdx();//this is for MPFA
       pheromoneTrailPublisher.publish(trail);
 
       //cout << "TestStatus: ===================================" << endl;
