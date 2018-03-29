@@ -1815,7 +1815,8 @@ void RoverGUIPlugin::buildSimulationButtonEventHandler()
         progress_dialog.resize(500, 50);
         progress_dialog.show();
 
-        QString rovers[16] = {"achilles", "aeneas", "ajax", "diomedes", "hector", "paris", "peleus", "memnon", "helen", "medea", "odyssey", "penelope", "agamemnon", "helenus", "hecuba", "eurytus"};
+        //QString rovers[16] = {"achilles", "aeneas", "ajax", "diomedes", "hector", "paris", "peleus", "memnon", "helen", "medea", "odyssey", "penelope", "agamemnon", "helenus", "hecuba", "eurytus"};
+        QString rovers[16] = {"achilles", "aeneas", "ajax", "diomedes", "hector", "paris", "thor", "zeus", "helen", "medea", "odyssey", "penelope", "agamemnon", "helenus", "hecuba", "eurytus"};
         QColor rover_colors[16] = {/* green         */ QColor(  0, 255,   0),
                                    /* black         */ QColor(0, 0,   0),
                                    /* deep sky blue */ QColor(  0, 191, 255),
@@ -1837,17 +1838,20 @@ void RoverGUIPlugin::buildSimulationButtonEventHandler()
 	    QPointF rover_positions[16] =
         {
         /* cardinal rovers: North, East, South, West */
-        QPointF(0.01,  2.0), // 2.0 = distance_from_center_to_edge_of_collection_zone
-        QPointF(0.01, -2.0),          
-        QPointF(-2.0,  0.01),           
-        QPointF(2.0,  0.01), 
-        
-        /* corner rovers: Northeast, Northwest, Southwest, Southeast */
-        QPointF(-1.414, 1.414), //the distance to the center is still 2.0
-        QPointF(1.414, -1.414),
-        QPointF(-1.414, -1.414),
-        QPointF(1.414, 1.414),
-      
+          QPointF(-1.308,  0.000), // 1.308 = distance_from_center_to_edge_of_collection_zone
+          QPointF( 0.000, -1.308), //             + 50 cm distance to rover
+          QPointF( 1.308,  0.000), //             + 30 cm distance_from_center_of_rover_to_edge_of_rover
+          QPointF( 0.000,  1.308), // 1.308m = 0.508m + 0.5m + 0.3m
+
+          /* corner rovers: Northeast, Southwest */
+          QPointF( 1.072,  1.072), // 1.072 = diagonal_distance_from_center_to_edge_of_collection_zone
+          QPointF(-1.072, -1.072), //             + diagonal_distance_to_move_50cm
+                                   //             + diagonal_distance_to_move_30cm
+                                   // 1.072m = 0.508 + 0.354 + 0.212
+
+          /* corner rovers: Northwest, Southeast */
+          QPointF(-1.072,  1.072),
+          QPointF( 1.072, -1.072),
         /* Others   */
         QPointF(1.848, 0.765), 
         QPointF(0.765, -1.848),
@@ -1871,15 +1875,14 @@ void RoverGUIPlugin::buildSimulationButtonEventHandler()
 //};
         float rover_yaw[16] =
         {
-        -1.571, //  -0.50 * PI
-         1.571, //  0.50 * PI
-         0.000, //  0.00 * PI
-         3.142, //  PI
-            
-        -0.785, //  -0.25 * PI
-        2.356, //  0.75 * PI
-        0.785, //  0.25 * PI
-        -2.356, //  -0.75 * PI
+           0.000, //  0.00 * PI
+           1.571, //  0.50 * PI
+          -3.142, // -1.00 * PI
+          -1.571, // -0.50 * PI
+          -2.356, // -0.75 * PI
+           0.785, //  0.25 * PI
+          -0.785, // -0.25 * PI
+           2.356,  //  0.75 * PI
       
         -2.749, //-0.875 * PI
         1.963, // 0.625 * PI
