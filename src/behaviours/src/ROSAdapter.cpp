@@ -101,7 +101,7 @@ int currentMode = 0;
 const float behaviourLoopTimeStep = 0.1; // time between the behaviour loop calls
 const float status_publish_interval = 1;
 const float heartbeat_publish_interval = 2;
-const float waypointTolerance = 0.1; //10 cm tolerance.
+//const float waypointTolerance = 1; //10 cm tolerance. //qilu no reference
 
 
 // used for calling code once but not in main
@@ -305,8 +305,8 @@ void behaviourStateMachine(const ros::TimerEvent&)
       initilized = true;
       //TODO: this just sets center to 0 over and over and needs to change
       Point centerOdom;
-      centerOdom.x = 1.3 * cos(currentLocation.theta);
-      centerOdom.y = 1.3 * sin(currentLocation.theta);
+      centerOdom.x = 1.308 * cos(currentLocation.theta);
+      centerOdom.y = 1.308 * sin(currentLocation.theta);
       //centerOdom.x = 2.0 * cos(currentLocation.theta);
       //centerOdom.y = 2.0 * sin(currentLocation.theta);
       //cout<<"TestStatus: centerOdom=["<<centerOdom.x<<", "<<centerOdom.y<<"]"<<endl;
@@ -314,10 +314,8 @@ void behaviourStateMachine(const ros::TimerEvent&)
       logicController.SetCenterLocationOdom(centerOdom);
       
       Point centerMap;
-      centerMap.x = currentLocationMap.x + (1.3 * cos(currentLocationMap.theta));
-      centerMap.y = currentLocationMap.y + (1.3 * sin(currentLocationMap.theta));
-      //centerMap.x = currentLocationMap.x + (2.0 * cos(currentLocationMap.theta));
-      //centerMap.y = currentLocationMap.y + (2.0 * sin(currentLocationMap.theta));
+      centerMap.x = currentLocationMap.x + (1.308 * cos(currentLocationMap.theta));
+      centerMap.y = currentLocationMap.y + (1.308 * sin(currentLocationMap.theta));
       centerMap.theta = centerLocationMap.theta;
       logicController.SetCenterLocationMap(centerMap);
       
