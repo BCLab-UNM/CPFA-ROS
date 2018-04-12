@@ -276,7 +276,7 @@ namespace rqt_rover_gui {
 
     int previous_collected_tags =0;
     int current_collected_tags = 0;
-    string score_data_filename = "score_data";
+    string score_data_filename = "CPFA_score_data";
     ofstream score_data; 
     double foragingElapsed = 0;
     double lastCollisionElapsedTime = 0;
@@ -284,7 +284,7 @@ namespace rqt_rover_gui {
     
     int previous_collisions =0;
     int current_collisions = 0;
-    string collision_data_filename = "collision_data";
+    string collision_data_filename = "CPFA_collision_data";
     ofstream collision_data; 
     bool display_sim_visualization;
 

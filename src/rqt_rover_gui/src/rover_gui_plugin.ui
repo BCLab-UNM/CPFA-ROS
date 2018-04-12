@@ -783,7 +783,7 @@ border-color: rgb(255, 255, 255);</string>
         <rect>
          <x>10</x>
          <y>30</y>
-         <width>151</width>
+         <width>171</width>
          <height>22</height>
         </rect>
        </property>
@@ -791,7 +791,7 @@ border-color: rgb(255, 255, 255);</string>
         <string notr="true">color: rgb(255, 255, 255);</string>
        </property>
        <property name="text">
-        <string>Preliminary (8X8)</string>
+        <string>Preliminary (15X15)</string>
        </property>
        <property name="checked">
         <bool>true</bool>
@@ -805,7 +805,7 @@ border-color: rgb(255, 255, 255);</string>
         <rect>
          <x>10</x>
          <y>50</y>
-         <width>71</width>
+         <width>151</width>
          <height>22</height>
         </rect>
        </property>
@@ -813,7 +813,7 @@ border-color: rgb(255, 255, 255);</string>
         <string notr="true">color: rgb(255, 255, 255);</string>
        </property>
        <property name="text">
-        <string>Final </string>
+        <string>Final (23.1X23.1) </string>
        </property>
       </widget>
       <widget class="QRadioButton" name="unbounded_radio_button">

@@ -624,7 +624,6 @@ void LogicController::SetCenterLocationOdom(Point centerLocationOdom)
 void LogicController::SetRoverInitLocation(Point location) //for mapping the locations of pheromone trails to other rovers.
 {
   pheromoneController.SetRoverInitLocation(location);
-  dropOffController.SetRoverInitLocation(location);
 }
 
 void LogicController::AddManualWaypoint(Point manualWaypoint, int waypoint_id)
@@ -756,7 +755,7 @@ bool LogicController::layPheromone() {
    //cout<<"random_num="<<random_num<<endl;
   
     if(poisson > random_num) {
-      cout << "Laying a pheromone..." << endl;
+      cout << "LocationTest: Laying a pheromone..." << endl;
       cout << endl;
       return true;
     } 
