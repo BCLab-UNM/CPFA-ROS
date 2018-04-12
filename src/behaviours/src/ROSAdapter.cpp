@@ -101,7 +101,7 @@ int currentMode = 0;
 const float behaviourLoopTimeStep = 0.1; // time between the behaviour loop calls
 const float status_publish_interval = 1;
 const float heartbeat_publish_interval = 2;
-const float waypointTolerance = 0.1; //10 cm tolerance.
+//const float waypointTolerance = 1; //10 cm tolerance. //qilu no reference
 
 
 // used for calling code once but not in main
@@ -122,10 +122,12 @@ Result result;
 
 std_msgs::String msg;
 
-float arena_dim =8.0; //qilu 03/2018
+float arena_dim =15.0; //qilu 03/2018
 
 vector<Point> roverPositions;
 vector<string> roverNames;
+Point roverInitPos;
+	
 	
 geometry_msgs::Twist velocity;
 char host[128];
@@ -305,19 +307,15 @@ void behaviourStateMachine(const ros::TimerEvent&)
       initilized = true;
       //TODO: this just sets center to 0 over and over and needs to change
       Point centerOdom;
-      centerOdom.x = 0.7 * cos(currentLocation.theta);
-      centerOdom.y = 0.7 * sin(currentLocation.theta);
-      //centerOdom.x = 2.0 * cos(currentLocation.theta);
-      //centerOdom.y = 2.0 * sin(currentLocation.theta);
-      //cout<<"TestStatus: centerOdom=["<<centerOdom.x<<", "<<centerOdom.y<<"]"<<endl;
+      centerOdom.x = 1.308 * cos(currentLocation.theta);
+      centerOdom.y = 1.308 * sin(currentLocation.theta);
       centerOdom.theta = centerLocation.theta;
+      
       logicController.SetCenterLocationOdom(centerOdom);
       
       Point centerMap;
-      centerMap.x = currentLocationMap.x + (0.7 * cos(currentLocationMap.theta));
-      centerMap.y = currentLocationMap.y + (0.7 * sin(currentLocationMap.theta));
-      //centerMap.x = currentLocationMap.x + (2.0 * cos(currentLocationMap.theta));
-      //centerMap.y = currentLocationMap.y + (2.0 * sin(currentLocationMap.theta));
+      centerMap.x = currentLocationMap.x + (1.308 * cos(currentLocationMap.theta));
+      centerMap.y = currentLocationMap.y + (1.308 * sin(currentLocationMap.theta));
       centerMap.theta = centerLocationMap.theta;
       logicController.SetCenterLocationMap(centerMap);
       
@@ -326,6 +324,13 @@ void behaviourStateMachine(const ros::TimerEvent&)
       
       centerLocationOdom.x = centerOdom.x;
       centerLocationOdom.y = centerOdom.y;
+      
+      cout<<"LocationTest: init rovername="<<publishedName<<endl;
+      cout<<"LocationTest: init centerLocationOdom=["<<centerLocationOdom.x<<", "<<centerLocationOdom.y<<"]"<<endl;
+	  Point pos(-centerLocationOdom.x, -centerLocationOdom.y, 0);  
+	  roverInitPos = pos;
+	  
+      logicController.SetRoverInitLocation(roverInitPos);
       
       startTime = getROSTimeInMilliSecs();
       
@@ -357,8 +362,7 @@ void behaviourStateMachine(const ros::TimerEvent&)
 			break;
 		}
 	  }*/
-	  Point pos(0, 0, 0);  
-      logicController.SetRoverInitLocation(pos);
+	  
        
       swarmie_msgs::PheromoneTrail trail;
       Point pheromone_location_point = logicController.GetCurrentLocation();//qilu 12/2017
@@ -367,8 +371,9 @@ void behaviourStateMachine(const ros::TimerEvent&)
       pheromone_location.y = pheromone_location_point.y - centerLocation.y;
       
       //map to the global location related to the center 
-      //pheromone_location.x += roverPositions[roverIdx].x;   
-      //pheromone_location.y += roverPositions[roverIdx].y;
+      cout<<"LocationTest: rovername="<<publishedName<<endl;
+      pheromone_location.x += roverInitPos.x;   
+      pheromone_location.y += roverInitPos.y;
       
       
       trail.waypoints.push_back(pheromone_location);

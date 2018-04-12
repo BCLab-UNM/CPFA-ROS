@@ -131,32 +131,6 @@ Result DropOffController::DoWork() {
   // Calculates the shortest distance to the center location from the current location
   double distanceToCenter = hypot(this->centerLocation.x - this->currentLocation.x, this->centerLocation.y - this->currentLocation.y);
    cout<<"TestTimeout: distanceToCenter="<<distanceToCenter<<endl; 
-	   
-  /*if(timerTimeElapsed > 50 && !seenEnoughCenterTags)
-  {
-	  cout<<"TestStatusA: timeout and reset to center *****"<<endl;
-	  Point centerPoint;
-	  centerPoint.x = 2.0 * cos(roverInitLocation.theta);
-      centerPoint.y = 2.0 * sin(roverInitLocation.theta);    
-	  
-	  returnTimer = current_time;
-	  
-	  result.type = waypoint;
-    // Clears all the waypoints in the vector
-    result.wpts.waypoints.clear();
-    // Adds the current location's point into the waypoint vector
-    result.wpts.waypoints.push_back(centerPoint);
-    // Do not start following waypoints
-    startWaypoint = false;
-    // Disable precision driving
-    isPrecisionDriving = false;
-    // Reset elapsed time
-    timerTimeElapsed = 0;
-    circularCenterSearching = true;
-    SetCPFAState(return_to_nest);
-
-    return result;	  
-  }*/
 
   //check to see if we are driving to the center location or if we need to drive in a circle and look.
   if (distanceToCenter > collectionPointVisualDistance && !circularCenterSearching && (count == 0)) {
@@ -354,13 +328,6 @@ Result DropOffController::DoWork() {
 
   return result;
 }
-
-void DropOffController::SetRoverInitLocation(Point location) 
-{
-  roverInitLocation = location;
-  cout<<"TestStatus: rover init location=["<<roverInitLocation.x<<","<<roverInitLocation.y<<"]"<<endl;
-}
-
 
 // Reset to default values
 void DropOffController::Reset() {
