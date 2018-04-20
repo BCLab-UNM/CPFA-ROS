@@ -526,7 +526,7 @@ void MapFrame::paintEvent(QPaintEvent* event)
     
 
     if(display_unique_rover_colors) painter.setPen(rover_color);
-    else painter.setPen(Qt::yellow);
+    else painter.setPen(Qt::blue);
     
     pair<float,float> current_coordinate;
     if(! map_data->getEKFPath(rover_to_display)->empty() )

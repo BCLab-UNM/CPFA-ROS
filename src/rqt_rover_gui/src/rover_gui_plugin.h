@@ -132,7 +132,7 @@ namespace rqt_rover_gui {
     QString addClusteredTargets();
     QString addFinalsWalls();
     QString addPrelimsWalls();
-
+    QString addTestWalls();
 
    // void targetDetectedEventHandler( rover_onboard_target_detection::ATag tagInfo ); //rover_onboard_target_detection::ATag msg );
 

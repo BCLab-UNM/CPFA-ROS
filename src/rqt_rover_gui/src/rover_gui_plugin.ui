@@ -758,9 +758,9 @@ border: 1px solid white;
       <property name="geometry">
        <rect>
         <x>280</x>
-        <y>120</y>
+        <y>100</y>
         <width>211</width>
-        <height>131</height>
+        <height>151</height>
        </rect>
       </property>
       <property name="font">
@@ -782,8 +782,8 @@ border-color: rgb(255, 255, 255);</string>
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>30</y>
-         <width>151</width>
+         <y>50</y>
+         <width>171</width>
          <height>22</height>
         </rect>
        </property>
@@ -791,10 +791,10 @@ border-color: rgb(255, 255, 255);</string>
         <string notr="true">color: rgb(255, 255, 255);</string>
        </property>
        <property name="text">
-        <string>Preliminary (8X8)</string>
+        <string>Preliminary (15X15)</string>
        </property>
        <property name="checked">
-        <bool>true</bool>
+        <bool>false</bool>
        </property>
       </widget>
       <widget class="QRadioButton" name="final_radio_button">
@@ -804,8 +804,8 @@ border-color: rgb(255, 255, 255);</string>
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>50</y>
-         <width>71</width>
+         <y>70</y>
+         <width>151</width>
          <height>22</height>
         </rect>
        </property>
@@ -813,7 +813,7 @@ border-color: rgb(255, 255, 255);</string>
         <string notr="true">color: rgb(255, 255, 255);</string>
        </property>
        <property name="text">
-        <string>Final </string>
+        <string>Final (22X22) </string>
        </property>
       </widget>
       <widget class="QRadioButton" name="unbounded_radio_button">
@@ -823,7 +823,7 @@ border-color: rgb(255, 255, 255);</string>
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>70</y>
+         <y>90</y>
          <width>111</width>
          <height>22</height>
         </rect>
@@ -839,7 +839,7 @@ border-color: rgb(255, 255, 255);</string>
        <property name="geometry">
         <rect>
          <x>40</x>
-         <y>98</y>
+         <y>115</y>
          <width>81</width>
          <height>20</height>
         </rect>
@@ -858,7 +858,7 @@ border-color: rgb(255, 255, 255);</string>
        <property name="geometry">
         <rect>
          <x>125</x>
-         <y>95</y>
+         <y>110</y>
          <width>71</width>
          <height>27</height>
         </rect>
@@ -920,6 +920,28 @@ padding: 1px 0px 1px 3px; /*This makes text colour work*/
          <string>50</string>
         </property>
        </item>
+      </widget>
+      <widget class="QRadioButton" name="test_radio_button">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>30</y>
+         <width>171</width>
+         <height>22</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">color: rgb(255, 255, 255);</string>
+       </property>
+       <property name="text">
+        <string>Test (8X8)</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
       </widget>
      </widget>
      <widget class="QLabel" name="ground_texture_label">
@@ -1202,7 +1224,7 @@ padding: 1px 0px 1px 3px; /*This makes text colour work*/
       </item>
       <item>
        <property name="text">
-        <string>30 min (Preliminary)</string>
+        <string>40 min</string>
        </property>
       </item>
       <item>

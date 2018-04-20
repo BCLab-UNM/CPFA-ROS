@@ -1471,9 +1471,9 @@ void RoverGUIPlugin::allAutonomousButtonEventHandler()
                                                  QString::number(floor(getSeconds(timer_stop_time_in_seconds))) + " seconds</font>");
             ui.simulation_timer_combobox->setEnabled(false);
             ui.simulation_timer_combobox->setStyleSheet("color: grey; border:2px solid grey;");
-        } else if (ui.simulation_timer_combobox->currentText() == "30 min (Preliminary)") {
+        } else if (ui.simulation_timer_combobox->currentText() == "40 min") {
             timer_start_time_in_seconds = current_simulated_time_in_seconds;
-            timer_stop_time_in_seconds = timer_start_time_in_seconds + 1800.0;
+            timer_stop_time_in_seconds = timer_start_time_in_seconds + 2400.0;
             is_timer_on = true;
             emit sendInfoLogMessage("\nSetting experiment timer to start at: " +
                                     QString::number(getHours(timer_start_time_in_seconds)) + " hours, " +
@@ -1731,14 +1731,20 @@ void RoverGUIPlugin::buildSimulationButtonEventHandler()
 
     if (ui.final_radio_button->isChecked() && !ui.create_savable_world_checkbox->isChecked())
     {
-         arena_dim = 23.1;
+         arena_dim = 22; //original is 23.1
          addFinalsWalls();
          emit sendInfoLogMessage(QString("Set arena size to ")+QString::number(arena_dim)+"x"+QString::number(arena_dim));
     }
     else if (ui.prelim_radio_button->isChecked() && !ui.create_savable_world_checkbox->isChecked())
     {
-        arena_dim = 8;//origin is 15;
+        arena_dim = 15;
         addPrelimsWalls();
+        emit sendInfoLogMessage(QString("Set arena size to ")+QString::number(arena_dim)+"x"+QString::number(arena_dim));
+    }
+    else if (ui.test_radio_button->isChecked() && !ui.create_savable_world_checkbox->isChecked())
+    {
+        arena_dim = 8;
+        addTestWalls();
         emit sendInfoLogMessage(QString("Set arena size to ")+QString::number(arena_dim)+"x"+QString::number(arena_dim));
     }
     else
@@ -2496,6 +2502,38 @@ QString RoverGUIPlugin::addPrelimsWalls()
    return output;
 }
 
+QString RoverGUIPlugin::addTestWalls()
+{
+    QProgressDialog progress_dialog;
+    progress_dialog.setWindowTitle("Placing Barriers");
+    progress_dialog.setCancelButton(NULL); // no cancel button
+    progress_dialog.setWindowModality(Qt::ApplicationModal);
+    progress_dialog.setWindowFlags(progress_dialog.windowFlags() | Qt::WindowStaysOnTopHint);
+    progress_dialog.resize(500, 50);
+    progress_dialog.show();
+
+    // Setting wall clearance to zero - radius of a wall does not make sense. Barrier clearance values ensure models are not placed on the walls.
+
+   QString output;
+   output += sim_mgr.addModel("barrier_test_round", "Barrier_West", -arena_dim/2, 0, 0, 0 );
+   progress_dialog.setValue(1*100.0f/4);
+   qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
+
+   output += sim_mgr.addModel("barrier_test_round", "Barrier_North", 0, -arena_dim/2, 0, 0, 0, M_PI/2, 0);
+   progress_dialog.setValue(2*100.0f/4);
+   qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
+
+   output += sim_mgr.addModel("barrier_test_round", "Barrier_East", arena_dim/2, 0, 0, 0 );
+   progress_dialog.setValue(3*100.0f/4);
+   qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
+
+   output += sim_mgr.addModel("barrier_test_round", "Barrier_South", 0, arena_dim/2, 0, 0, 0, M_PI/2, 0);
+   progress_dialog.setValue(4*100.0f/4);
+   qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
+
+   return output;
+}
+
 void RoverGUIPlugin::checkAndRepositionRover(QString rover_name, float x, float y)
 {
     // Currently disabled.
@@ -2875,6 +2913,7 @@ void RoverGUIPlugin::createSavableWorldCheckboxToggledEventHandler(bool checked)
     if(checked)
     {
         ui.round_type_button_group->setStyleSheet("color: grey;");
+        ui.test_radio_button->setStyleSheet("color: grey;");
         ui.prelim_radio_button->setStyleSheet("color: grey;");
         ui.final_radio_button->setStyleSheet("color: grey;");
         ui.unbounded_radio_button->setStyleSheet("color: grey;");
@@ -2889,6 +2928,7 @@ void RoverGUIPlugin::createSavableWorldCheckboxToggledEventHandler(bool checked)
     else
     {
         ui.round_type_button_group->setStyleSheet("color: white;");
+        ui.test_radio_button->setStyleSheet("color: white;");
         ui.prelim_radio_button->setStyleSheet("color: white;");
         ui.final_radio_button->setStyleSheet("color: white;");
         ui.unbounded_radio_button->setStyleSheet("color: white;");
