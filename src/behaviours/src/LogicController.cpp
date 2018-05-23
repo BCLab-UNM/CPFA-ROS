@@ -18,7 +18,7 @@ LogicController::~LogicController() {}
 
 void LogicController::Reset() {
 
-  std::cout << "LogicController.Reset()" << std::endl;
+  //std::cout << "LogicController.Reset()" << std::endl;
   logicState = LOGIC_STATE_INTERRUPT;
   processState = PROCCESS_STATE_SEARCHING;
 
@@ -35,7 +35,7 @@ Result LogicController::DoWork()
 {
   Result result;
   
-  cout << "LogicController:DoWork()...Proccess State is " << processState << endl;
+  //cout << "LogicController:DoWork()...Proccess State is " << processState << endl;
   //first a loop runs through all the controllers who have a priority of 0 or above with the largest number being
   // above with the largest number being most important. A priority of less than
   // 0 is an ignored controller (we will use -1 as the standard for an ignored
@@ -45,7 +45,7 @@ Result LogicController::DoWork()
   {
     if(cntrlr.controller->ShouldInterrupt() && cntrlr.priority >= 0)
     {
-		//cout<<" is interrupt..."<<endl;
+	//cout<<" is interrupt..."<<endl;
       logicState = LOGIC_STATE_INTERRUPT;
       //do not break all shouldInterupts may need calling in order to properly pre-proccess data.
     }
@@ -91,7 +91,6 @@ Result LogicController::DoWork()
     // Take the top member of the priority queue and run its do work function.
     result = control_queue.top().controller->DoWork();
     
-   //cout<<"get the result..."<<endl;
     // This tells ROS Adapter whether to lay a pheromone
     lay_pheromone = result.lay_pheromone;
 	
@@ -112,7 +111,7 @@ Result LogicController::DoWork()
 
       //ask for the procces state to change to the next state or loop around to the begining
       if(result.b == nextProcess) {
-		 cout<<"TestStatus: next process..."<<endl;
+		// cout<<"TestStatus: next process..."<<endl;
         if (processState == _LAST - 1) {
           processState = _FIRST;
         }
@@ -131,7 +130,7 @@ Result LogicController::DoWork()
       }
       if(result.b == FAILED)
       {  
-		 cout<<"SwitchStatus: switch to site fidelity"<<endl;
+		// cout<<"SwitchStatus: switch to site fidelity"<<endl;
 		  processState = PROCESS_STATE_SITE_FIDELITY;
 		  }
       
@@ -143,7 +142,7 @@ Result LogicController::DoWork()
 		  {
 		       double followSiteFidelityRate = getPoissonCDF(CPFA_parameters.rate_of_following_site_fidelity);
 		       //double followSiteFidelityRate = 0.1;
-               cout <<"TestStatus: followSiteFidelityRate="<<followSiteFidelityRate<<endl;
+               //cout <<"TestStatus: followSiteFidelityRate="<<followSiteFidelityRate<<endl;
                double r1 = rng->uniformReal(0, 1);
               //cout<<"TestStatus: r1 = "<< r1<<endl;
                if(r1 > followSiteFidelityRate || siteFidelityController.SiteFidelityInvalid())//informed search with pheromone waypoints or uninformed search
@@ -180,7 +179,7 @@ Result LogicController::DoWork()
       }
       //else if(result.b == COMPLETED || result.b == FAILED){
       else if(result.b == COMPLETED){
-		  cout <<"SwitchStatus: Completed..."<<endl;
+		  //cout <<"SwitchStatus: Completed..."<<endl;
 		  informed_search = true;
           processState = PROCCESS_STATE_SEARCHING;
           ProcessData();
@@ -236,19 +235,15 @@ Result LogicController::DoWork()
     // priority queue so it must be checked here.
     if (result.type == behavior) 
     {
-		cout <<"logic state== waiting; result type == behavior"<<endl;
+		//cout <<"logic state== waiting; result type == behavior"<<endl;
 		if(driveController.ShouldInterrupt()) 
         {
           logicState = LOGIC_STATE_INTERRUPT;
          //cout<<"SwitchStatus: driver controller interrupt...true"<<endl;
           if(processState == PROCCESS_STATE_SEARCHING)
           {
-		   cout<<"TestStatusSwitchStatus: searchCtrl set reached..."<<endl;
+		   //cout<<"TestStatusSwitchStatus: searchCtrl set reached..."<<endl;
 		    searchController.SetReachedWaypoint(true);
-		    /*if(searchController.GiveupSearch())
-		    {
-				
-				}*/
 		  } 
       }
     }
@@ -476,7 +471,7 @@ void LogicController::controllerInterconnect()
 		if(searchController.GetCPFAState() == return_to_nest)
 		{
 			obstacleController.SetCPFAState(return_to_nest);
-		   cout<<"TestStatusA: obstacle set to return to nest..."<<obstacleController.GetCPFAState()<<endl;
+		  // cout<<"TestStatusA: obstacle set to return to nest..."<<obstacleController.GetCPFAState()<<endl;
 		}
 		else
 		{
@@ -489,7 +484,7 @@ void LogicController::controllerInterconnect()
 	} 
 	if(obstacleController.GetCPFAState() == reached_nest)
 	{
-		cout<<"TestStatusSwitchStatus: interconnect, set reached_nest..."<<endl;
+		//cout<<"TestStatusSwitchStatus: interconnect, set reached_nest..."<<endl;
 		searchController.SetCPFAState(reached_nest);
 		//searchController.SetReachedWaypoint(true);
 		obstacleController.SetCPFAState(start_state);
@@ -504,7 +499,7 @@ void LogicController::controllerInterconnect()
 		  if(obstacleController.HasWork()) 
 		  {
 			  obstacleController.SetCPFAState(return_to_nest);
-		      cout<<"TestStatusA: obstacle set to return to nest by dropoff..."<<endl;
+		      //cout<<"TestStatusA: obstacle set to return to nest by dropoff..."<<endl;
 		  }
 		
 	  }
@@ -552,7 +547,7 @@ void LogicController::controllerInterconnect()
 
 void LogicController::SetArenaSize(int size)
 {
-	cout<<"set arena size "<< size<<endl;
+	//cout<<"set arena size "<< size<<endl;
 	searchController.SetArenaSize(size);
 	}
 
@@ -707,12 +702,6 @@ void LogicController::SetCurrentTimeInMilliSecs( long int time )
 }*/
 void LogicController::senseLocalResourceDensity(int num_tags) {
 	local_resource_density = num_tags;
-  //if(cpfa_state == sense_local_resource_density) {
-    //searchController.senseLocalResourceDensity(num_tags); //should be removed? qilu 11/2017
-     //dropOffController.senseLocalResourceDensity(num_tags);
-    //cout << "CPFAState: sense_local_resource_density" << endl;
-    //printCPFASearchType();
-  //}
 }
 
 void LogicController::printCPFAState() {
@@ -769,10 +758,6 @@ bool LogicController::layPheromone() {
   return false;
 }
 
-/*Point LogicController::getTargetLocation() {
-  return searchController.getTargetLocation();
-}
-*/
 Point LogicController::GetCurrentLocation() {
   return searchController.GetCurrentLocation();
 }
