@@ -76,7 +76,7 @@ void RangeController::Reset()
 
 Result RangeController::DoWork() 
 {
- cout<<"RangeController::DoWork()"<<endl;
+ //cout<<"RangeController::DoWork()"<<endl;
   Result result;
 
   // Move the rover a parameterised distance towards the origin 
@@ -91,7 +91,7 @@ Result RangeController::DoWork()
   result.wpts.waypoints.push_back( point_in_range );
   result.PIDMode = FAST_PID;
   
-  cout << "Range controller doing work: moving to (" << point_in_range.x << ", " << point_in_range.y << ")" << endl;  
+  //cout << "Range controller doing work: moving to (" << point_in_range.x << ", " << point_in_range.y << ")" << endl;  
 
   return result;
   
@@ -99,7 +99,7 @@ Result RangeController::DoWork()
 
 bool RangeController::ShouldInterrupt() 
 {
-	cout<<"range controller should interrupt...";
+	//cout<<"range controller should interrupt...";
   // Cause an interrupt if the rover leaves the specified foraging range
   // Note use of shortcircuiting "and"
   bool should_interrupt = false;
@@ -108,11 +108,11 @@ bool RangeController::ShouldInterrupt()
       && !range->isInside(current_location) 
       && !requested_return_to_valid_range)
     {
-      cout << "Range controller interrupt" << endl;
+      //cout << "Range controller interrupt" << endl;
       requested_return_to_valid_range = true;
       should_interrupt = true;
     }
-  cout<<should_interrupt<<endl;
+  //cout<<should_interrupt<<endl;
     
   return should_interrupt;    
 }
@@ -126,7 +126,7 @@ void RangeController::SetCPFAState(CPFAState state) {
 	
   cpfa_state = state;
   result.cpfa_state = state;
-  cout<<"SwitchStatus: rangectrl: state="<<cpfa_state<<endl;
+  //cout<<"SwitchStatus: rangectrl: state="<<cpfa_state<<endl;
 }
 
 bool RangeController::HasWork() 
@@ -134,7 +134,7 @@ bool RangeController::HasWork()
   bool has_work = false;
   if (enabled && range != NULL && !range->isInside(current_location)) 
     {
-      cout << "Range controller has work:  current location (" << current_location.x << ", " << current_location.y << ")" << endl;
+     // cout << "Range controller has work:  current location (" << current_location.x << ", " << current_location.y << ")" << endl;
       has_work = true;
       // Report that there is work to be done if the rover is outside the specified forgaing range.
       // Note use of shortcircuiting "and"
@@ -145,12 +145,6 @@ bool RangeController::HasWork()
       enabled && range != NULL && !range->isInside(current_location);
       has_work = false;
     }
-  
-  if (has_work)
-  {
-    cout << "Range Controller Has Work" << endl;
-  }
-
   return has_work;
 }
 
