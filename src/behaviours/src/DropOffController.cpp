@@ -77,7 +77,7 @@ Result DropOffController::DoWork() {
 	  returnTimer = current_time;
 	  timerTimeElapsed = 0;
 	  }
-  cout<<"TestTimeout:TestStatusA: timerTimeElapsed="<<timerTimeElapsed<<endl;
+  //cout<<"TestTimeout:TestStatusA: timerTimeElapsed="<<timerTimeElapsed<<endl;
   
     //cout<<"TestTimeout: seenEnoughCenterTags="<<seenEnoughCenterTags<<endl;
   //cout<<"TestTimeout: count="<<count<<endl;
@@ -358,7 +358,7 @@ Result DropOffController::DoWork() {
 void DropOffController::SetRoverInitLocation(Point location) 
 {
   roverInitLocation = location;
-  cout<<"TestStatus: rover init location=["<<roverInitLocation.x<<","<<roverInitLocation.y<<"]"<<endl;
+  //cout<<"TestStatus: rover init location=["<<roverInitLocation.x<<","<<roverInitLocation.y<<"]"<<endl;
 }
 
 

@@ -52,7 +52,7 @@ Result SearchController::DoWork() {
 		cout<<"TestStatusSwitchStatus: SearchCTRL, reach waypoint..."<<endl;
 	    if(GetCPFAState() == avoid_obstacle)
         {
-			if(attemptCount<3)
+			if(attemptCount<10)
 			{
 				attemptCount++;//count the times to approach the location. If the rover always see an obstacle, it should give up. 
 		        cout<<"TestStatus: travel to the previous location before avoiding obstacles "<<attemptCount<<endl; 
@@ -61,7 +61,7 @@ Result SearchController::DoWork() {
 		    }
 		    else
 		    {
-				cout<<"TestStatus: Give up to go to previous location"<<endl;
+				cout<<"TestStatus: Give up to previous location"<<endl;
 				result.wpts.waypoints.clear();	
                 SetReachedWaypoint(false);
                 attemptCount = 0;
@@ -167,7 +167,7 @@ Result SearchController::DoWork() {
 	        searchLocation.theta = atan2(currentLocation.y - this->centerLocation.y, currentLocation.x - this->centerLocation.x);//this is the direction from center to the rover
 	        
 	        searchLocation.theta += rng->uniformReal(-M_PI/4, M_PI/4); //sample an angle in this range based on the direction from the center to the rover, so rover will not collide with the collection disk when it travels in this direction
-	       //cout<<"CPFAStatus: searchLocation.theta="<<searchLocation.theta<<endl;
+	       cout<<"TestStatus: searchLocation.theta="<<searchLocation.theta<<endl;
 	        SetRandomSearchLocation();
 	        //result.cpfa_state = travel_to_search_site;
 	        SetCPFAState(travel_to_search_site);
@@ -181,7 +181,10 @@ Result SearchController::DoWork() {
 	        //select new heading from Gaussian distribution around current heading
 	        //searchLocation.theta = rng->gaussian(currentLocation.theta, 0.25);
 	       //cout<<"SwitchStatus: not first waypoint..."<<endl;
+	       
 	        searchLocation.theta = rng->gaussian(currentLocation.theta, correlation);
+	        cout<<"TestStatus: not first searchLocation.theta="<<searchLocation.theta<<endl;
+	        cout<<"TestStatus: search_step_size="<<search_step_size<<endl;
 	        searchLocation.x = currentLocation.x + (search_step_size * cos(searchLocation.theta));
 	        searchLocation.y = currentLocation.y + (search_step_size * sin(searchLocation.theta));
 	        //result.cpfa_state = search_with_uninformed_walk;
@@ -212,29 +215,29 @@ void SearchController::SetRandomSearchLocation()
 	//float pos_x;
 	if(cos(searchLocation.theta)<0)
 	{
-		searchLocation.x = rng->uniformReal(-arena_size*(3.0/4), -arena_size/2);
+		searchLocation.x = rng->uniformReal(-arena_size/2.0+0.5, -arena_size/3.0);
 		//searchLocation.x = pos_x - currentLocation.x;
 		//searchLocation.y = pos_x * tan(searchLocation.theta) - currentLocation.y;
-		//cout<<"TestStatus...1. pos_x="<<searchLocation.x<<endl;
+		cout<<"TestStatus...1. pos_x="<<searchLocation.x<<endl;
 		}
     else
     {
 		//searchLocation.x = arena_size/2 - 4*cos(searchLocation.theta);
-		searchLocation.x = rng->uniformReal(arena_size*(3.0/4), arena_size/2);
-		//cout<<"TestStatus...2. pos_x="<<searchLocation.x<<endl;
+		searchLocation.x = rng->uniformReal(arena_size/3.0, arena_size/2.0-0.5);
+		cout<<"TestStatus...2. pos_x="<<searchLocation.x<<endl;
 		}
 	searchLocation.y = searchLocation.x * tan(searchLocation.theta);
-    //cout<<"TestStatus: searchLocation.y="<<searchLocation.y<<endl;
+    cout<<"TestStatus: searchLocation.y="<<searchLocation.y<<endl;
     
 	if(searchLocation.y >= arena_size/2) 
 	{
-		//cout<<"case 1..."<<endl;
+		cout<<"TestStatus: case 1..."<<endl;
 		searchLocation.y = rng->uniformReal(arena_size/4, arena_size/2);
 		searchLocation.x = searchLocation.y/tan(searchLocation.theta);
 	}
 	else if(searchLocation.y <= -arena_size/2)
 	{
-		//cout<<"case 2..."<<endl;
+		cout<<"TestStatus: case 2..."<<endl;
 		searchLocation.y = rng->uniformReal(-arena_size/2, -arena_size/4);
 		searchLocation.x = searchLocation.y/tan(searchLocation.theta);
 		}	

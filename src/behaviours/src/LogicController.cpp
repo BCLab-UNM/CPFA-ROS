@@ -480,8 +480,9 @@ void LogicController::controllerInterconnect()
 		}
 		else
 		{
+			cout<<"TestStatusA: before avoid obstacle...CPFAStatus="<<searchController.GetCPFAState()<<endl;
 		    searchController.SetCPFAState(avoid_obstacle);
-             cout<<"TestStatusA: SearchCtrl set to avoid obstacle...CPFAStatus="<<searchController.GetCPFAState()<<endl;			
+             //cout<<"TestStatusA: SearchCtrl set to avoid obstacle...CPFAStatus="<<searchController.GetCPFAState()<<endl;			
 			}
 			
 			

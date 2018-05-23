@@ -110,7 +110,7 @@ Result DriveController::DoWork()
     //if we are out of waypoints then interupt and return to logic controller
     if (waypoints.empty())
     {
-		cout<<"TestStatus: Reach goal and exit driveCTRL, Drive: waypoints size="<<waypoints.size()<<endl;
+		//cout<<"TestStatus: Reach goal and exit driveCTRL, Drive: waypoints size="<<waypoints.size()<<endl;
 		//cout<<"TestStatus: wpts.waypoint size="<<result.wpts.waypoints.size()<<endl;
 		
       result.wpts.waypoints.clear();//qilu 02/2018
@@ -266,7 +266,7 @@ void DriveController::ProcessData()
     result.b = noChange;
 
     if(result.reset) {
-		cout<<"TestStatus: reset driver waypoints..."<<endl;
+		//cout<<"TestStatus: reset driver waypoints..."<<endl;
       waypoints.clear();
     }
 
