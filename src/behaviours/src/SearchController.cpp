@@ -155,11 +155,11 @@ void SearchController::SetRandomSearchLocation()
 {	
 	if(cos(searchLocation.theta)<0)
 	{
-		searchLocation.x = rng->uniformReal(-arena_size/2.0+0.5, -arena_size/3.0);
+		searchLocation.x = rng->uniformReal(-arena_size/2.0+2.0, -arena_size/3.0);
 		}
     else
     {
-		searchLocation.x = rng->uniformReal(arena_size/3.0, arena_size/2.0-0.5);
+		searchLocation.x = rng->uniformReal(arena_size/3.0, arena_size/2.0-2.0);
 		}
 	searchLocation.y = searchLocation.x * tan(searchLocation.theta);
     
@@ -174,11 +174,9 @@ void SearchController::SetRandomSearchLocation()
 		searchLocation.x = searchLocation.y/tan(searchLocation.theta);
 		}	
 	
-	
+	searchLocation.x += this->centerLocation.x;
 	searchLocation.y += this->centerLocation.y;
-    searchLocation.x += this->centerLocation.x;
-  
-
+   
 }
 
 bool SearchController::GiveupSearch()
