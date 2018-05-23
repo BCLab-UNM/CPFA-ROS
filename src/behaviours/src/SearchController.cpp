@@ -155,11 +155,11 @@ void SearchController::SetRandomSearchLocation()
 {	
 	if(cos(searchLocation.theta)<0)
 	{
-		searchLocation.x = rng->uniformReal(-arena_size/2.0+2.0, -arena_size/3.0);
+		searchLocation.x = rng->uniformReal(-arena_size/2.0+3.0, -arena_size/3.0);
 		}
     else
     {
-		searchLocation.x = rng->uniformReal(arena_size/3.0, arena_size/2.0-2.0);
+		searchLocation.x = rng->uniformReal(arena_size/3.0, arena_size/2.0-3.0);
 		}
 	searchLocation.y = searchLocation.x * tan(searchLocation.theta);
     
@@ -173,10 +173,10 @@ void SearchController::SetRandomSearchLocation()
 		searchLocation.y = rng->uniformReal(-arena_size/2, -arena_size/4);
 		searchLocation.x = searchLocation.y/tan(searchLocation.theta);
 		}	
-	
+	cout <<"wpTest: abs rand location = ["<<searchLocation.x<<","<<searchLocation.y<<"]"<<endl;
 	searchLocation.x += this->centerLocation.x;
 	searchLocation.y += this->centerLocation.y;
-   
+    cout <<"wpTest: related rand location = ["<<searchLocation.x<<","<<searchLocation.y<<"]"<<endl;
 }
 
 bool SearchController::GiveupSearch()

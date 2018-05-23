@@ -173,27 +173,30 @@ Result PheromoneController::DoWork()
   
   if(drive_to_pheromone)
   {
-	  cout <<"TestStatus: drive to pheromone..."<<endl;
+	  cout <<"wpTestStatus: drive to pheromone..."<<endl;
 	  
 	 
-	  cout<<"TestStatus: selected_pheromone=["<<selected_pheromone.x<<", "<<selected_pheromone.y<<"]"<<endl;
+	  cout<<"wpTestStatus: selected_pheromone=["<<selected_pheromone.x<<", "<<selected_pheromone.y<<"]"<<endl;
       //cout<<"PheromoneStatus: current_location.x="<<current_location.x<<endl;
-	  if (hypot(selected_pheromone.x - current_location.x, selected_pheromone.y - current_location.y) < 0.15 || attemptCount>=5) 
+	  if (hypot(selected_pheromone.x - current_location.x, selected_pheromone.y - current_location.y) < 0.15 || attemptCount>=15) 
 	  {
 		  attemptCount=0;
           drive_to_pheromone= false;
           sense_local_density_completed  = false;
           //cout <<"TestStatus: sense_local_density_completed="<<sense_local_density_completed<<endl;
-          cout <<"TestStatus: Reached pheromone waypoint..."<<endl;
+          cout <<"wpTestStatus: Reached pheromone waypoint..."<<endl;
 		  result.type = behavior;
 		  result.b = COMPLETED;
-		  //targetHeld =true;
+		  if (attemptCount >=15)
+          {
+		      cout <<"wpTest: give up to pheromone wp and start to search..."<<endl;
+		  }
 	  } 
-	  else if(attemptCount<5)
+	  else if(attemptCount<15)
 	  {
 		  attemptCount++;
-          cout <<"TestStatus: travel to pheromone_waypoint ["<<selected_pheromone.x<<", "<<selected_pheromone.y<<"]"<<endl;
-          cout<<"TestStatus: pw attemptCount="<<attemptCount<<endl;
+          cout <<"wpTestStatus: travel to pheromone_waypoint ["<<selected_pheromone.x<<", "<<selected_pheromone.y<<"]"<<endl;
+          cout<<"wpTestStatus: pw attemptCount="<<attemptCount<<endl;
 		  result.type = waypoint;
 		  result.PIDMode = FAST_PID;
 		  result.wpts.waypoints.insert(result.wpts.waypoints.begin(), selected_pheromone);
@@ -280,7 +283,7 @@ bool PheromoneController::SelectPheromone()
       //target_location = pheromones[i].getLocation();
       
       selected_pheromone = pheromones[i].getLocation();
-      //cout << "TestStatus: selected pheromoneLocation=[" <<selected_pheromone.x << ", " << selected_pheromone.y<<"]"<< endl;
+      cout << "wpTestStatus: selected pheromoneLocation=[" <<selected_pheromone.x << ", " << selected_pheromone.y<<"]"<< endl;
       //cout<<"TestStatus: centerLocation=["<<centerLocation.x <<", "<<centerLocation.y<<"]"<<endl;
       //cout<<"TestStatus: roverInitLocation=["<<roverInitLocation.x <<", "<<roverInitLocation.y<<"]"<<endl;
       

@@ -102,8 +102,9 @@ Result ObstacleController::DoWork() {
     double stepSize;
     if(GetCPFAState() == return_to_nest || GetCPFAState() == reached_nest)
     {
-	//cout<<"TestStatusA: ****sample another location to avoid collection disk..."<<endl;
 		stepSize = rng->uniformReal(0.1, 0.3);
+	cout<<"wpTest: ****sample avoid collection disk step size..."<<stepSize<<endl;
+		
 		forward.x = currentLocation.x + (stepSize * cos(currentLocation.theta));
         forward.y = currentLocation.y + (stepSize * sin(currentLocation.theta));
     }
@@ -111,6 +112,7 @@ Result ObstacleController::DoWork() {
     {
 	//cout<<"TestStatusA: ****normal sample wpt..."<<endl;
 	stepSize = rng->uniformReal(0.3, 0.6);
+		cout<<"wpTest: ****sample avoid rocks step size..."<<stepSize<<endl;
 	forward.x = currentLocation.x + (stepSize * cos(currentLocation.theta));
         forward.y = currentLocation.y + (stepSize * sin(currentLocation.theta));
     }

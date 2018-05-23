@@ -149,21 +149,21 @@ Result LogicController::DoWork()
                {
 				   if(siteFidelityController.SiteFidelityInvalid())
 				   {
-					  cout<<"TestStatus: no site fidelity..."<<endl;
+					  cout<<"wpTest: no site fidelity..."<<endl;
 				   }
 				   else
 				   {
-					  cout<<"TestStatus: has fidelity, but choose not follow..."<<endl;
+					  cout<<"wpTest: has fidelity, but do not follow..."<<endl;
 				   }
 				   if(pheromoneController.SelectPheromone())
 				   {
 		             processState = PROCESS_STATE_PHEROMONE; 
-                     cout <<"TestStatus: select a pheromone..."<<endl;
+                     cout <<"wpTestStatus: select a pheromone..."<<endl;
                    }
                    else
                    {
 				     processState = PROCCESS_STATE_SEARCHING; 
-                     cout <<"TestStatus: no pheromone trail selected ="<<processState<<"  uninformed search..."<<endl;
+                     cout <<"wpTestStatus: no pheromone trail selected ="<<processState<<"  uninformed search..."<<endl;
                      searchController.Reset();
 				   }
 			   }
@@ -742,11 +742,11 @@ bool LogicController::layPheromone() {
  
     double poisson = getPoissonCDF(CPFA_parameters.rate_of_laying_pheromone);
     double random_num = rng->uniformReal(0, 1);
-   //cout<<"poisson="<<poisson<<endl;
-   //cout<<"random_num="<<random_num<<endl;
+   cout<<"wpTest: poisson="<<poisson<<endl;
+   cout<<"wpTest: random_num="<<random_num<<endl;
   
     if(poisson > random_num) {
-      cout << "Laying a pheromone..." << endl;
+      cout << "wpTest: Laying a pheromone..." << endl;
       cout << endl;
       return true;
     } 
