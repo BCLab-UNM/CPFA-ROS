@@ -102,7 +102,7 @@ Result ObstacleController::DoWork() {
     double stepSize;
     if(GetCPFAState() == return_to_nest || GetCPFAState() == reached_nest)
     {
-		stepSize = rng->uniformReal(0.3, 0.5);
+		stepSize = rng->uniformReal(0.2, 0.4);
 	//cout<<"wpTest: ****sample avoid collection disk step size..."<<stepSize<<endl;
 		
 		forward.x = currentLocation.x + (stepSize * cos(currentLocation.theta));
