@@ -4,7 +4,7 @@
 struct CPFAParameters {
   const float random_seed = -1;
   //For clustered
-  const float probability_of_switching_to_searching = 0.005;
+  const float probability_of_switching_to_searching = 0.01;
   const float probability_of_returning_to_nest = 0.05;
   // In radians
   const float uninformed_search_variation = 0.8; //range [0, pi]
