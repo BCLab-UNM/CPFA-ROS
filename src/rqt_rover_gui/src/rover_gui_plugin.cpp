@@ -1901,21 +1901,20 @@ void RoverGUIPlugin::buildSimulationButtonEventHandler()
         -0.393, // -0.125 * PI  
         };
          
-        rover_publisher = nh.advertise<swarmie_msgs::RoverInfo>("/rovers", 10, this); 
-        swarmie_msgs::RoverInfo msg_rover;
-        //std_msgs::string roverName;
-        geometry_msgs::Pose2D pos;
+        //rover_publisher = nh.advertise<swarmie_msgs::RoverInfo>("/rovers", 10, this); 
+        //swarmie_msgs::RoverInfo msg_rover;
+        //geometry_msgs::Pose2D pos;
         
         // Add rovers to the simulation and start the associated ROS nodes
         for (int i = 0; i < n_rovers; i++)
         {
 			
-			pos.x = rover_positions[i].x();
-	        pos.y = rover_positions[i].y(); 
+			//pos.x = rover_positions[i].x();
+	        //pos.y = rover_positions[i].y(); 
         
         
-			msg_rover.names.push_back(rovers[i].toStdString());
-			msg_rover.positions.push_back(pos);
+			//msg_rover.names.push_back(rovers[i].toStdString());
+			//msg_rover.positions.push_back(pos);
 			
 			// add the global offset for sim rovers
             ui.map_frame->SetGlobalOffsetForRover(rovers[i].toStdString(), rover_positions[i].x(), rover_positions[i].y());
@@ -1937,7 +1936,7 @@ void RoverGUIPlugin::buildSimulationButtonEventHandler()
               sleep(rover_load_delay); // Gives plugins enough time to finish loading
             }
         }
-        rover_publisher.publish(msg_rover);
+        //rover_publisher.publish(msg_rover);
     }
     else
     {

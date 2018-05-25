@@ -38,7 +38,7 @@ public:
   CPFAState GetCPFAState() override;
   void SetCPFAState(CPFAState state) override;
   //int GetCenterIdx();
-  bool OutOfArena(Point location);
+  //bool OutOfArena(Point location);
   //CPFASearchType GetCPFASearchType() override;
   //void SetCPFASearchType(CPFASearchType type) override;
   void SetCurrentLocation(Point currentLocation);
@@ -91,7 +91,7 @@ private:
    */
   //void setPheromone();
   CPFAState cpfa_state = start_state;
-  int arena_size;
+  int arena_size = 15.0;
   int local_resource_density; // An estimate of the density of the resources in the local region.
   //std::vector<Pheromone> pheromones; // Stores all pheromone trails
   //map<int, vector<Pheromone>> pheromones;// qilu 08/2017

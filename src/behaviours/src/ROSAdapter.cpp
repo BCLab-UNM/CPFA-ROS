@@ -23,7 +23,6 @@
 #include <std_msgs/Float32MultiArray.h>
 #include "swarmie_msgs/Waypoint.h"
 #include "swarmie_msgs/PheromoneTrail.h" //qilu 12/2017
-#include "swarmie_msgs/RoverInfo.h"
 // Include Controllers
 #include "LogicController.h"
 #include <vector>
@@ -122,16 +121,19 @@ Result result;
 
 std_msgs::String msg;
 
-float arena_dim =0.0; //qilu 01/2018
+float arena_dim =15.0;
 
-vector<Point> roverPositions;
+//vector<Point> roverPositions;
 vector<string> roverNames;
+Point roverInitPos;
 	
 geometry_msgs::Twist velocity;
 char host[128];
 string publishedName;
 char prev_state_machine[128];
 
+vector<string> rover_names;
+size_t swarm_size = 0;
 // Publishers
 ros::Publisher stateMachinePublisher;
 ros::Publisher status_publisher;
@@ -140,12 +142,12 @@ ros::Publisher wristAnglePublisher;
 ros::Publisher infoLogPublisher;
 ros::Publisher driveControlPublisher;
 ros::Publisher heartbeatPublisher;
-// Publishes swarmie_msgs::Waypoint messages on "/<robot>/waypooints"
-// to indicate when waypoints have been reached.
 ros::Publisher waypointFeedbackPublisher;
 ros::Publisher pheromoneTrailPublisher;//qilu 12/2017
 ros::Publisher obstaclePubisher;
 
+// Publishes swarmie_msgs::Waypoint messages on "/<robot>/waypooints"
+// to indicate when waypoints have been reached.
 // Subscribers
 ros::Subscriber joySubscriber;
 ros::Subscriber modeSubscriber; 
@@ -188,7 +190,7 @@ void odometryHandler(const nav_msgs::Odometry::ConstPtr& message);
 void mapHandler(const nav_msgs::Odometry::ConstPtr& message);
 void virtualFenceHandler(const std_msgs::Float32MultiArray& message);
 void arenaDimHandler(const std_msgs::Float32::ConstPtr& message);
-void roverHandler(const swarmie_msgs::RoverInfo& message);
+//void roverHandler(const swarmie_msgs::RoverInfo& message);
 void pheromoneTrailHandler(const swarmie_msgs::PheromoneTrail& message); //qilu 12/2017
 void manualWaypointHandler(const swarmie_msgs::Waypoint& message);
 void behaviourStateMachine(const ros::TimerEvent&);
@@ -229,7 +231,7 @@ int main(int argc, char **argv) {
   odometrySubscriber = mNH.subscribe((publishedName + "/odom/filtered"), 10, odometryHandler);
   mapSubscriber = mNH.subscribe((publishedName + "/odom/ekf"), 10, mapHandler);
   
-  roverSubscriber = mNH.subscribe("/rovers", 10, roverHandler);
+  //roverSubscriber = mNH.subscribe("/rovers", 10, roverHandler);
   pheromoneTrailSubscriber = mNH.subscribe("/pheromones", 10, pheromoneTrailHandler);//qilu 12/2017
   arenaDimSubscriber = mNH.subscribe("/arena_dim", 10, arenaDimHandler); //qilu 08/2017
   manualWaypointSubscriber = mNH.subscribe((publishedName + "/waypoints/cmd"), 10, manualWaypointHandler);
@@ -325,6 +327,10 @@ void behaviourStateMachine(const ros::TimerEvent&)
 	      centerLocationOdom.x = centerOdom.x;
 	      centerLocationOdom.y = centerOdom.y;
 	      
+	  Point pos(-centerLocationOdom.x, -centerLocationOdom.y, 0);  
+	  roverInitPos = pos;
+	  
+      logicController.SetRoverInitLocation(roverInitPos);
 	      startTime = getROSTimeInMilliSecs();
 	      
 	      logicController.SetArenaSize(arena_dim);
@@ -344,16 +350,16 @@ void behaviourStateMachine(const ros::TimerEvent&)
 
     if (logicController.layPheromone()) 
     {
-  	  for(int i=0; i<roverNames.size(); i++)
+  	 /* for(int i=0; i<roverNames.size(); i++)
       {
 		if(roverNames[i] == publishedName)
 		{
 			roverIdx = i;
 			break;
 		}
-	  }
+	  }*/
 	  
-      logicController.SetRoverInitLocation(roverPositions[roverIdx]);
+      //logicController.SetRoverInitLocation(roverPositions[roverIdx]);
        
       swarmie_msgs::PheromoneTrail trail;
       Point pheromone_location_point = logicController.GetCurrentLocation();//qilu 12/2017
@@ -365,9 +371,10 @@ void behaviourStateMachine(const ros::TimerEvent&)
       pheromone_location.x = pheromone_location_point.x - centerLocation.x;
       pheromone_location.y = pheromone_location_point.y - centerLocation.y;
       
-      //map to the global location related to the center 
-      pheromone_location.x += roverPositions[roverIdx].x;   
-      pheromone_location.y += roverPositions[roverIdx].y;
+      //map to the global location related to the rover's initial location
+      cout<<"LocationTest: rovername="<<publishedName<<endl;
+      pheromone_location.x += roverInitPos.x;   
+      pheromone_location.y += roverInitPos.y;
       
       
       //cout << "*****logicController.GetCenterIdx() = "<<logicController.GetCenterIdx()<<endl;
@@ -582,7 +589,7 @@ void arenaDimHandler(const std_msgs::Float32::ConstPtr& message)
 }
 
 
-void roverHandler(const swarmie_msgs::RoverInfo& message)
+/*void roverHandler(const swarmie_msgs::RoverInfo& message)
 {
 	swarmie_msgs::RoverInfo rover_info = message;
 	
@@ -596,7 +603,7 @@ void roverHandler(const swarmie_msgs::RoverInfo& message)
 		Point pos(rover_info.positions[i].x, rover_info.positions[i].y, rover_info.positions[i].theta);
 		roverPositions.push_back(pos);		 
 	} 
-}
+}*/
 	
 void odometryHandler(const nav_msgs::Odometry::ConstPtr& message) {
   //Get (x,y) location directly from pose

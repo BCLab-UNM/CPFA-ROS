@@ -31,7 +31,7 @@ void SearchController::SetArenaSize(int size)
 {
 	arena_size = size;
 	}
-	
+
 /**
  * This code implements a basic random walk search.
  */
@@ -47,13 +47,13 @@ Result SearchController::DoWork() {
 			if(attemptCount<15)
 			{
 				attemptCount++;//count the times to approach the location. If the rover always see an obstacle, it should give up. 
-		        cout<<"TestStatus: travel to the previous location before avoiding obstacles "<<attemptCount<<endl; 
+		        cout<<"wpTestStatus: travel to the previous location before avoiding obstacles "<<attemptCount<<endl; 
 		        SetCPFAState(reach_search_site);
 		        return result;	
 		    }
 		    else
 		    {
-				cout<<"TestStatus: Give up to previous location"<<endl;
+				cout<<"wpTestStatus: Give up to previous location"<<endl;
 				result.wpts.waypoints.clear();	
                 SetReachedWaypoint(false);
                 attemptCount = 0;
@@ -62,10 +62,10 @@ Result SearchController::DoWork() {
         }
         else if(GetCPFAState() == return_to_nest)
         {
-		  cout<<"TestStatus: Returning to nest..."<<endl;
+		  cout<<"wpTestStatus: Returning to nest..."<<endl;
 	      //SetCPFAState(reached_nest);
 	      //cout<<"TestStatusSwitchStatus: reached nest..."<<endl;
-		  cout<<"TestStatus: start a new round ..."<<endl;
+		  cout<<"wpTestStatus: start a new round ..."<<endl;
 		  informed_search = true;
           first_waypoint = true;   
           result.type = behavior;
@@ -95,7 +95,7 @@ Result SearchController::DoWork() {
       
     if(GiveupSearch())
     {
-		cout<<"TestStatus: 1. Return to nest..."<<endl;
+		cout<<"wpTestStatus: in searchCTRL 1. give up and return to nest..."<<endl;
         searchLocation.x = this->centerLocation.x;
         searchLocation.y = this->centerLocation.y; 
         SetGiveupSearch(false);
@@ -104,7 +104,7 @@ Result SearchController::DoWork() {
 	{
 	    if (informed_search)
         {
-          cout << "TestStatus: Informed Search" << endl;
+          cout << "wpTestStatus: Informed Search" << endl;
 	      float exponential = exp(-CPFA_parameters.rate_of_informed_search_decay * informed_search_time);
 	      exponential *= (4 * M_PI - CPFA_parameters.uninformed_search_variation);
 	      correlation += exponential; 
@@ -117,11 +117,11 @@ Result SearchController::DoWork() {
 	    }
 	    else 
 	    {
-	      //cout << "TestStatus: Uninformed Search" << endl;
+	      cout << "wpTestStatus: Uninformed Search" << endl;
 	      //select new position 50 cm from current location for random search
 	      if (first_waypoint)
 	      {
-			//cout<<"TestStatusSwitchStatus: first waypoint..."<<endl;  
+			cout<<"wpTestStatus: first waypoint..."<<endl;  
 	        first_waypoint = false;
 	        searchLocation.theta = atan2(currentLocation.y - this->centerLocation.y, currentLocation.x - this->centerLocation.x);//this is the direction from center to the rover
 	        
@@ -132,7 +132,7 @@ Result SearchController::DoWork() {
 	      else
 	      {
 	        //select new heading from Gaussian distribution around current heading
-	        //cout<<"SwitchStatus: not first waypoint..."<<endl;
+	        cout<<"wpTest: not first waypoint..."<<endl;
 	       
 	        searchLocation.theta = rng->gaussian(currentLocation.theta, correlation);
 	        searchLocation.x = currentLocation.x + (search_step_size * cos(searchLocation.theta));
@@ -145,14 +145,14 @@ Result SearchController::DoWork() {
     result.wpts.waypoints.clear();
     result.wpts.waypoints.insert(result.wpts.waypoints.begin(), searchLocation);
 
-   //cout<<"TestStatusSwitchStatus: info/uninfo sampled wp=["<<searchLocation.x<<","<<searchLocation.y<<"]"<<endl;
+   cout<<"wpTestStatus: info/uninfo sampled wp=["<<searchLocation.x<<","<<searchLocation.y<<"]"<<endl;
 		
     
     return result;
 }
 
 void SearchController::SetRandomSearchLocation() 
-{	
+{	 
 	if(cos(searchLocation.theta)<0)
 	{
 		searchLocation.x = rng->uniformReal(-arena_size/2.0+3.0, -arena_size/3.0);
@@ -176,7 +176,7 @@ void SearchController::SetRandomSearchLocation()
 	cout <<"wpTest: abs rand location = ["<<searchLocation.x<<","<<searchLocation.y<<"]"<<endl;
 	searchLocation.x += this->centerLocation.x;
 	searchLocation.y += this->centerLocation.y;
-    cout <<"wpTest: related rand location = ["<<searchLocation.x<<","<<searchLocation.y<<"]"<<endl;
+    //cout <<"wpTest: related rand location = ["<<searchLocation.x<<","<<searchLocation.y<<"]"<<endl;
 }
 
 bool SearchController::GiveupSearch()
@@ -218,7 +218,7 @@ bool SearchController::ShouldInterrupt()
               result.wpts.waypoints.clear();
    	          SetReachedWaypoint(true);
               SetCPFAState(search_with_uninformed_walk);
-              cout<<"TestStatus:: Switch to search..."<<endl;
+              cout<<"wpTestStatus:: Switch to search..."<<endl;
               return true;
             }
         }
@@ -231,7 +231,7 @@ bool SearchController::ShouldInterrupt()
                 result.wpts.waypoints.clear();
    	            SetGiveupSearch(true);
 				SetCPFAState(return_to_nest);
-				cout<<"TestStatusSwitchStatus:: 2. Return to nest..."<<endl;
+				cout<<"wpTest:: 2. give up and return to nest..."<<endl;
 			    return true;	
 				}
 	    }
@@ -454,7 +454,7 @@ void SearchController::setObstacleAvoidance(bool turn_direction)
   this->turn_direction = turn_direction;
 }
 
-bool SearchController::OutOfArena(Point location){
+/*bool SearchController::OutOfArena(Point location){
 	double lower = -arena_size/2.0;
 	double upper = arena_size/2.0;
 	if(location.x -0.5 <= lower || location.y -0.5 <= lower || location.x +0.5 >= upper || location.y +0.5 >= upper){
@@ -462,4 +462,4 @@ bool SearchController::OutOfArena(Point location){
     }
 	return false;
 	}
-
+*/

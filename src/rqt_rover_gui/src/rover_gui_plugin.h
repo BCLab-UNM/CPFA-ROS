@@ -52,7 +52,7 @@
 #include <mutex>
 #include <ublox_msgs/NavSOL.h>
 #include "swarmie_msgs/Waypoint.h" // For waypoint commands
-#include "swarmie_msgs/RoverInfo.h"
+//#include "swarmie_msgs/RoverInfo.h"
 #include <fstream>
 
 //ROS msg types
@@ -220,7 +220,7 @@ namespace rqt_rover_gui {
     map<string,ros::Publisher> waypoint_cmd_publishers;
     ros::Publisher joystick_publisher;
     ros::Publisher arenaDim_publisher;
-    ros::Publisher rover_publisher;
+    //ros::Publisher rover_publisher;
 
     // ROS Subscribers
     ros::Subscriber joystick_subscriber;

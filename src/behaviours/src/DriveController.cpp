@@ -36,7 +36,7 @@ Result DriveController::DoWork()
   
   ///WARNING waypoint input must use FAST_PID at this point in time failure to set fast pid will result in no movment
 
- cout <<"CPFAStatus: DriveController::DoWork()"<<endl;
+ //cout <<"CPFAStatus: DriveController::DoWork()"<<endl;
  
   if(result.type == behavior)
   {
@@ -110,7 +110,7 @@ Result DriveController::DoWork()
     //if we are out of waypoints then interupt and return to logic controller
     if (waypoints.empty())
     {
-		//cout<<"TestStatus: Reach goal and exit driveCTRL, Drive: waypoints size="<<waypoints.size()<<endl;
+		//cout<<"wpTestStatus: Reach goal and exit driveCTRL, Drive: waypoints size="<<waypoints.size()<<endl;
 		//cout<<"TestStatus: wpts.waypoint size="<<result.wpts.waypoints.size()<<endl;
 		
       result.wpts.waypoints.clear();//qilu 02/2018
