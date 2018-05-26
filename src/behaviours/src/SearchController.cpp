@@ -124,8 +124,10 @@ Result SearchController::DoWork() {
 			cout<<"wpTestStatus: first waypoint..."<<endl;  
 	        first_waypoint = false;
 	        searchLocation.theta = atan2(currentLocation.y - this->centerLocation.y, currentLocation.x - this->centerLocation.x);//this is the direction from center to the rover
-	        
-	        searchLocation.theta += rng->uniformReal(-M_PI/4, M_PI/4); //sample an angle in this range based on the direction from the center to the rover, so rover will not collide with the collection disk when it travels in this direction
+	        cout<<"TestFirstWP: init searchLocation.theta="<<searchLocation.theta<<endl;
+	
+	        //searchLocation.theta += rng->uniformReal(-M_PI/4, M_PI/4); //sample an angle in this range based on the direction from the center to the rover, so rover will not collide with the collection disk when it travels in this direction
+	        searchLocation.theta += M_PI/4;
 	        SetRandomSearchLocation();
 	        SetCPFAState(travel_to_search_site);
 	       }
@@ -145,7 +147,7 @@ Result SearchController::DoWork() {
     result.wpts.waypoints.clear();
     result.wpts.waypoints.insert(result.wpts.waypoints.begin(), searchLocation);
 
-   cout<<"wpTestStatus: info/uninfo sampled wp=["<<searchLocation.x<<","<<searchLocation.y<<"]"<<endl;
+   //cout<<"TestFirstWP: info/uninfo sampled wp=["<<searchLocation.x<<","<<searchLocation.y<<"]"<<endl;
 		
     
     return result;
@@ -153,6 +155,7 @@ Result SearchController::DoWork() {
 
 void SearchController::SetRandomSearchLocation() 
 {	 
+	cout<<"TestFirstWP: searchLocation.theta="<<searchLocation.theta<<endl;
 	if(cos(searchLocation.theta)<0)
 	{
 		cout<<"TestFirstWP: 1..."<<endl;
@@ -163,8 +166,10 @@ void SearchController::SetRandomSearchLocation()
 		cout<<"TestFirstWP: 2..."<<endl;
 		searchLocation.x = rng->uniformReal(arena_size/5.0, arena_size/2.0-2.0);
 		}
-	searchLocation.y = searchLocation.x * tan(searchLocation.theta);
+    cout<<"TestFirstWP: searchLocation.x="<<searchLocation.x<<endl;
     
+	searchLocation.y = searchLocation.x * tan(searchLocation.theta);
+    cout<<"TestFirstWP: searchLocation.y="<<searchLocation.y<<endl;
 	if(searchLocation.y >= arena_size/2) 
 	{   cout<<"TestFirstWP: 3..."<<endl;
 		searchLocation.y = rng->uniformReal(arena_size/5.0, arena_size/2-2.0);
