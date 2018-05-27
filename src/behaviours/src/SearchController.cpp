@@ -121,7 +121,7 @@ Result SearchController::DoWork() {
 	      //select new position 50 cm from current location for random search
 	      if (first_waypoint)
 	      {
-			cout<<"wpTestStatus: first waypoint..."<<endl;  
+			cout<<"TestDrift: first waypoint..."<<endl;  
 	        first_waypoint = false;
 	        searchLocation.theta = atan2(currentLocation.y - this->centerLocation.y, currentLocation.x - this->centerLocation.x);//this is the direction from center to the rover
 	        cout<<"TestFirstWP: init searchLocation.theta="<<searchLocation.theta<<endl;
@@ -155,33 +155,33 @@ Result SearchController::DoWork() {
 
 void SearchController::SetRandomSearchLocation() 
 {	 
-	cout<<"TestFirstWP: searchLocation.theta="<<searchLocation.theta<<endl;
+	cout<<"TestDrift:: searchLocation.theta="<<searchLocation.theta<<endl;
 	if(cos(searchLocation.theta)<0)
 	{
-		cout<<"TestFirstWP: 1..."<<endl;
+		cout<<"TestDrift:: 1..."<<endl;
 		searchLocation.x = rng->uniformReal(-arena_size/2.0+2.0, -arena_size/5.0);
 		}
     else
     {
-		cout<<"TestFirstWP: 2..."<<endl;
+		cout<<"TestDrift:: 2..."<<endl;
 		searchLocation.x = rng->uniformReal(arena_size/5.0, arena_size/2.0-2.0);
 		}
-    cout<<"TestFirstWP: searchLocation.x="<<searchLocation.x<<endl;
+    cout<<"TestDrift:: searchLocation.x="<<searchLocation.x<<endl;
     
 	searchLocation.y = searchLocation.x * tan(searchLocation.theta);
-    cout<<"TestFirstWP: searchLocation.y="<<searchLocation.y<<endl;
+    cout<<"TestDrift:: searchLocation.y="<<searchLocation.y<<endl;
 	if(searchLocation.y >= arena_size/2) 
-	{   cout<<"TestFirstWP: 3..."<<endl;
+	{   cout<<"TestDrift:: 3..."<<endl;
 		searchLocation.y = rng->uniformReal(arena_size/5.0, arena_size/2-2.0);
 		searchLocation.x = searchLocation.y/tan(searchLocation.theta);
 	}
 	else if(searchLocation.y <= -arena_size/2)
 	{
-		cout<<"TestFirstWP: 4..."<<endl;
+		cout<<"TestDrift:: 4..."<<endl;
 		searchLocation.y = rng->uniformReal(-arena_size/2.0+2.0, -arena_size/5.0);
 		searchLocation.x = searchLocation.y/tan(searchLocation.theta);
 		}	
-	cout <<"wpTest: abs rand location = ["<<searchLocation.x<<","<<searchLocation.y<<"]"<<endl;
+	cout <<"TestDrift:: abs rand location = ["<<searchLocation.x<<","<<searchLocation.y<<"]"<<endl;
 	searchLocation.x += this->centerLocation.x;
 	searchLocation.y += this->centerLocation.y;
     //cout <<"wpTest: related rand location = ["<<searchLocation.x<<","<<searchLocation.y<<"]"<<endl;

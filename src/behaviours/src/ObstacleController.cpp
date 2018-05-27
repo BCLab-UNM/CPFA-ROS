@@ -26,7 +26,7 @@ void ObstacleController::Reset() {
 
 // Avoid crashing into objects detected by the ultraound
 void ObstacleController::avoidObstacle() {
-	//cout<<"TestStatusA: avoidObstacle..."<<endl;
+	cout<<"TestDrift: avoidObstacle..."<<endl;
     if (left <= right && left <= center && left <triggerDistance) 
     {  
       result.pd.cmdAngular = -K_angular; 
@@ -59,7 +59,7 @@ void ObstacleController::avoidObstacle() {
 // A collection zone was seen in front of the rover and we are not carrying a target
 // so avoid running over the collection zone and possibly pushing cubes out.
 void ObstacleController::avoidCollectionZone() {
- //cout<<"TestStatusA: avoid collection zone..."<<endl;
+ cout<<"TestDrift: avoid collection zone..."<<endl;
     result.type = precisionDriving;
 
     if (pitches < 0) //turn to the right
@@ -103,7 +103,7 @@ Result ObstacleController::DoWork() {
     if(GetCPFAState() == return_to_nest || GetCPFAState() == reached_nest)
     {
 		stepSize = rng->uniformReal(0.1, 0.2);
-	//cout<<"wpTest: ****sample avoid collection disk step size..."<<stepSize<<endl;
+	cout<<"TestDrift: 2****avoid collection disk step size ="<<stepSize<<endl;
 		
 		forward.x = currentLocation.x + (stepSize * cos(currentLocation.theta));
         forward.y = currentLocation.y + (stepSize * sin(currentLocation.theta));
@@ -112,7 +112,7 @@ Result ObstacleController::DoWork() {
     {
 	//cout<<"TestStatusA: ****normal sample wpt..."<<endl;
 	stepSize = rng->uniformReal(0.4, 0.8);
-        //cout<<"wpTest: ****sample avoid rocks step size..."<<stepSize<<endl;
+    cout<<"TestDrift: ####avoid obstacle step size ="<<stepSize<<endl;
 	forward.x = currentLocation.x + (stepSize * cos(currentLocation.theta));
         forward.y = currentLocation.y + (stepSize * sin(currentLocation.theta));
     }
