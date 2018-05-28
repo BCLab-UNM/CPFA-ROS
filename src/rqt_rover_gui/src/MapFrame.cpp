@@ -845,6 +845,7 @@ void MapFrame::setAutoTransform()
 
 void MapFrame::clear()
 {
+  if (popout_window) popout_window->close();
   map_data->lock();
   display_list.clear();
   map_data->unlock();
