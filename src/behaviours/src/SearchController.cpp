@@ -62,10 +62,10 @@ Result SearchController::DoWork() {
         }
         else if(GetCPFAState() == return_to_nest)
         {
-		  cout<<"wpTestStatus: Returning to nest..."<<endl;
+		  //cout<<"wpTestStatus: Returning to nest..."<<endl;
 	      //SetCPFAState(reached_nest);
 	      //cout<<"TestStatusSwitchStatus: reached nest..."<<endl;
-		  cout<<"wpTestStatus: start a new round ..."<<endl;
+		  //cout<<"wpTestStatus: start a new round ..."<<endl;
 		  informed_search = true;
           first_waypoint = true;   
           result.type = behavior;
@@ -134,7 +134,7 @@ Result SearchController::DoWork() {
 	      else
 	      {
 	        //select new heading from Gaussian distribution around current heading
-	        cout<<"wpTest: not first waypoint..."<<endl;
+	        cout<<"TestDrift: not first waypoint..."<<endl;
 	       
 	        searchLocation.theta = rng->gaussian(currentLocation.theta, correlation);
 	        searchLocation.x = currentLocation.x + (search_step_size * cos(searchLocation.theta));

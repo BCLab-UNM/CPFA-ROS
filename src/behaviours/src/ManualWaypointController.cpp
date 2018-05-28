@@ -14,12 +14,12 @@ void ManualWaypointController::Reset() {
 }
 	
 bool ManualWaypointController::HasWork() {
-	cout<<"Manual waypoint has work..."<<!waypoints.empty()<<endl;
+	//cout<<"Manual waypoint has work..."<<!waypoints.empty()<<endl;
   return !waypoints.empty();
 }
 
 bool ManualWaypointController::ShouldInterrupt() {
-	cout<<"manualwaypoint controller should interrupt...";
+	//cout<<"manualwaypoint controller should interrupt...";
   bool interrupt = false;
   // If the size of the manual waypoint list has changed, then interrupt.
   if(num_waypoints != waypoints.size() && !waypoints.empty()) {
@@ -31,7 +31,7 @@ bool ManualWaypointController::ShouldInterrupt() {
 }
 
 Result ManualWaypointController::DoWork() {
-	cout<<"ManualWaypointController::DoWork()"<<endl;
+	//cout<<"ManualWaypointController::DoWork()"<<endl;
   Result result;
   result.type = waypoint;
   result.wpts.waypoints.push_back(waypoints.begin()->second);

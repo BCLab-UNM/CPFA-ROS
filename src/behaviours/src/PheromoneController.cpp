@@ -14,7 +14,7 @@ PheromoneController::~PheromoneController()
 
 void PheromoneController::Reset()
 {
-	cout<<"PheromoneStatus: reset pheromone controller..."<<endl;
+	//cout<<"PheromoneStatus: reset pheromone controller..."<<endl;
 	//pheromones.clear(); //qilu 08/2017
   
   targetHeld = true;//qilu 12/2017
@@ -187,10 +187,10 @@ Result PheromoneController::DoWork()
           cout <<"wpTestStatus: Reached pheromone waypoint..."<<endl;
 		  result.type = behavior;
 		  result.b = COMPLETED;
-		  if (attemptCount >=15)
+		  /*if (attemptCount >=15)
           {
 		      cout <<"wpTest: give up to pheromone wp and start to search..."<<endl;
-		  }
+		  }*/
 	  } 
 	  else if(attemptCount<15)
 	  {
@@ -349,7 +349,7 @@ bool PheromoneController::ShouldInterrupt()
 
 bool PheromoneController::HasWork()
 {
-	cout<<"Pheromone has work...True"<<endl;
+	//cout<<"Pheromone has work...True"<<endl;
   bool has_work = true;
   
   return has_work;

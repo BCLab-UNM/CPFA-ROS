@@ -149,27 +149,27 @@ Result LogicController::DoWork()
                {
 				   if(siteFidelityController.SiteFidelityInvalid())
 				   {
-					  cout<<"wpTest: no site fidelity..."<<endl;
+					  cout<<"TestDrift: no site fidelity..."<<endl;
 				   }
 				   else
 				   {
-					  cout<<"wpTest: has fidelity, but do not follow..."<<endl;
+					  cout<<"TestDrift: has fidelity, but do not follow..."<<endl;
 				   }
 				   if(pheromoneController.SelectPheromone())
 				   {
 		             processState = PROCESS_STATE_PHEROMONE; 
-                     cout <<"wpTestStatus: select a pheromone..."<<endl;
+                     cout <<"TestDrift: select a pheromone..."<<endl;
                    }
                    else
                    {
 				     processState = PROCCESS_STATE_SEARCHING; 
-                     cout <<"wpTestStatus: no pheromone trail selected ="<<processState<<"  uninformed search..."<<endl;
+                     cout <<"TestDrift: no pheromone trail selected ="<<processState<<"  uninformed search..."<<endl;
                      searchController.Reset();
 				   }
 			   }
 			   else
 			   {
-				   cout<<"TestStatus: follow site fidelity..."<<endl;
+				   cout<<"TestDrift: follow site fidelity..."<<endl;
 				   }
            }
 	     
@@ -422,7 +422,7 @@ int LogicController::getCollisionCalls()
 {
 	if(obstacleController.HasWork())
 	{
-		cout<<"ObstacleState: get one obstacle avoidance call..."<<endl;
+		//cout<<"ObstacleState: get one obstacle avoidance call..."<<endl;
 		return 1;
 		}
 		
@@ -475,7 +475,7 @@ void LogicController::controllerInterconnect()
 		}
 		else
 		{
-			cout<<"TestStatusA: before avoid obstacle...CPFAStatus="<<searchController.GetCPFAState()<<endl;
+			//cout<<"TestStatusA: before avoid obstacle...CPFAStatus="<<searchController.GetCPFAState()<<endl;
 		    searchController.SetCPFAState(avoid_obstacle);
              //cout<<"TestStatusA: SearchCtrl set to avoid obstacle...CPFAStatus="<<searchController.GetCPFAState()<<endl;			
 			}
