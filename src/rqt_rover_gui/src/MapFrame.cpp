@@ -265,7 +265,7 @@ void MapFrame::paintEvent(QPaintEvent* event)
   QPoint northArrow_point(map_center_x, 0);
   QPoint northArrow_left(map_center_x - 10, 10);
   QPoint northArrow_right(map_center_x + 10, 10);
-  QRect northArrow_textBox(northArrow_left.x() + 2, northArrow_left.y(), 20, 20);
+  QRect northArrow_textBox(northArrow_left.x() + 2, northArrow_left.y(), 30, 30);
 
   if (am_I_the_popout_map == false)
   {
