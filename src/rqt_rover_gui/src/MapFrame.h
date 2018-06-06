@@ -103,7 +103,7 @@ namespace rqt_rover_gui
 
         void ReceiveWaypointReached(int);
         void ReceiveCurrentRoverName(QString);
-        
+
     protected:
 
       void paintEvent(QPaintEvent *event);
@@ -130,14 +130,16 @@ namespace rqt_rover_gui
       set<string> display_list;
       std::map<std::string, QColor> unique_rover_colors;
       std::map<std::string, QColor> unique_simulated_rover_colors;
-      QColor unique_physical_rover_colors[8] = { /* deep sky blue */ QColor(  0, 191, 255),
-                                                 /* lime green  */ QColor( 50, 205,  50),
-                                                 /* Black          */ QColor(0, 0, 0),
-                                                 /* red           */ QColor(255,   0,   0),
-                                                 /* hot pink      */ QColor(255, 105, 180),
-                                                 /* chocolate     */ QColor(210, 105,  30),
-                                                 /* indigo        */ QColor( 75,   0, 130),
-                                                 /* green         */ QColor(  0, 255,   0) };
+      QColor unique_physical_rover_colors[8] = {
+                                                /* black         */ QColor(  0,   0,   0),
+                                                /* dark yellow   */ QColor(153, 153,   0),
+                                                /* gray          */ QColor(100, 100, 100),
+                                                /* red           */ QColor(255,   0,   0),
+                                                /* blue          */ QColor(  0,   0, 255),
+                                                /* dark orange   */ QColor(255, 140,   0),
+                                                /* turquoise     */ QColor(  0, 206, 209),
+                                                /* indigo        */ QColor( 75,   0, 130)
+                                               };
 
       // For external pop out window
       QMainWindow* popout_window;
@@ -162,26 +164,26 @@ namespace rqt_rover_gui
       float min_seen_y_when_manual_enabled;
 
       QPoint mouse_pointer_position = QPoint(0,0);
-      
+
       MapData* map_data;
 
       // Map coordinate data
       // Calculate the axis positions
       int map_origin_x = 0;
       int map_origin_y = 0;
-      
+
       int map_width = 0;
-      int map_height = 0; 
-      
-      int map_center_x = 0; 
+      int map_height = 0;
+
+      int map_center_x = 0;
       int map_center_y = 0;
 
       float max_seen_x = -std::numeric_limits<float>::max();
       float max_seen_y = -std::numeric_limits<float>::max();
-      
+
       float min_seen_x = std::numeric_limits<float>::max();
       float min_seen_y = std::numeric_limits<float>::max();
-      
+
       float max_seen_width = -std::numeric_limits<float>::max();
       float max_seen_height = -std::numeric_limits<float>::max();
 
@@ -197,4 +199,3 @@ namespace rqt_rover_gui
 }
 
 #endif // MapFrame_H
-
