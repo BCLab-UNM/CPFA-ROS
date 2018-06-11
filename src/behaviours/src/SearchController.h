@@ -7,6 +7,9 @@
 #include "CPFAParameters.h"
 #include "Pheromone.h"
 #include "Controller.h"
+#ifndef M_PI
+#define M_PI 3.141592653589793238462643383279502884197169399375105820974944592307816406286
+#endif
 
 /**
  * This class implements the search control algorithm for the rovers. The code
@@ -91,7 +94,7 @@ private:
    */
   //void setPheromone();
   CPFAState cpfa_state = start_state;
-  int arena_size = 15.0;
+  int arena_size = 14.0;
   int local_resource_density; // An estimate of the density of the resources in the local region.
   //std::vector<Pheromone> pheromones; // Stores all pheromone trails
   //map<int, vector<Pheromone>> pheromones;// qilu 08/2017
