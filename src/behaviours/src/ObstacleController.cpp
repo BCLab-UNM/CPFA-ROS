@@ -26,14 +26,28 @@ void ObstacleController::Reset() {
 
 // Avoid crashing into objects detected by the ultraound
 void ObstacleController::avoidObstacle() {
-	cout<<"TestDrift: avoidObstacle..."<<endl;
+	//cout<<"TestDrift: avoidObstacle..."<<endl;
     if (left <= right && left <= center && left <triggerDistance) 
     {  
-      result.pd.cmdAngular = -K_angular; 
+	if(GetCPFAState() == return_to_nest || GetCPFAState() == reached_nest)
+	{
+	    result.pd.cmdAngular = -2*K_angular;
+	}
+	else
+	{
+	    result.pd.cmdAngular = -K_angular;
+	} 
     }
     else if (right < left && right < center && right < triggerDistance) //turn left
     {
-      result.pd.cmdAngular = 1.5*K_angular;
+		if(GetCPFAState() == return_to_nest || GetCPFAState() == reached_nest)
+		{
+			result.pd.cmdAngular = 2*K_angular;
+		}
+		else
+		{
+	        result.pd.cmdAngular = K_angular;
+        }
     }
     else //the obstacle is in front 
     {
@@ -41,7 +55,7 @@ void ObstacleController::avoidObstacle() {
       if(p <= 0.5) //turn left
       {
     //obstacle on right side
-		result.pd.cmdAngular = 1.5*K_angular;
+		result.pd.cmdAngular = K_angular;
       }
       else //turn right
       {
@@ -102,8 +116,8 @@ Result ObstacleController::DoWork() {
     double stepSize;
     if(GetCPFAState() == return_to_nest || GetCPFAState() == reached_nest)
     {
-		stepSize = rng->uniformReal(0.1, 0.2);
-	cout<<"TestDrift: 2****avoid collection disk step size ="<<stepSize<<endl;
+		stepSize = rng->uniformReal(0.05, 0.1);
+	//cout<<"TestDrift: 2****avoid collection disk step size ="<<stepSize<<endl;
 		
 		forward.x = currentLocation.x + (stepSize * cos(currentLocation.theta));
         forward.y = currentLocation.y + (stepSize * sin(currentLocation.theta));
@@ -111,8 +125,8 @@ Result ObstacleController::DoWork() {
     else
     {
 	//cout<<"TestStatusA: ****normal sample wpt..."<<endl;
-	stepSize = rng->uniformReal(0.4, 0.8);
-    cout<<"TestDrift: ####avoid obstacle step size ="<<stepSize<<endl;
+		stepSize = rng->uniformReal(0.5, 0.8);
+    //cout<<"TestDrift: ####avoid obstacle step size ="<<stepSize<<endl;
 	forward.x = currentLocation.x + (stepSize * cos(currentLocation.theta));
         forward.y = currentLocation.y + (stepSize * sin(currentLocation.theta));
     }

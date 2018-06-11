@@ -63,7 +63,7 @@ Result DropOffController::DoWork() {
   //cout << "DropOffController::DoWork() " << endl;
   // Getting the total tag count from the left and the right side of the rover
   int count = countLeft + countRight;
-   
+
   // If the timer has started
   if(timerTimeElapsed > -1) {
     // Calcuate the elapsed time from the current time and the time since
@@ -79,13 +79,12 @@ Result DropOffController::DoWork() {
   //to resart our search.
   if(reachedCollectionPoint)
   {
-    if (timerTimeElapsed >= 10)
+    if (timerTimeElapsed >= 12)
     {
       if (finalInterrupt)
       {
-	    result.type = behavior;
-	    
-		    result.b = nextProcess;
+        result.type = behavior;
+        result.b = nextProcess;
         result.reset = true;
         targetHeld = false; //qilu 02/2018
         return result;       
@@ -99,14 +98,14 @@ Result DropOffController::DoWork() {
     else if (timerTimeElapsed >= 3)
     {
       result.fingerAngle = M_PI_2; //open fingers and drop cubes
-      result.pd.cmdVel = -0.2;
+      result.pd.cmdVel = -0.15;
     }
     else
     {
       isPrecisionDriving = true;
       result.type = precisionDriving;
-      result.wristAngle = -0.9; //raise wrist
-      result.pd.cmdVel = 0.06;
+      result.wristAngle = 0; //raise wrist
+      result.pd.cmdVel = 0.05;
       result.pd.cmdAngularError = 0.0;
     }
 
@@ -252,7 +251,8 @@ Result DropOffController::DoWork() {
     float timeSinceSeeingEnoughCenterTags = elapsed/1e3; // Convert from milliseconds to seconds
 
     //we have driven far enough forward to have passed over the circle.
-    if (count < 5 && seenEnoughCenterTags && timeSinceSeeingEnoughCenterTags > dropDelay) {
+    //if (count < 5 && seenEnoughCenterTags && timeSinceSeeingEnoughCenterTags > dropDelay) {
+    if (seenEnoughCenterTags && timeSinceSeeingEnoughCenterTags > dropDelay) {
       centerSeen = false;
       //cout<<"not seen center"<<endl;
     }

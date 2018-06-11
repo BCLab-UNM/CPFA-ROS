@@ -155,33 +155,33 @@ Result SearchController::DoWork() {
 
 void SearchController::SetRandomSearchLocation() 
 {	 
-	cout<<"TestDrift:: searchLocation.theta="<<searchLocation.theta<<endl;
+	//cout<<"TestDrift:: searchLocation.theta="<<searchLocation.theta<<endl;
 	if(cos(searchLocation.theta)<0)
 	{
-		cout<<"TestDrift:: 1..."<<endl;
+		//cout<<"TestDrift:: 1..."<<endl;
 		searchLocation.x = rng->uniformReal(-arena_size/2.0+2.0, -arena_size/5.0);
 		}
     else
     {
-		cout<<"TestDrift:: 2..."<<endl;
+		//cout<<"TestDrift:: 2..."<<endl;
 		searchLocation.x = rng->uniformReal(arena_size/5.0, arena_size/2.0-2.0);
 		}
-    cout<<"TestDrift:: searchLocation.x="<<searchLocation.x<<endl;
+    //cout<<"TestDrift:: searchLocation.x="<<searchLocation.x<<endl;
     
 	searchLocation.y = searchLocation.x * tan(searchLocation.theta);
-    cout<<"TestDrift:: searchLocation.y="<<searchLocation.y<<endl;
+    //cout<<"TestDrift:: searchLocation.y="<<searchLocation.y<<endl;
 	if(searchLocation.y >= arena_size/2) 
-	{   cout<<"TestDrift:: 3..."<<endl;
+	{   //cout<<"TestDrift:: 3..."<<endl;
 		searchLocation.y = rng->uniformReal(arena_size/5.0, arena_size/2-2.0);
 		searchLocation.x = searchLocation.y/tan(searchLocation.theta);
 	}
 	else if(searchLocation.y <= -arena_size/2)
 	{
-		cout<<"TestDrift:: 4..."<<endl;
+		//cout<<"TestDrift:: 4..."<<endl;
 		searchLocation.y = rng->uniformReal(-arena_size/2.0+2.0, -arena_size/5.0);
 		searchLocation.x = searchLocation.y/tan(searchLocation.theta);
 		}	
-	cout <<"TestDrift:: abs rand location = ["<<searchLocation.x<<","<<searchLocation.y<<"]"<<endl;
+	//cout <<"TestDrift:: abs rand location = ["<<searchLocation.x<<","<<searchLocation.y<<"]"<<endl;
 	searchLocation.x += this->centerLocation.x;
 	searchLocation.y += this->centerLocation.y;
     //cout <<"wpTest: related rand location = ["<<searchLocation.x<<","<<searchLocation.y<<"]"<<endl;
@@ -213,7 +213,7 @@ void SearchController::SetReachedWaypoint(bool reached)
 
 bool SearchController::ShouldInterrupt()
 {
-	cout<<"SwitchStatus: cpfa_state="<<GetCPFAState()<<endl;
+	//cout<<"SwitchStatus: cpfa_state="<<GetCPFAState()<<endl;
 	if(current_time % 3000 <= 100) //check in every 30 seconds 
 	{ 
 		if(GetCPFAState() == travel_to_search_site)
@@ -273,7 +273,7 @@ void SearchController::senseLocalResourceDensity(int num_tags)
     local_resource_density = num_tags;
   }
 
-  cout << "ROSAdapter: targetHandler" << endl;
+  //cout << "ROSAdapter: targetHandler" << endl;
   cout << "local_resource_density: " << local_resource_density << endl;
   cout << endl;
 }

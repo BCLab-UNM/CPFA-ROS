@@ -121,7 +121,7 @@ Result result;
 
 std_msgs::String msg;
 
-float arena_dim =15.0;
+float arena_dim =14.0;
 
 //vector<Point> roverPositions;
 vector<string> roverNames;
@@ -333,8 +333,7 @@ void behaviourStateMachine(const ros::TimerEvent&)
       logicController.SetRoverInitLocation(roverInitPos);
 	      startTime = getROSTimeInMilliSecs();
 	      
-	      logicController.SetArenaSize(arena_dim);
-	 
+	  logicController.SetArenaSize(arena_dim);
 	    }
 
 	    else
@@ -445,13 +444,12 @@ void behaviourStateMachine(const ros::TimerEvent&)
         prevWrist = result.wristAngle;
       }
     }
-  collision_msg.data = logicController.getCollisionCalls();  
-  obstaclePubisher.publish(collision_msg); 
+  collision_msg.data = logicController.getCollisionCalls();
+  obstaclePubisher.publish(collision_msg);
     //publishHandeling here
     //logicController.getPublishData(); suggested
     //adds a blank space between sets of debugging data to easily tell one tick from the next
     cout << endl;
-    
   }
   
   // mode is NOT auto
@@ -552,7 +550,7 @@ void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& messag
 							    tagPose.pose.orientation.w ) );
       tags.push_back(loc);
     }
-    if(num_center_tags >= 5)// reset the location of the center
+    if(num_center_tags >= 1)// reset the location of the center
     {
 		centerLocationMap.x = currentLocationMap.x + 1.0*cos(currentLocationMap.theta);
         centerLocationMap.y = currentLocationMap.y + 1.0*sin(currentLocationMap.theta);
