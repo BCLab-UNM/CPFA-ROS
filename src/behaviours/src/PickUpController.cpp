@@ -165,8 +165,8 @@ void PickUpController::ProcessData()
     //cout << "CPFAStatus Lower wrist and open fingers if no locked target..."<<endl;
     //set gripper;
     result.fingerAngle = M_PI_2;
-    //result.wristAngle = 1.25;
-    result.wristAngle = 0.87;
+    result.wristAngle = 1.2;
+    //result.wristAngle = 0.87;
   }
 }
 
@@ -293,7 +293,7 @@ Result PickUpController::DoWork()
         result.pd.cmdVel = 0.0;
         result.pd.cmdAngularError= 0.0;
         //result.wristAngle = 1.25;
-        result.wristAngle = 0.87;
+        result.wristAngle = 1.2;
         // result.fingerAngle does not need to be set here
 
         // We are getting ready to start the pre-programmed pickup routine now! Maybe? <(^_^)/"

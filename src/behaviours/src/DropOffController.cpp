@@ -17,7 +17,8 @@ DropOffController::DropOffController() {
   result.type = behavior;
   // The b is of the BehaviorTrigger enum
   result.b = wait;
-  result.wristAngle = 0.7;
+  //result.wristAngle = 0.7;
+  result.wristAngle = 1.0;
   result.reset = false;
   interrupt = false;
 
@@ -323,7 +324,8 @@ void DropOffController::Reset() {
   result.pd.cmdVel = 0;
   result.pd.cmdAngularError = 0;
   result.fingerAngle = -1;
-  result.wristAngle = 0.7;
+  //result.wristAngle = 0.7;
+  result.wristAngle = 1.0;
   result.reset = false;
   //result.lay_pheromone = false;
   result.wpts.waypoints.clear();
