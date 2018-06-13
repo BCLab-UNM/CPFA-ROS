@@ -433,7 +433,9 @@ void MapFrame::paintEvent(QPaintEvent* event)
       rover_color = unique_physical_rover_colors[hardware_rover_color_index];
     }
 
-    painter.setPen(rover_color);
+    QPen pen = QPen(rover_color);
+    pen.setWidth(3);
+    painter.setPen(pen);
 
     if(!display_unique_rover_colors) painter.setPen(red);
 
