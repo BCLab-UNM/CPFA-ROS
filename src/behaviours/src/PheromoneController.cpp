@@ -137,7 +137,7 @@ Result PheromoneController::DoWork()
 	    {
 			total_resource += max_num_tags;
 			}
-	  cout<<"TestStatus: the final density="<<total_resource<<endl;
+	  //cout<<"TestStatus: the final density="<<total_resource<<endl;
 	  detect_resource_angle.clear();
 	  num_resource_detected.clear();
 	  //cout<<"PheromoneStatus: num_resource_detected size="<<num_resource_detected.size()<<endl;
