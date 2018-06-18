@@ -73,7 +73,7 @@ void ObstacleController::avoidObstacle() {
 // A collection zone was seen in front of the rover and we are not carrying a target
 // so avoid running over the collection zone and possibly pushing cubes out.
 void ObstacleController::avoidCollectionZone() {
- cout<<"TestDrift: avoid collection zone..."<<endl;
+ //cout<<"TestDrift: avoid collection zone..."<<endl;
     result.type = precisionDriving;
 
     if (pitches < 0) //turn to the right
@@ -116,9 +116,7 @@ Result ObstacleController::DoWork() {
     double stepSize;
     if(GetCPFAState() == return_to_nest || GetCPFAState() == reached_nest)
     {
-		stepSize = rng->uniformReal(0.05, 0.1);
-	//cout<<"TestDrift: 2****avoid collection disk step size ="<<stepSize<<endl;
-		
+		stepSize = rng->uniformReal(0.15, 0.25);// the minimum should be greater than 0.15 (waypoint tolerance)
 		forward.x = currentLocation.x + (stepSize * cos(currentLocation.theta));
         forward.y = currentLocation.y + (stepSize * sin(currentLocation.theta));
     }
@@ -162,11 +160,11 @@ void ObstacleController::ProcessData() {
 	  //cout<<"TestStatus: set collection_zone_seen to false; "<<collection_zone_seen<<endl;
     collection_zone_seen = false; 
     phys= false;
-    //if (!obstacleAvoided)
-    //{
+    if (!obstacleAvoided)
+    {
 	//cout<<"TestStatusA: obstacle not avoid..."<<endl;
       can_set_waypoint = true;
-    //}
+    }
   }
 
   //If we are ignoring the center sonar
