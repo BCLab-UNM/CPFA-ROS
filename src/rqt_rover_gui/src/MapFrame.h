@@ -90,6 +90,7 @@ namespace rqt_rover_gui
 
       // Show a copy of the map in its own resizable window
       void popout();
+      void setPopoutFlag();
 
       ~MapFrame();
 
@@ -123,6 +124,7 @@ namespace rqt_rover_gui
       bool display_encoder_data;
       bool display_global_offset;
       bool display_unique_rover_colors;
+      bool am_I_the_popout_map = false;
 
       QTime frame_rate_timer;
       int frames;
