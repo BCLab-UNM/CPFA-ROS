@@ -801,6 +801,7 @@ void RoverGUIPlugin::pollRoversTimerEventHandler()
         gps_nav_solution_subscribers[*it].shutdown();
         ekf_subscribers[*it].shutdown();
         rover_diagnostic_subscribers[*it].shutdown();
+        center_location_offset_subscribers[*it].shutdown();
 
         // Delete the subscribers
         status_subscribers.erase(*it);
@@ -810,6 +811,7 @@ void RoverGUIPlugin::pollRoversTimerEventHandler()
         gps_nav_solution_subscribers.erase(*it);
         ekf_subscribers.erase(*it);
         rover_diagnostic_subscribers.erase(*it);
+        center_location_offset_subscribers.erase(*it);
 
         // Shudown Publishers
         control_mode_publishers[*it].shutdown();
@@ -916,6 +918,7 @@ void RoverGUIPlugin::pollRoversTimerEventHandler()
             gps_subscribers[*i] = nh.subscribe("/"+*i+"/odom/navsat", 10, &RoverGUIPlugin::GPSEventHandler, this);
             gps_nav_solution_subscribers[*i] = nh.subscribe("/"+*i+"/navsol", 10, &RoverGUIPlugin::GPSNavSolutionEventHandler, this);
             rover_diagnostic_subscribers[*i] = nh.subscribe("/"+*i+"/diagnostics", 1, &RoverGUIPlugin::diagnosticEventHandler, this);
+          center_location_offset_subscribers[*i] = nh.subscribe("/"+*i+"/centerLocationOffset", 10, &RoverGUIPlugin::centerLocationOffsetHandler, this);
 
            RoverStatus rover_status;
            // Build new ui rover list string
@@ -1169,6 +1172,26 @@ void RoverGUIPlugin::diagnosticEventHandler(const ros::MessageEvent<const std_ms
 
     emit sendDiagsDataUpdate(QString::fromStdString(rover_name), QString::fromStdString(diagnostic_display), QColor(red, green, blue));
 
+}
+
+void RoverGUIPlugin::centerLocationOffsetHandler(const ros::MessageEvent<std_msgs::Float32MultiArray const> &event)
+{
+  const std::string& publisher_name = event.getPublisherName();
+
+  // We need to parse the publisher name to get the rover name
+  //     publisher_name = /roverName_BEHAVIOUR; we just want "roverName"
+  const std::string& rover_name = publisher_name.substr(1, publisher_name.find("_") - 1);
+  const boost::shared_ptr<const std_msgs::Float32MultiArray> msg = event.getMessage();
+
+  // data[0] = X
+  // data[1] = Y
+  // data[2] = theta
+  std::vector<float> data = msg->data;
+
+  // for debugging
+  // emit sendInfoLogMessage("[CenterLocationOffsetHandler] !!! updating global offset for: " + QString::fromStdString(rover_name));
+
+  ui.map_frame->SetGlobalOffsetForRover(rover_name, data[0], data[1]);
 }
 
 // We use item changed signal as a proxy for the checkbox being clicked

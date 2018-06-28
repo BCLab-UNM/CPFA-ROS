@@ -117,7 +117,7 @@ namespace rqt_rover_gui {
     void scoreEventHandler(const ros::MessageEvent<std_msgs::String const> &event);
     void simulationTimerEventHandler(const rosgraph_msgs::Clock& msg);
     void diagnosticEventHandler(const ros::MessageEvent<std_msgs::Float32MultiArray const> &event);
-
+    void centerLocationOffsetHandler(const ros::MessageEvent<std_msgs::Float32MultiArray const> &event);
     void centerUSEventHandler(const sensor_msgs::Range::ConstPtr& msg);
     void leftUSEventHandler(const sensor_msgs::Range::ConstPtr& msg);
     void rightUSEventHandler(const sensor_msgs::Range::ConstPtr& msg);
@@ -230,6 +230,7 @@ namespace rqt_rover_gui {
     map<string,ros::Subscriber> ekf_subscribers;
     map<string,ros::Subscriber> rover_diagnostic_subscribers;
     map<string,ros::Subscriber> waypoint_subscribers;
+    map<string,ros::Subscriber> center_location_offset_subscribers;
     ros::Subscriber us_center_subscriber;
     ros::Subscriber us_left_subscriber;
     ros::Subscriber us_right_subscriber;
