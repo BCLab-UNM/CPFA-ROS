@@ -555,7 +555,7 @@ void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& messag
 		centerLocationMap.x = currentLocationMap.x + 1.0*cos(currentLocationMap.theta);
         centerLocationMap.y = currentLocationMap.y + 1.0*sin(currentLocationMap.theta);
         centerLocationOdom.x = currentLocation.x + 1.0*cos(currentLocation.theta);
-        centerLocationOdom.y = currentLocation.y + + 1.0*sin(currentLocation.theta);  
+        centerLocationOdom.y = currentLocation.y + 1.0*sin(currentLocation.theta);  
 	}
     
         
