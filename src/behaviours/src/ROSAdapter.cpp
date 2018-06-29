@@ -145,6 +145,7 @@ ros::Publisher heartbeatPublisher;
 ros::Publisher waypointFeedbackPublisher;
 ros::Publisher pheromoneTrailPublisher;//qilu 12/2017
 ros::Publisher obstaclePubisher;
+ros::Publisher centerLocationOffsetPublisher;
 
 // Publishes swarmie_msgs::Waypoint messages on "/<robot>/waypooints"
 // to indicate when waypoints have been reached.
@@ -250,6 +251,7 @@ int main(int argc, char **argv) {
   pheromoneTrailPublisher = mNH.advertise<swarmie_msgs::PheromoneTrail>("/pheromones", 10, true);
   waypointFeedbackPublisher = mNH.advertise<swarmie_msgs::Waypoint>((publishedName + "/waypoints"), 1, true);
 
+  centerLocationOffsetPublisher = mNH.advertise<std_msgs::Float32MultiArray>((publishedName + "/centerLocationOffset"), 10, true);
   publish_status_timer = mNH.createTimer(ros::Duration(status_publish_interval), publishStatusTimerEventHandler);
   stateMachineTimer = mNH.createTimer(ros::Duration(behaviourLoopTimeStep), behaviourStateMachine);
   
@@ -315,6 +317,15 @@ void behaviourStateMachine(const ros::TimerEvent&)
 	      centerOdom.theta = centerLocation.theta;
 	      logicController.SetCenterLocationOdom(centerOdom);
 	      
+        // Set the global offset for physical rovers; we assume that a robot
+        // is placed a specified distance from the center... This position
+        // will be the negative of centerOdom.
+        std_msgs::Float32MultiArray centerOdomOffsetMessage;
+        centerOdomOffsetMessage.data.push_back(-centerOdom.x);
+        centerOdomOffsetMessage.data.push_back(-centerOdom.y);
+        centerOdomOffsetMessage.data.push_back(centerOdom.theta);
+        centerLocationOffsetPublisher.publish(centerOdomOffsetMessage);
+
 	      Point centerMap;
 	      centerMap.x = currentLocationMap.x + (1.308 * cos(currentLocationMap.theta));
 	      centerMap.y = currentLocationMap.y + (1.308 * sin(currentLocationMap.theta));
