@@ -216,6 +216,7 @@ bool SearchController::ShouldInterrupt()
 	//cout<<"SwitchStatus: cpfa_state="<<GetCPFAState()<<endl;
 	if(current_time % 3000 <= 100) //check in every 30 seconds 
 	{ 
+		cout<<"giveupTest: GetCPFAState()="<<GetCPFAState()<<endl;
 		if(GetCPFAState() == travel_to_search_site)
 		{
 	        double rndNum = rng->uniformReal(0.0, 1.0);
@@ -233,13 +234,15 @@ bool SearchController::ShouldInterrupt()
         else if(GetCPFAState() == search_with_uninformed_walk || GetCPFAState() == search_with_informed_walk)
         {  
 	        double rndNum = rng->uniformReal(0.0, 1.0);
+	        cout<<"giveupTest: rndNum ="<< rndNum<<endl;
+	        cout<<"giveupTest: giveup rate="<<CPFA_parameters.probability_of_returning_to_nest<<endl;
 	        if(rndNum < CPFA_parameters.probability_of_returning_to_nest)
 	        {
 				result.reset = true;
                 result.wpts.waypoints.clear();
    	            SetGiveupSearch(true);
 				SetCPFAState(return_to_nest);
-				cout<<"wpTest:: 2. give up and return to nest..."<<endl;
+				cout<<"giveupTest:: 2. give up and return to nest..."<<endl;
 			    return true;	
 				}
 	    }
