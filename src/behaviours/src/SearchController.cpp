@@ -44,7 +44,7 @@ Result SearchController::DoWork() {
 		//cout<<"TestStatusSwitchStatus: SearchCTRL, reach waypoint..."<<endl;
 	    if(GetCPFAState() == avoid_obstacle)
         {
-			if(attemptCount<15)
+			if(attemptCount<8)
 			{
 				attemptCount++;//count the times to approach the location. If the rover always see an obstacle, it should give up. 
 		        cout<<"wpTestStatus: travel to the previous location before avoiding obstacles "<<attemptCount<<endl; 
