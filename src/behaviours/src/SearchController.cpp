@@ -231,7 +231,7 @@ bool SearchController::ShouldInterrupt()
               return true;
             }
         }
-        else if(GetCPFAState() == search_with_uninformed_walk || GetCPFAState() == search_with_informed_walk)
+        else if(GetCPFAState() == reach_search_site || GetCPFAState() == search_with_uninformed_walk || GetCPFAState() == search_with_informed_walk || GetCPFAState() == avoid_obstacle)
         {  
 	        double rndNum = rng->uniformReal(0.0, 1.0);
 	        cout<<"giveupTest: rndNum ="<< rndNum<<endl;
