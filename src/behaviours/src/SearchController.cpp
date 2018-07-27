@@ -66,7 +66,7 @@ Result SearchController::DoWork() {
 	      //SetCPFAState(reached_nest);
 	      //cout<<"TestStatusSwitchStatus: reached nest..."<<endl;
 		  //cout<<"wpTestStatus: start a new round ..."<<endl;
-		  informed_search = true;
+		  //informed_search = true;
           first_waypoint = true;   
           result.type = behavior;
           SetCPFAState(start_state);
