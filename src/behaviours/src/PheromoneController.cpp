@@ -208,7 +208,7 @@ Result PheromoneController::DoWork()
 void PheromoneController::UpdatePheromoneList()
 {
   vector<Pheromone> newPheromoneList;
-  //cout<<"PheromoneStatus: pheromones.size()="<<pheromones.size()<<endl;
+  cout<<"wpTestStatus: pheromones.size()="<<pheromones.size()<<endl;
   //cout<<"PheromoneStatus: update pheromone, current_time="<<current_time<<endl;
   for(int i = 0; i < pheromones.size(); i++) 
   {
@@ -222,7 +222,7 @@ void PheromoneController::UpdatePheromoneList()
     }
     else
     {
-		cout<<"TestStatus: the pheromone ["<<pheromones[i].getLocation().x<<","<<pheromones[i].getLocation().y<<"] is inactive"<<endl;
+		cout<<"wpTestStatus: the pheromone ["<<pheromones[i].getLocation().x<<","<<pheromones[i].getLocation().y<<"] is inactive"<<endl;
 		}
   }
   pheromones = newPheromoneList;
@@ -309,12 +309,12 @@ void PheromoneController::InsertPheromone( const vector<Point> &pheromone_trail,
   // the first index of the trail is the same position as the pheromone location
   Point new_location = pheromone_trail[0];
   //Pheromone pheromone(new_location, pheromone_trail, ros::Time::now(), rate_of_pheromone_decay);
-  cout<<"TestStatus: create pheromone..."<<endl;
+  cout<<"wpTestStatus: create pheromone..."<<endl;
   Pheromone pheromone(new_location, pheromone_trail, current_time, pheromone_decay_rate);
 
   pheromones.push_back(pheromone);
   //pheromones[center_id].push_back(pheromone);
-  cout << "TestStatus: pheromoneLocation=[" << pheromone_trail[0].x << ", " << pheromone_trail[0].y<<"]" << endl;
+  cout << "wpTestStatus: pheromoneLocation=[" << pheromone_trail[0].x << ", " << pheromone_trail[0].y<<"]" << endl;
   
   /*for(map<int, vector<Pheromone>>::iterator it= pheromones.begin(); it!=pheromones.end(); ++it) {
                 for(int i=0; i<it->second.size(); i++){

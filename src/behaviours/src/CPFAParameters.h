@@ -11,9 +11,9 @@ struct CPFAParameters {
   // Lower causes it to decay slower
   const float rate_of_informed_search_decay = 0.1;
   // Reduce these to increase probability
-  const float rate_of_following_site_fidelity = 12; //0.3; original is 0.3; range [0, 20]; 0 -> 1; 20 -> 0
+  const float rate_of_following_site_fidelity = 8; //0.3; original is 0.3; range [0, 20]; 0 -> 1; 20 -> 0
   const float rate_of_laying_pheromone = 10; //range [0, 20]; 0 -> 1; 20 -> 0
-  const float rate_of_pheromone_decay = 0.1; //range [0, 1];
+  const float rate_of_pheromone_decay = 0.01; //range [0, 1]; Last only half min with 0.025, last 1 min and 10 sec. 
   
 };
 

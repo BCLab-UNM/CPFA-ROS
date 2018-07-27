@@ -382,7 +382,7 @@ void behaviourStateMachine(const ros::TimerEvent&)
       pheromone_location.y = pheromone_location_point.y - centerLocation.y;
       
       //map to the global location related to the rover's initial location
-      cout<<"LocationTest: rovername="<<publishedName<<endl;
+      cout<<"wpTestStatusLocationTest: rovername="<<publishedName<<endl;
       pheromone_location.x += roverInitPos.x;   
       pheromone_location.y += roverInitPos.y;
       

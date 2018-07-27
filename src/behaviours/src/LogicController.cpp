@@ -149,27 +149,27 @@ Result LogicController::DoWork()
                {
 				   if(siteFidelityController.SiteFidelityInvalid())
 				   {
-					  cout<<"TestDrift: no site fidelity..."<<endl;
+					  cout<<"wpTestStatusTestDrift: no site fidelity..."<<endl;
 				   }
 				   else
 				   {
-					  cout<<"TestDrift: has fidelity, but do not follow..."<<endl;
+					  cout<<"wpTestStatusTestDrift: has fidelity, but do not follow..."<<endl;
 				   }
 				   if(pheromoneController.SelectPheromone())
 				   {
 		             processState = PROCESS_STATE_PHEROMONE; 
-                     cout <<"TestDrift: select a pheromone..."<<endl;
+                     cout <<"wpTestStatusDrift: select a pheromone..."<<endl;
                    }
                    else
                    {
 				     processState = PROCCESS_STATE_SEARCHING; 
-                     cout <<"TestDrift: no pheromone trail selected ="<<processState<<"  uninformed search..."<<endl;
+                     cout <<"wpTestStatusTestDrift: no pheromone trail selected ="<<processState<<"  uninformed search..."<<endl;
                      searchController.Reset();
 				   }
 			   }
 			   else
 			   {
-				   cout<<"TestDrift: follow site fidelity..."<<endl;
+				   cout<<"wpTestStatusTestDrift: follow site fidelity..."<<endl;
 				   }
            }
 	     
