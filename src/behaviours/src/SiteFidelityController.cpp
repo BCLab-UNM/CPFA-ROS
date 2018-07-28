@@ -33,7 +33,7 @@ Result SiteFidelityController::DoWork()
   cout <<"wpTest: site_fidelity_location="<<site_fidelity_location.x<<", "<<site_fidelity_location.y<<endl;
   cout <<"SF: current_location="<<current_location.x<<", "<<current_location.y<<endl;
           
-  if (hypot(site_fidelity_location.x - current_location.x, site_fidelity_location.y - current_location.y) < 0.15 || attemptCount>=15) 
+  if (hypot(site_fidelity_location.x - current_location.x, site_fidelity_location.y - current_location.y) < 0.15 || attemptCount>=ATTEMPT_MAX) 
   {
 	  cout <<"wpTest: SF: Reached site fidelity"<<endl;
 	  attemptCount=0;
@@ -41,13 +41,13 @@ Result SiteFidelityController::DoWork()
     result.type = behavior;
     result.b = COMPLETED;
     cout <<"result.wpts.waypoints size="<<result.wpts.waypoints.size()<<endl;
-    if (attemptCount >=15)
+    if (attemptCount >=ATTEMPT_MAX)
     {
 		cout <<"wpTest: give up to go to site fidelity and start to search..."<<endl;
 		}
   } 
 
-  else if(attemptCount<15)
+  else if(attemptCount<ATTEMPT_MAX)
   {
 	  attemptCount++;
 	  cout<<"wpTest: SF: travel to site fidelity, attemptCount="<<attemptCount<<endl; 

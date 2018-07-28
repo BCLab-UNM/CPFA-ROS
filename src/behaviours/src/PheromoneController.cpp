@@ -178,7 +178,7 @@ Result PheromoneController::DoWork()
 	 
 	  cout<<"wpTestStatus: selected_pheromone=["<<selected_pheromone.x<<", "<<selected_pheromone.y<<"]"<<endl;
       //cout<<"PheromoneStatus: current_location.x="<<current_location.x<<endl;
-	  if (hypot(selected_pheromone.x - current_location.x, selected_pheromone.y - current_location.y) < 0.15 || attemptCount>=15) 
+	  if (hypot(selected_pheromone.x - current_location.x, selected_pheromone.y - current_location.y) < 0.15 || attemptCount>=ATTEMPT_MAX) 
 	  {
 		  attemptCount=0;
           drive_to_pheromone= false;
@@ -192,7 +192,7 @@ Result PheromoneController::DoWork()
 		      cout <<"wpTest: give up to pheromone wp and start to search..."<<endl;
 		  }*/
 	  } 
-	  else if(attemptCount<15)
+	  else if(attemptCount<ATTEMPT_MAX)
 	  {
 		  attemptCount++;
           cout <<"wpTestStatus: travel to pheromone_waypoint ["<<selected_pheromone.x<<", "<<selected_pheromone.y<<"]"<<endl;

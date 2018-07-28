@@ -13,7 +13,7 @@ struct CPFAParameters {
   // Reduce these to increase probability
   const float rate_of_following_site_fidelity = 12; //0.3; original is 0.3; range [0, 20]; 0 -> 1; 20 -> 0 
   const float rate_of_laying_pheromone = 17; //range [0, 20]; 0 -> 1; 20 -> 0
-  const float rate_of_pheromone_decay = 0.01; //range [0, 1]; Last only half min with 0.025, last 1 min and 10 sec. 
+  const float rate_of_pheromone_decay = 0.01; //range [0, 1]; Last only half min with 0.025, last 1 min and 10 sec with 0.01. 
   // more using site fidelity or pheromone wp causes high collision rate and reduces foraging rate. 
 };
 
