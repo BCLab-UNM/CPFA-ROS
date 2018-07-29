@@ -10,7 +10,7 @@
 #include "Tag.h"
 #include <angles/angles.h>
 #ifndef ATTEMPT_MAX
-#define ATTEMPT_MAX 8
+#define ATTEMPT_MAX 15
 #endif
 class PheromoneController : virtual Controller
 {
