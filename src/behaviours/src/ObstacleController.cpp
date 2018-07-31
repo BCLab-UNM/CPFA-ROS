@@ -27,26 +27,9 @@ void ObstacleController::Reset() {
 // Avoid crashing into objects detected by the ultraound
 void ObstacleController::avoidObstacle() {
 	//cout<<"TestDrift: avoidObstacle..."<<endl;
-    if (left <= right && left <= center && left <triggerDistance) 
+    if (left <= triggerDistance || center <= triggerDistance || right <= triggerDistance)//turn to right 
     {  
-        result.pd.cmdAngular = -K_angular;
-    }
-    else if (right < left && right < center && right < triggerDistance) //turn left
-    {	
-	    result.pd.cmdAngular = K_angular;   
-    }
-    else //the obstacle is in front 
-    {
-	double p = rng->uniformReal(0, 1.0);
-      if(p <= 0.5) //turn left
-      {
-    //obstacle on right side
-		result.pd.cmdAngular = K_angular;
-      }
-      else //turn right
-      {
-        result.pd.cmdAngular = -K_angular;
-	  }
+	    result.pd.cmdAngular = -K_angular; 
     }
     result.type = precisionDriving;
     result.pd.setPointVel = 0.0;
