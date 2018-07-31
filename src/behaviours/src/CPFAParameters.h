@@ -4,8 +4,8 @@
 struct CPFAParameters {
   const float random_seed = -1;
   //For no obst.
-  const float probability_of_switching_to_searching = 0.1;
-  const float probability_of_returning_to_nest = 0.015;//0.01;
+  const float probability_of_switching_to_searching = 0.08;
+  const float probability_of_returning_to_nest = 0.02;//0.01;
   // In radians
   const float uninformed_search_variation = 0.6; //range [0, pi]
   // Lower causes it to decay slower
