@@ -27,10 +27,14 @@ void ObstacleController::Reset() {
 // Avoid crashing into objects detected by the ultraound
 void ObstacleController::avoidObstacle() {
 	//cout<<"TestDrift: avoidObstacle..."<<endl;
-    if (left <= triggerDistance || center <= triggerDistance || right <= triggerDistance)//turn to right 
+    if (left <= right && left <= triggerDistance)//turn to right 
     {  
 	    result.pd.cmdAngular = -K_angular; 
     }
+    else if (right < left && right <= triggerDistance) //turn to left
+    {
+		result.pd.cmdAngular = K_angular;
+	}
     result.type = precisionDriving;
     result.pd.setPointVel = 0.0;
     
@@ -85,14 +89,15 @@ Result ObstacleController::DoWork() {
     double stepSize;
     if(GetCPFAState() == return_to_nest || GetCPFAState() == reached_nest)
     {
-		stepSize = rng->uniformReal(0.15, 0.25);// the minimum should be greater than 0.15 (waypoint tolerance)
+		//stepSize = rng->uniformReal(0.15, 0.25);// the minimum should be greater than 0.15 (waypoint tolerance)
+		stepSize = 0.3; 
 		forward.x = currentLocation.x + (stepSize * cos(currentLocation.theta));
         forward.y = currentLocation.y + (stepSize * sin(currentLocation.theta));
     }
     else
     {
 	//cout<<"TestStatusA: ****normal sample wpt..."<<endl;
-		stepSize = rng->uniformReal(0.5, 0.8);
+	stepSize = rng->uniformReal(0.6, 0.8);
     //cout<<"TestDrift: ####avoid obstacle step size ="<<stepSize<<endl;
 	forward.x = currentLocation.x + (stepSize * cos(currentLocation.theta));
         forward.y = currentLocation.y + (stepSize * sin(currentLocation.theta));
