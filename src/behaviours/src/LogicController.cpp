@@ -752,6 +752,8 @@ bool LogicController::layPheromone() {
     } 
     else 
     {
+		cout << "wpTest: Not Lay a pheromone..." << endl;
+      
       return false;
     }
   }
