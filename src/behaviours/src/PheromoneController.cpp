@@ -208,7 +208,7 @@ Result PheromoneController::DoWork()
 void PheromoneController::UpdatePheromoneList()
 {
   vector<Pheromone> newPheromoneList;
-  cout<<"wpTestStatus: pheromones.size()="<<pheromones.size()<<endl;
+  //cout<<"wpTestStatus: pheromones.size()="<<pheromones.size()<<endl;
   //cout<<"PheromoneStatus: update pheromone, current_time="<<current_time<<endl;
   for(int i = 0; i < pheromones.size(); i++) 
   {

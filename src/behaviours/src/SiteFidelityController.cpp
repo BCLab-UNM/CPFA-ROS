@@ -28,10 +28,10 @@ void SiteFidelityController::SiteFidelityReset()
 	  
 Result SiteFidelityController::DoWork() 
 {
-	cout<<"CPFAStatus: SiteFidelityController::DoWork()"<<endl;
+	//cout<<"CPFAStatus: SiteFidelityController::DoWork()"<<endl;
   Result result;
   cout <<"wpTest: site_fidelity_location="<<site_fidelity_location.x<<", "<<site_fidelity_location.y<<endl;
-  cout <<"SF: current_location="<<current_location.x<<", "<<current_location.y<<endl;
+  //cout <<"SF: current_location="<<current_location.x<<", "<<current_location.y<<endl;
           
   if (hypot(site_fidelity_location.x - current_location.x, site_fidelity_location.y - current_location.y) < 0.15 || attemptCount>=ATTEMPT_MAX) 
   {
