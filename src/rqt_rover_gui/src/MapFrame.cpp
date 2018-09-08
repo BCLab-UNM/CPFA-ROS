@@ -479,7 +479,7 @@ void MapFrame::paintEvent(QPaintEvent* event)
     }
 
     QPen pen = QPen(rover_color);
-    pen.setWidth(2.5);
+    pen.setWidth(3.0);
     painter.setPen(pen);
 
     if(!display_unique_rover_colors) painter.setPen(red);
@@ -495,7 +495,7 @@ void MapFrame::paintEvent(QPaintEvent* event)
     { 
 		//painter.setPen(green);
 		QPen pen = QPen(green);
-        pen.setWidth(2.5);
+        pen.setWidth(3.0);
         painter.setPen(pen);
 	}
 
