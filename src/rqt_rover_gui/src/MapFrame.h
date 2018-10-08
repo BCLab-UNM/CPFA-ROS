@@ -134,10 +134,10 @@ namespace rqt_rover_gui
       std::map<std::string, QColor> unique_simulated_rover_colors;
       QColor unique_physical_rover_colors[8] = {
                                                 /* black         */ QColor(  0,   0,   0),
-                                                /* dark yellow   */ QColor(153, 153,   0),
-                                                /* gray          */ QColor(100, 100, 100),
-                                                /* red           */ QColor(255,   0,   0),
                                                 /* blue          */ QColor(  0,   0, 255),
+                                                 /* lime green  */ QColor( 50, 205,  50),
+                                                /* red           */ QColor(255,   0,   0),
+                                                /* dark yellow   */ QColor(214, 214,   0),
                                                 /* dark orange   */ QColor(255, 140,   0),
                                                 /* turquoise     */ QColor(  0, 206, 209),
                                                 /* indigo        */ QColor( 75,   0, 130)
@@ -173,19 +173,19 @@ namespace rqt_rover_gui
       // Calculate the axis positions
       int map_origin_x = 0;
       int map_origin_y = 0;
-
+      
       int map_width = 0;
-      int map_height = 0;
-
-      int map_center_x = 0;
+      int map_height = 0; 
+      
+      int map_center_x = 0; 
       int map_center_y = 0;
 
       float max_seen_x = -std::numeric_limits<float>::max();
       float max_seen_y = -std::numeric_limits<float>::max();
-
+      
       float min_seen_x = std::numeric_limits<float>::max();
       float min_seen_y = std::numeric_limits<float>::max();
-
+      
       float max_seen_width = -std::numeric_limits<float>::max();
       float max_seen_height = -std::numeric_limits<float>::max();
 
@@ -201,3 +201,4 @@ namespace rqt_rover_gui
 }
 
 #endif // MapFrame_H
+

@@ -172,7 +172,7 @@
 				</geometry>
 				<material>
 					<script>
-						<name>Gazebo/Blue</name>
+						<name>Gazebo/Yellow</name>
 					</script>
 				</material>
 			</visual>

@@ -46,11 +46,11 @@ private:
   // and are those AprilTags oriented towards or away from the camera.
   bool checkForCollectionZoneTags( vector<Tag> );
   
-  const float K_angular = 1.0; //origin is 1.2; radians a second turn rate to avoid obstacles
-  const float reactivate_center_sonar_threshold = 0.8; //reactive center sonar if it goes back above this distance, assuming it is deactivated
+  const float K_angular = 0.8; //1.2; //radians a second turn rate to avoid obstacles
+  const float reactivate_center_sonar_threshold = 0.5;  //origin is 0.8; reactive center sonar if it goes back above this distance, assuming it is deactivated
   const int targetCountPivot = 6; ///unused variable
   const float obstacleDistancePivot = 0.2526; ///unused variable
-  const float triggerDistance = 0.8;
+  const float triggerDistance = 0.5; //origin is 0.8
 
   /*
      * Member variables

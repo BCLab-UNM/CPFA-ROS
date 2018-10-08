@@ -24,6 +24,7 @@ public:
   void SetCenterLocation(Point center);
   void SetCurrentLocation(Point current);
   void SetTargetPickedUp();
+  void SetRoverInitLocation(Point location);
   
   void SetBlockBlockingUltrasound(bool blockBlock);
   void SetTagData(std::vector<Tag> tags);
@@ -52,7 +53,7 @@ private:
   const float initialSpinSize = 0.05; //in meters aka 10cm
   const float spinSizeIncrement = 0.50; //in meters
   const float searchVelocity = 0.15; //in meters per second
-  const float dropDelay = 0.45; //delay in seconds for dropOff
+  const float dropDelay = 0.5; //delay in seconds for dropOff
   
   int local_resource_density = 0;
   random_numbers::RandomNumberGenerator* rng;
@@ -89,6 +90,7 @@ private:
   Point currentLocation;
   //Point site_fidelity_location; //11/2017
   
+  Point roverInitLocation;
   //Time since modeTimer was started, in seconds
   float timerTimeElapsed;
 

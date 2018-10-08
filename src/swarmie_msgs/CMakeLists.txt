@@ -49,7 +49,6 @@ add_message_files(
   FILES
   Waypoint.msg
   PheromoneTrail.msg
-  RoverInfo.msg
 )
 
 ## Generate services in the 'srv' folder

@@ -51,6 +51,7 @@ MapFrame::MapFrame(QWidget *parent, Qt::WindowFlags flags) : QFrame(parent)
 
   // Trigger mouseMoveEvent even when button not pressed
   setMouseTracking(true);
+
 }
 
 // This can't go in the constructor or there will be an infinite regression.
@@ -59,7 +60,6 @@ void MapFrame::CreatePopoutWindow( MapData * map_data )
 {
   popout_window = new QMainWindow();
   popout_window->setWindowTitle("Navigation Map");
-
   popout_mapframe = new MapFrame(popout_window, 0);
   popout_mapframe->SetMapData(map_data);
   popout_mapframe->setPopoutFlag();
@@ -99,7 +99,6 @@ void MapFrame::paintEvent(QPaintEvent* event)
 
   font.setPointSize(font_size);
   painter.setFont(font);
-
   QFontMetrics fm(font);
 
   // Track the frames per second for development purposes
@@ -228,7 +227,7 @@ void MapFrame::paintEvent(QPaintEvent* event)
   max_seen_height > max_seen_width ? max_seen_width = max_seen_height : max_seen_height = max_seen_width;
 
   // Calculate the axis positions
-  if (am_I_the_popout_map == true)
+  if (am_I_the_popout_map)
   {
     map_origin_x = fm.width(QString::number(-max_seen_height, 'f', 1)) + 5;
     map_origin_y = (2*fm.height()) + 5;
@@ -239,7 +238,7 @@ void MapFrame::paintEvent(QPaintEvent* event)
     map_origin_y = 2*fm.height();
   }
 
-  map_width = this->width()-1; // Minus 1 or will go off the edge
+  map_width = this->width()-1;// Minus 1 or will go off the edge
   map_height = this->height()-1;
 
   int map_center_x = map_origin_x+((map_width-map_origin_x)/2);
@@ -247,6 +246,12 @@ void MapFrame::paintEvent(QPaintEvent* event)
 
   // The map axes do not need to be redrawn for each rover so this code is
   // sandwiched between the two rover display list loops
+
+  // Draw the scale bars
+  //painter.setPen(Qt::gray);
+  //painter.drawLine(QPoint(map_center_x, map_origin_y), QPoint(map_center_x, map_height));
+  //painter.drawLine(QPoint(map_origin_x, map_center_y), QPoint(map_width, map_center_y));
+  //painter.setPen(Qt::white);
 
   // Cross hairs at map display center
   QPoint axes_origin(map_origin_x,map_origin_y);
@@ -261,7 +266,7 @@ void MapFrame::paintEvent(QPaintEvent* event)
   QPoint northArrow_point(map_center_x, 0);
   QPoint northArrow_left(map_center_x - 10, 10);
   QPoint northArrow_right(map_center_x + 10, 10);
-  QRect northArrow_textBox(northArrow_left.x() + 2, northArrow_left.y(), 20, 20);
+  QRect northArrow_textBox(northArrow_left.x() + 2, northArrow_left.y(), 30, 30);
 
   if (am_I_the_popout_map == false)
   {
@@ -330,7 +335,6 @@ void MapFrame::paintEvent(QPaintEvent* event)
       x_labels_offset_y += 5;
       y_labels_offset_x += 5;
     }
-
     painter.drawText(x_axis_ticks[i].x()+x_labels_offset_x, axes_origin.y()+x_labels_offset_y, x_label);
     painter.drawText(axes_origin.x()+y_labels_offset_x, y_axis_ticks[i].y()+y_labels_offset_y, y_label);
   }
@@ -373,8 +377,50 @@ void MapFrame::paintEvent(QPaintEvent* event)
       scaled_gps_rover_points.push_back( QPoint(x,y) );
     }
 
+
     // Maintain aspect ratio
     max_seen_height > max_seen_width ? max_seen_width = max_seen_height : max_seen_height = max_seen_width;
+
+    // Calculate the axis positions
+    /*map_origin_x = fm.width(QString::number(-max_seen_height, 'f', 1)+"m");
+    map_origin_y = 2*fm.height();
+
+    map_width = this->width()-1;// Minus 1 or will go off the edge
+    map_height = this->height()-1;//
+
+    map_center_x = map_origin_x+((map_width-map_origin_x)/2);
+    map_center_y = map_origin_y+((map_height-map_origin_y)/2);
+
+    // The map axes do not need to be redrawn for each rover so this code is
+    // sandwiched between the two rover display list loops
+
+    // Draw the scale bars
+    //painter.setPen(Qt::gray);
+    //painter.drawLine(QPoint(map_center_x, map_origin_y), QPoint(map_center_x, map_height));
+    //painter.drawLine(QPoint(map_origin_x, map_center_y), QPoint(map_width, map_center_y));
+    //painter.setPen(Qt::white);
+
+    // Cross hairs at map display center
+    QPoint axes_origin(map_origin_x,map_origin_y);
+    QPoint x_axis(map_width,map_origin_y);
+    QPoint y_axis(map_origin_x,map_height);
+    painter.drawLine(axes_origin, x_axis);
+    painter.drawLine(axes_origin, y_axis);
+    painter.drawLine(QPoint(map_width, map_origin_y), QPoint(map_width, map_height));
+    painter.drawLine(QPoint(map_origin_x, map_height), QPoint(map_width, map_height));
+
+    // Draw north arrow
+    QPoint northArrow_point(map_center_x, 0);
+    QPoint northArrow_left(map_center_x - 5, 5);
+    QPoint northArrow_right(map_center_x + 5, 5);
+    QRect northArrow_textBox(northArrow_left.x(), northArrow_left.y(), 10, 15);
+    painter.drawLine(northArrow_left, northArrow_right);
+    painter.drawLine(northArrow_left, northArrow_point);
+    painter.drawLine(northArrow_right, northArrow_point);
+    painter.drawText(northArrow_textBox, QString("N"));
+    */
+    // Draw rover origin crosshairs
+    // painter.setPen(green);
 
     float initial_x = 0.0; //map_data->getEKFPath(rover_to_display).begin()->first;
     float initial_y = 0.001; //map_data->getEKFPath(rover_to_display).begin()->second;
@@ -434,7 +480,7 @@ void MapFrame::paintEvent(QPaintEvent* event)
     }
 
     QPen pen = QPen(rover_color);
-    pen.setWidth(3);
+    pen.setWidth(3.0);
     painter.setPen(pen);
 
     if(!display_unique_rover_colors) painter.setPen(red);
@@ -446,7 +492,13 @@ void MapFrame::paintEvent(QPaintEvent* event)
 
     if (display_ekf_data) painter.drawPath(scaled_ekf_rover_path);
 
-    if(!display_unique_rover_colors) painter.setPen(green);
+    if(!display_unique_rover_colors)
+    { 
+		//painter.setPen(green);
+		QPen pen = QPen(green);
+        pen.setWidth(3.0);
+        painter.setPen(pen);
+	}
 
     if (display_encoder_data) {
        painter.drawPath(scaled_encoder_rover_path);
@@ -455,7 +507,7 @@ void MapFrame::paintEvent(QPaintEvent* event)
        float o_y = map_origin_y+((odom_point.second-min_seen_y)/max_seen_height)*(map_height-map_origin_y);
        QPen old_pen = painter.pen();
        QPen pen;
-       pen.setWidth(20);
+       pen.setWidth(15);
        pen.setColor(old_pen.color());
        pen.setCapStyle(Qt::RoundCap);
        painter.setPen(pen);
@@ -518,7 +570,7 @@ void MapFrame::paintEvent(QPaintEvent* event)
 
 
     if(display_unique_rover_colors) painter.setPen(rover_color);
-    else painter.setPen(Qt::yellow);
+    else painter.setPen(Qt::blue);
 
     pair<float,float> current_coordinate;
     if(! map_data->getEKFPath(rover_to_display)->empty() )
@@ -837,6 +889,7 @@ void MapFrame::setAutoTransform()
 
 void MapFrame::clear()
 {
+  if (popout_window) popout_window->close();
   map_data->lock();
   display_list.clear();
   map_data->unlock();
@@ -858,7 +911,6 @@ void MapFrame::setPopoutFlag()
 {
   am_I_the_popout_map = true;
 }
-
  void MapFrame::SetMapData(MapData* data)
  {
    map_data = data;

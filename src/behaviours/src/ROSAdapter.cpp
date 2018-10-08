@@ -116,24 +116,25 @@ long int startTime = 0;
 float minutesTime = 0;
 float hoursTime = 0;
 
-float drift_tolerance = 0.5; // meters
+float drift_tolerance = 1.0; // meters
 
 Result result;
 
 std_msgs::String msg;
 
-float arena_dim =15.0; //qilu 03/2018
+float arena_dim =14.0;
 
-vector<Point> roverPositions;
+//vector<Point> roverPositions;
 vector<string> roverNames;
 Point roverInitPos;
-	
 	
 geometry_msgs::Twist velocity;
 char host[128];
 string publishedName;
 char prev_state_machine[128];
 
+vector<string> rover_names;
+size_t swarm_size = 0;
 // Publishers
 ros::Publisher stateMachinePublisher;
 ros::Publisher status_publisher;
@@ -147,7 +148,10 @@ ros::Publisher heartbeatPublisher;
 ros::Publisher waypointFeedbackPublisher;
 ros::Publisher pheromoneTrailPublisher;//qilu 12/2017
 ros::Publisher obstaclePubisher;
+ros::Publisher centerLocationOffsetPublisher;
 
+// Publishes swarmie_msgs::Waypoint messages on "/<robot>/waypooints"
+// to indicate when waypoints have been reached.
 // Subscribers
 ros::Subscriber joySubscriber;
 ros::Subscriber modeSubscriber; 
@@ -190,7 +194,7 @@ void odometryHandler(const nav_msgs::Odometry::ConstPtr& message);
 void mapHandler(const nav_msgs::Odometry::ConstPtr& message);
 void virtualFenceHandler(const std_msgs::Float32MultiArray& message);
 void arenaDimHandler(const std_msgs::Float32::ConstPtr& message);
-void roverHandler(const swarmie_msgs::RoverInfo& message);
+//void roverHandler(const swarmie_msgs::RoverInfo& message);
 void pheromoneTrailHandler(const swarmie_msgs::PheromoneTrail& message); //qilu 12/2017
 void manualWaypointHandler(const swarmie_msgs::Waypoint& message);
 void behaviourStateMachine(const ros::TimerEvent&);
@@ -231,7 +235,7 @@ int main(int argc, char **argv) {
   odometrySubscriber = mNH.subscribe((publishedName + "/odom/filtered"), 10, odometryHandler);
   mapSubscriber = mNH.subscribe((publishedName + "/odom/ekf"), 10, mapHandler);
   
-  roverSubscriber = mNH.subscribe("/rovers", 10, roverHandler);
+  //roverSubscriber = mNH.subscribe("/rovers", 10, roverHandler);
   pheromoneTrailSubscriber = mNH.subscribe("/pheromones", 10, pheromoneTrailHandler);//qilu 12/2017
   arenaDimSubscriber = mNH.subscribe("/arena_dim", 10, arenaDimHandler); //qilu 08/2017
   manualWaypointSubscriber = mNH.subscribe((publishedName + "/waypoints/cmd"), 10, manualWaypointHandler);
@@ -250,6 +254,7 @@ int main(int argc, char **argv) {
   pheromoneTrailPublisher = mNH.advertise<swarmie_msgs::PheromoneTrail>("/pheromones", 10, true);
   waypointFeedbackPublisher = mNH.advertise<swarmie_msgs::Waypoint>((publishedName + "/waypoints"), 1, true);
 
+  centerLocationOffsetPublisher = mNH.advertise<std_msgs::Float32MultiArray>((publishedName + "/centerLocationOffset"), 10, true);
   publish_status_timer = mNH.createTimer(ros::Duration(status_publish_interval), publishStatusTimerEventHandler);
   stateMachineTimer = mNH.createTimer(ros::Duration(behaviourLoopTimeStep), behaviourStateMachine);
   
@@ -294,67 +299,70 @@ void behaviourStateMachine(const ros::TimerEvent&)
   // time since timerStartTime was set to current time
   timerTimeElapsed = time(0) - timerStartTime;
   
+  // Robot is in automode
+  if (currentMode == 2 || currentMode == 3) 
+  {
   // init code goes here. (code that runs only once at start of
   // auto mode but wont work in main goes here)
-  if (!initilized)
-  {
+      if (!initilized)
+      {
 
-    if (timerTimeElapsed > startDelayInSeconds)
-    {
+        if (timerTimeElapsed > startDelayInSeconds)
+        {
 
-      // initialization has run
-      //cout<<"initialization has run..."<<endl;
-      initilized = true;
-      //TODO: this just sets center to 0 over and over and needs to change
-      Point centerOdom;
-      centerOdom.x = 1.308 * cos(currentLocation.theta);
-      centerOdom.y = 1.308 * sin(currentLocation.theta);
-      centerOdom.theta = centerLocation.theta;
-      
-      logicController.SetCenterLocationOdom(centerOdom);
-      
-      Point centerMap;
-      centerMap.x = currentLocationMap.x + (1.308 * cos(currentLocationMap.theta));
-      centerMap.y = currentLocationMap.y + (1.308 * sin(currentLocationMap.theta));
-      centerMap.theta = centerLocationMap.theta;
-      logicController.SetCenterLocationMap(centerMap);
-      
-      centerLocationMap.x = centerMap.x;
-      centerLocationMap.y = centerMap.y;
-      
-      centerLocationOdom.x = centerOdom.x;
-      centerLocationOdom.y = centerOdom.y;
-      
-      cout<<"LocationTest: init rovername="<<publishedName<<endl;
-      cout<<"LocationTest: init centerLocationOdom=["<<centerLocationOdom.x<<", "<<centerLocationOdom.y<<"]"<<endl;
+	      // initialization has run
+	      //cout<<"initialization has run..."<<endl;
+	      initilized = true;
+	      //TODO: this just sets center to 0 over and over and needs to change
+	      Point centerOdom;
+	      centerOdom.x = 1.308 * cos(currentLocation.theta);
+	      centerOdom.y = 1.308 * sin(currentLocation.theta);
+	      centerOdom.theta = centerLocation.theta;
+	      logicController.SetCenterLocationOdom(centerOdom);
+	      
+        // Set the global offset for physical rovers; we assume that a robot
+        // is placed a specified distance from the center... This position
+        // will be the negative of centerOdom.
+        std_msgs::Float32MultiArray centerOdomOffsetMessage;
+        centerOdomOffsetMessage.data.push_back(-centerOdom.x);
+        centerOdomOffsetMessage.data.push_back(-centerOdom.y);
+        centerOdomOffsetMessage.data.push_back(centerOdom.theta);
+        centerLocationOffsetPublisher.publish(centerOdomOffsetMessage);
+
+	      Point centerMap;
+	      centerMap.x = currentLocationMap.x + (1.308 * cos(currentLocationMap.theta));
+	      centerMap.y = currentLocationMap.y + (1.308 * sin(currentLocationMap.theta));
+	      centerMap.theta = centerLocationMap.theta;
+	      logicController.SetCenterLocationMap(centerMap);
+	      
+	      centerLocationMap.x = centerMap.x;
+	      centerLocationMap.y = centerMap.y;
+	      
+	      centerLocationOdom.x = centerOdom.x;
+	      centerLocationOdom.y = centerOdom.y;
+	      
 	  Point pos(-centerLocationOdom.x, -centerLocationOdom.y, 0);  
 	  roverInitPos = pos;
 	  
       logicController.SetRoverInitLocation(roverInitPos);
-      
-      startTime = getROSTimeInMilliSecs();
-      
-      logicController.SetArenaSize(arena_dim);
- 
-    }
+	      startTime = getROSTimeInMilliSecs();
+	      
+	  logicController.SetArenaSize(arena_dim);
+	    }
 
-    else
-    {
-      return;
-    }
+	    else
+	    {
+	      return;
+	    }
     
-  }
-
-  // Robot is in automode
-  if (currentMode == 2 || currentMode == 3)
-  {
-    
+      }
+  
     humanTime();
     
 
     if (logicController.layPheromone()) 
     {
-  	  /*for(int i=0; i<roverNames.size(); i++)
+  	 /* for(int i=0; i<roverNames.size(); i++)
       {
 		if(roverNames[i] == publishedName)
 		{
@@ -363,20 +371,29 @@ void behaviourStateMachine(const ros::TimerEvent&)
 		}
 	  }*/
 	  
+      //logicController.SetRoverInitLocation(roverPositions[roverIdx]);
        
       swarmie_msgs::PheromoneTrail trail;
       Point pheromone_location_point = logicController.GetCurrentLocation();//qilu 12/2017
+      //cout<<"TestStatus: ROSAdapter, GetCurrentLocation()=["<<logicController.GetCurrentLocation().x<<", "<<logicController.GetCurrentLocation().y<<"]"<<endl;
+      //cout<<"TestStatus: centerLocation=["<<centerLocation.x<<", "<<centerLocation.y<<"]"<<endl;
+      //cout<<"TestStatus: centerLocationOdom=["<<centerLocationOdom.x<<", "<<centerLocationOdom.y<<"]"<<endl;
+      //cout<<"TestStatus: Rover "<<roverNames[roverIdx]<<" position=["<<roverPositions[roverIdx].x<<", "<<roverPositions[roverIdx].y<<"]"<<endl;
       geometry_msgs::Pose2D pheromone_location;
       pheromone_location.x = pheromone_location_point.x - centerLocation.x;
       pheromone_location.y = pheromone_location_point.y - centerLocation.y;
       
-      //map to the global location related to the center 
-      cout<<"LocationTest: rovername="<<publishedName<<endl;
+      //map to the global location related to the rover's initial location
+      cout<<"wpTestStatusLocationTest: rovername="<<publishedName<<endl;
       pheromone_location.x += roverInitPos.x;   
       pheromone_location.y += roverInitPos.y;
       
       
+      //cout << "*****logicController.GetCenterIdx() = "<<logicController.GetCenterIdx()<<endl;
+      //cout << "*****current location = "<<currentLocation<<endl;
+      //cout << "TestStatus: transformed pheromone_location = ("<<pheromone_location.x << ", "<< pheromone_location.y<< ")"<<endl;
       trail.waypoints.push_back(pheromone_location);
+      //trail.centerIdx = logicController.GetCenterIdx();//this is for MPFA
       pheromoneTrailPublisher.publish(trail);
 
       //cout << "TestStatus: ===================================" << endl;
@@ -435,13 +452,13 @@ void behaviourStateMachine(const ros::TimerEvent&)
 
       if (result.wristAngle != -1)
       {
-        angle.data = result.wristAngle;
+	angle.data = result.wristAngle;
         wristAnglePublisher.publish(angle);
         prevWrist = result.wristAngle;
       }
     }
-  collision_msg.data = logicController.getCollisionCalls();  
-  obstaclePubisher.publish(collision_msg); 
+  collision_msg.data = logicController.getCollisionCalls();
+  obstaclePubisher.publish(collision_msg);
     //publishHandeling here
     //logicController.getPublishData(); suggested
     //adds a blank space between sets of debugging data to easily tell one tick from the next
@@ -547,15 +564,13 @@ void targetHandler(const apriltags_ros::AprilTagDetectionArray::ConstPtr& messag
 							    tagPose.pose.orientation.w ) );
       tags.push_back(loc);
     }
-    if(num_center_tags >= 5)// reset the location of the center
+    if(num_center_tags >= 1)// reset the location of the center
     {
 		//cout<<"TestStatusA: currentLocation=["<<currentLocation.x<<", "<<currentLocation.y<<"]"<<endl;
 		centerLocationMap.x = currentLocationMap.x + 1.0*cos(currentLocationMap.theta);
         centerLocationMap.y = currentLocationMap.y + 1.0*sin(currentLocationMap.theta);
         centerLocationOdom.x = currentLocation.x + 1.0*cos(currentLocation.theta);
-        centerLocationOdom.y = currentLocation.y + + 1.0*sin(currentLocation.theta);  
-        //cout<<"TestStatusA: centerLocationMap=["<<centerLocationMap.x<<", "<<centerLocationMap.y<<"]"<<endl;
-        //cout<<"TestStatusA: centerLocationOdom=["<<centerLocationOdom.x<<", "<<centerLocationOdom.y<<"]"<<endl;
+        centerLocationOdom.y = currentLocation.y + 1.0*sin(currentLocation.theta);  
 	}
     
         
@@ -587,7 +602,7 @@ void arenaDimHandler(const std_msgs::Float32::ConstPtr& message)
 }
 
 
-void roverHandler(const swarmie_msgs::RoverInfo& message)
+/*void roverHandler(const swarmie_msgs::RoverInfo& message)
 {
 	swarmie_msgs::RoverInfo rover_info = message;
 	
@@ -601,7 +616,7 @@ void roverHandler(const swarmie_msgs::RoverInfo& message)
 		Point pos(rover_info.positions[i].x, rover_info.positions[i].y, rover_info.positions[i].theta);
 		roverPositions.push_back(pos);		 
 	} 
-}
+}*/
 	
 void odometryHandler(const nav_msgs::Odometry::ConstPtr& message) {
   //Get (x,y) location directly from pose

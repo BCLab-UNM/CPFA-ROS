@@ -44,11 +44,11 @@ enum CPFAState
   start_state,
   set_target_location,
   travel_to_search_site,//2
-  reach_search_site,
-  switched_to_search,
-  search_with_uninformed_walk,
-  search_with_informed_walk,
-  sense_local_resource_density,
+  reach_search_site,//3
+  switched_to_search, //4
+  search_with_uninformed_walk, //5
+  search_with_informed_walk, //6
+  sense_local_resource_density, //7
   avoid_obstacle,//8
   return_to_nest,//9
   reached_nest//10
