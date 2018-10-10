@@ -23,7 +23,6 @@
 #include <std_msgs/Float32MultiArray.h>
 #include "swarmie_msgs/Waypoint.h"
 #include "swarmie_msgs/PheromoneTrail.h" //qilu 12/2017
-#include "swarmie_msgs/RoverInfo.h"
 // Include Controllers
 #include "LogicController.h"
 #include <vector>
