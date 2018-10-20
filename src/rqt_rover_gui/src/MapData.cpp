@@ -212,6 +212,8 @@ void MapData::clear(string rover)
     global_offset_encoder_rover_path.erase(rover);
 
     gps_rover_path[rover].clear();
+    global_offset_ekf_rover_path[rover].clear();
+    global_offset_encoder_rover_path[rover].clear();
     global_offset_gps_rover_path[rover].clear();
     gps_rover_path.erase(rover);
     global_offset_gps_rover_path.erase(rover);

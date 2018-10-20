@@ -52,7 +52,7 @@
 #include <mutex>
 #include <ublox_msgs/NavSOL.h>
 #include "swarmie_msgs/Waypoint.h" // For waypoint commands
-#include "swarmie_msgs/RoverInfo.h"
+//#include "swarmie_msgs/RoverInfo.h"
 #include <fstream>
 
 //ROS msg types
@@ -117,7 +117,7 @@ namespace rqt_rover_gui {
     void scoreEventHandler(const ros::MessageEvent<std_msgs::String const> &event);
     void simulationTimerEventHandler(const rosgraph_msgs::Clock& msg);
     void diagnosticEventHandler(const ros::MessageEvent<std_msgs::Float32MultiArray const> &event);
-
+    void centerLocationOffsetHandler(const ros::MessageEvent<std_msgs::Float32MultiArray const> &event);
     void centerUSEventHandler(const sensor_msgs::Range::ConstPtr& msg);
     void leftUSEventHandler(const sensor_msgs::Range::ConstPtr& msg);
     void rightUSEventHandler(const sensor_msgs::Range::ConstPtr& msg);
@@ -132,7 +132,7 @@ namespace rqt_rover_gui {
     QString addClusteredTargets();
     QString addFinalsWalls();
     QString addPrelimsWalls();
-
+    QString addTestWalls();
 
    // void targetDetectedEventHandler( rover_onboard_target_detection::ATag tagInfo ); //rover_onboard_target_detection::ATag msg );
 
@@ -220,7 +220,7 @@ namespace rqt_rover_gui {
     map<string,ros::Publisher> waypoint_cmd_publishers;
     ros::Publisher joystick_publisher;
     ros::Publisher arenaDim_publisher;
-    ros::Publisher rover_publisher;
+    //ros::Publisher rover_publisher;
 
     // ROS Subscribers
     ros::Subscriber joystick_subscriber;
@@ -230,6 +230,7 @@ namespace rqt_rover_gui {
     map<string,ros::Subscriber> ekf_subscribers;
     map<string,ros::Subscriber> rover_diagnostic_subscribers;
     map<string,ros::Subscriber> waypoint_subscribers;
+    map<string,ros::Subscriber> center_location_offset_subscribers;
     ros::Subscriber us_center_subscriber;
     ros::Subscriber us_left_subscriber;
     ros::Subscriber us_right_subscriber;

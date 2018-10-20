@@ -28,26 +28,29 @@ void SiteFidelityController::SiteFidelityReset()
 	  
 Result SiteFidelityController::DoWork() 
 {
-	cout<<"CPFAStatus: SiteFidelityController::DoWork()"<<endl;
+	//cout<<"CPFAStatus: SiteFidelityController::DoWork()"<<endl;
   Result result;
-  cout <<"SF: site_fidelity_location="<<site_fidelity_location.x<<", "<<site_fidelity_location.y<<endl;
-  cout <<"SF: current_location="<<current_location.x<<", "<<current_location.y<<endl;
+  cout <<"wpTest: site_fidelity_location="<<site_fidelity_location.x<<", "<<site_fidelity_location.y<<endl;
+  //cout <<"SF: current_location="<<current_location.x<<", "<<current_location.y<<endl;
           
-  if (hypot(site_fidelity_location.x - current_location.x, site_fidelity_location.y - current_location.y) < 0.15 || attemptCount>=5) 
+  if (hypot(site_fidelity_location.x - current_location.x, site_fidelity_location.y - current_location.y) < 0.15 || attemptCount>=ATTEMPT_MAX) 
   {
-	  cout <<"TestStatusCPFAStatus: SF: Reached site fidelity"<<endl;
+	  cout <<"wpTest: SF: Reached site fidelity"<<endl;
 	  attemptCount=0;
 	SiteFidelityReset();  
     result.type = behavior;
     result.b = COMPLETED;
     cout <<"result.wpts.waypoints size="<<result.wpts.waypoints.size()<<endl;
+    if (attemptCount >=ATTEMPT_MAX)
+    {
+		cout <<"wpTest: give up to go to site fidelity and start to search..."<<endl;
+		}
   } 
 
-  else if(attemptCount<5)
+  else if(attemptCount<ATTEMPT_MAX)
   {
 	  attemptCount++;
-	  cout<<"TestStatusCPFAStatus: SF: travel to site fidelity"<<endl;
-	  cout<<"TestStatus: SF attemptCount="<<attemptCount<<endl;
+	  cout<<"wpTest: SF: travel to site fidelity, attemptCount="<<attemptCount<<endl; 
     result.type = waypoint;
     result.PIDMode = FAST_PID;
     result.wpts.waypoints.insert(result.wpts.waypoints.begin(), site_fidelity_location);

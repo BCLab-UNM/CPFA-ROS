@@ -8,6 +8,10 @@
 
 #include <math.h> // hypot
 
+#ifndef ATTEMPT_MAX
+#define ATTEMPT_MAX 8
+#endif
+
 class SiteFidelityController : virtual Controller {
 
 public:

@@ -9,8 +9,9 @@
 #include "Pheromone.h"
 #include "Tag.h"
 #include <angles/angles.h>
-
-
+#ifndef ATTEMPT_MAX
+#define ATTEMPT_MAX 8
+#endif
 class PheromoneController : virtual Controller
 {
 public:

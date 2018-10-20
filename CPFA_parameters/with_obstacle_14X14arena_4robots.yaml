@@ -1,0 +1,23 @@
+# Parameters for CPFA
+
+# Increase these values to increease probability
+probabilityOfSwitchingToSearching: 0.2 
+probabilityOfReturningToNest: 0.05
+
+# Uses a gaussian random num generator 
+# This value represents the std dev around the current 
+# heading for the next random heading in an uninformed search
+uninformedSearchVariation: 0.7
+
+# The inverse of the average expected time for the rover to 
+# find a resource with an informed walk
+#
+# Example: If the rover takes on average 5 seconds to find a resource
+# after switching an informed walk, then you will choose this value to be
+# 1/5 = 0.2
+rateOfInformedSearchDecay: 0.1
+
+# Reduce these values to increase the return vallue for the poisson distribution
+rateOfSiteFidelity: 6
+rateOfLayingPheromone: 8
+rateOfPheromoneDecay: 0.1

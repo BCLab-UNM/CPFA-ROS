@@ -172,7 +172,7 @@
 				</geometry>
 				<material>
 					<script>
-						<name>Gazebo/Grey</name>
+						<name>Gazebo/Green</name>
 					</script>
 				</material>
 			</visual>
@@ -185,7 +185,7 @@
 					</box>
 				</geometry>
 			</collision>
-
+      
 			<collision name='wheel_guard_front_left_collision'>
 				<pose>0.148 0.13 -0.05 0 0 0</pose>
 				<geometry>
@@ -203,7 +203,7 @@
 					</box>
 				</geometry>
 			</collision>
-
+      
 			<collision name='wheel_guard_front_right_collision'>
 				<pose>0.148 -0.13 -0.05 0 0 0</pose>
 				<geometry>
@@ -212,7 +212,7 @@
 					</box>
 				</geometry>
 			</collision>
-
+      
 			<visual name='cow_catcher_front_visual'>
 				<pose>0.1675 0 -0.08 1.57079 0 0</pose>
 				<geometry>
@@ -257,7 +257,7 @@
 			<pose>0.155 0 -0.013 0 0 0</pose>
 			<inertial>
 				<mass>0.03</mass>
-				<inertia>
+				<inertia> 
 					<ixx>0.00245</ixx> <!--> 1/12*(mass)(h^2 + d^2) where h,d,w are in meters and mass is in kilograms <-->
 					<ixy>0.0</ixy>
 					<ixz>0.0</ixz>
@@ -674,7 +674,7 @@
 			<axis>
 				<xyz>0 1 0</xyz>
 			</axis>
-		</joint>
+		</joint>   
 
 		<!-- Gripper plugin-->
 		<plugin name="gripper_sim" filename="libgazebo_plugins_gripper.so">
@@ -762,7 +762,7 @@
 			<topicName>/ajax/imu</topicName>
 			<xyzOffset>0 0 0</xyzOffset>
 			<rpyOffset>0 0 0</rpyOffset>
-			<gaussianNoise>0</gaussianNoise>
+			<gaussianNoise>0</gaussianNoise>  
 			<accelDrift>0.5 0.5 0.5</accelDrift>
 			<accelGaussianNoise>0.35 0.35 0.3</accelGaussianNoise>
 			<rateDrift>0.1 0.1 0.1</rateDrift>

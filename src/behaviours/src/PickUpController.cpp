@@ -46,7 +46,7 @@ void PickUpController::SetTagData(vector<Tag> tags)
       {
 
         targetFound = true;
-	    cout <<"target found..."<<endl;
+	//cout <<"target found..."<<endl;
         //absolute distance to block from camera lens
         double test = hypot(hypot(tags[i].getPositionX(), tags[i].getPositionY()), tags[i].getPositionZ()); //absolute distance to block from camera lens
       
@@ -165,7 +165,8 @@ void PickUpController::ProcessData()
     //cout << "CPFAStatus Lower wrist and open fingers if no locked target..."<<endl;
     //set gripper;
     result.fingerAngle = M_PI_2;
-    result.wristAngle = 1.25;
+    result.wristAngle = 1.2;
+    //result.wristAngle = 0.87;
   }
 }
 
@@ -212,7 +213,7 @@ bool PickUpController::ShouldInterrupt()
 
 Result PickUpController::DoWork()
 {
- cout<<"CPFAStatus: PickUpController::DoWork()"<<endl;
+ //cout<<"CPFAStatus: PickUpController::DoWork()"<<endl;
 
   has_control = true;
 
@@ -291,7 +292,8 @@ Result PickUpController::DoWork()
 		  //cout<<"CPFAStatus if not timeOut..."<<endl;
         result.pd.cmdVel = 0.0;
         result.pd.cmdAngularError= 0.0;
-        result.wristAngle = 1.25;
+        //result.wristAngle = 1.25;
+        result.wristAngle = 1.2;
         // result.fingerAngle does not need to be set here
 
         // We are getting ready to start the pre-programmed pickup routine now! Maybe? <(^_^)/"
