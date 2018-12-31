@@ -144,7 +144,7 @@ ros::Publisher driveControlPublisher;
 ros::Publisher heartbeatPublisher;
 ros::Publisher waypointFeedbackPublisher;
 ros::Publisher pheromoneTrailPublisher;//qilu 12/2017
-ros::Publisher obstaclePubisher;
+ros::Publisher obstaclePublisher;
 ros::Publisher centerLocationOffsetPublisher;
 
 // Publishes swarmie_msgs::Waypoint messages on "/<robot>/waypooints"
@@ -240,7 +240,7 @@ int main(int argc, char **argv) {
   message_filters::Subscriber<sensor_msgs::Range> sonarCenterSubscriber(mNH, (publishedName + "/sonarCenter"), 10);
   message_filters::Subscriber<sensor_msgs::Range> sonarRightSubscriber(mNH, (publishedName + "/sonarRight"), 10);
   
-  obstaclePubisher = mNH.advertise<std_msgs::UInt8>((publishedName + "/obstacle"), 10, true);
+  obstaclePublisher = mNH.advertise<std_msgs::UInt8>((publishedName + "/obstacle"), 10, true);
   status_publisher = mNH.advertise<std_msgs::String>((publishedName + "/status"), 1, true);
   stateMachinePublisher = mNH.advertise<std_msgs::String>((publishedName + "/state_machine"), 1, true);
   fingerAnglePublisher = mNH.advertise<std_msgs::Float32>((publishedName + "/fingerAngle/cmd"), 1, true);
@@ -456,7 +456,7 @@ void behaviourStateMachine(const ros::TimerEvent&)
       }
     }
   collision_msg.data = logicController.getCollisionCalls();
-  obstaclePubisher.publish(collision_msg);
+  obstaclePublisher.publish(collision_msg);
     //publishHandeling here
     //logicController.getPublishData(); suggested
     //adds a blank space between sets of debugging data to easily tell one tick from the next
