@@ -121,7 +121,7 @@ Result result;
 
 std_msgs::String msg;
 
-float arena_dim =14.0;
+float arena_dim =15.0;
 
 //vector<Point> roverPositions;
 vector<string> roverNames;
