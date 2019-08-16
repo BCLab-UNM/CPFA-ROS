@@ -26,7 +26,6 @@ bool ManualWaypointController::ShouldInterrupt() {
     interrupt = true;
     num_waypoints = waypoints.size();
   }
-  cout<<interrupt<<endl;
   return interrupt;
 }
 

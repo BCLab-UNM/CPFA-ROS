@@ -47,13 +47,13 @@ Result SearchController::DoWork() {
 			if(attemptCount<ATTEMPT_MAX)
 			{
 				attemptCount++;//count the times to approach the location. If the rover always see an obstacle, it should give up. 
-		        cout<<"wpTestStatus: travel to the previous location before avoiding obstacles "<<attemptCount<<endl; 
+		        //cout<<"wpTestStatus: travel to the previous location before avoiding obstacles "<<attemptCount<<endl; 
 		        SetCPFAState(reach_search_site);
 		        return result;	
 		    }
 		    else
 		    {
-				cout<<"wpTestStatus: Give up to previous location"<<endl;
+				//cout<<"wpTestStatus: Give up to previous location"<<endl;
 				result.wpts.waypoints.clear();	
                 SetReachedWaypoint(false);
                 attemptCount = 0;
@@ -95,7 +95,7 @@ Result SearchController::DoWork() {
       
     if(GiveupSearch())
     {
-		cout<<"wpTestStatus: in searchCTRL 1. give up and return to nest..."<<endl;
+		//cout<<"wpTestStatus: in searchCTRL 1. give up and return to nest..."<<endl;
         searchLocation.x = this->centerLocation.x;
         searchLocation.y = this->centerLocation.y; 
         SetGiveupSearch(false);
@@ -104,7 +104,7 @@ Result SearchController::DoWork() {
 	{
 	    if (informed_search)
         {
-          cout << "wpTestStatus: Informed Search" << endl;
+          //cout << "wpTestStatus: Informed Search" << endl;
 	      float exponential = exp(-CPFA_parameters.rate_of_informed_search_decay * informed_search_time);
 	      exponential *= (4 * M_PI - CPFA_parameters.uninformed_search_variation);
 	      correlation += exponential; 
@@ -117,14 +117,14 @@ Result SearchController::DoWork() {
 	    }
 	    else 
 	    {
-	      cout << "wpTestStatus: Uninformed Search" << endl;
+	      //cout << "wpTestStatus: Uninformed Search" << endl;
 	      //select new position 50 cm from current location for random search
 	      if (first_waypoint)
 	      {
-			cout<<"TestDrift: first waypoint..."<<endl;  
+			//cout<<"TestDrift: first waypoint..."<<endl;  
 	        first_waypoint = false;
 	        searchLocation.theta = atan2(currentLocation.y - this->centerLocation.y, currentLocation.x - this->centerLocation.x);//this is the direction from center to the rover
-	        cout<<"TestFirstWP: init searchLocation.theta="<<searchLocation.theta<<endl;
+	        //cout<<"TestFirstWP: init searchLocation.theta="<<searchLocation.theta<<endl;
 	
 	        //searchLocation.theta += rng->uniformReal(-M_PI/4, M_PI/4); //sample an angle in this range based on the direction from the center to the rover, so rover will not collide with the collection disk when it travels in this direction
 	        searchLocation.theta += M_PI/4;
@@ -134,7 +134,7 @@ Result SearchController::DoWork() {
 	      else
 	      {
 	        //select new heading from Gaussian distribution around current heading
-	        cout<<"TestDrift: not first waypoint..."<<endl;
+	        //cout<<"TestDrift: not first waypoint..."<<endl;
 	       
 	        searchLocation.theta = rng->gaussian(currentLocation.theta, correlation);
 	        searchLocation.x = currentLocation.x + (search_step_size * cos(searchLocation.theta));
@@ -277,7 +277,7 @@ void SearchController::senseLocalResourceDensity(int num_tags)
   }
 
   //cout << "ROSAdapter: targetHandler" << endl;
-  cout << "local_resource_density: " << local_resource_density << endl;
+  //cout << "local_resource_density: " << local_resource_density << endl;
   cout << endl;
 }
 

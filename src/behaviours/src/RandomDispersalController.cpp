@@ -14,14 +14,14 @@ void RandomDispersalController::Reset() {}
 	
 Result RandomDispersalController::DoWork()
 {
-	cout<<"RandomDispersalController::DoWork()"<<endl;
+	//cout<<"RandomDispersalController::DoWork()"<<endl;
   Result result;
   has_control = true;
 
   result.type = precisionDriving;
   result.PIDMode = FAST_PID;
   
-  cout << "dispersal doing work" << endl;
+  //cout << "dispersal doing work" << endl;
 
   if (switch_to_search)
   {
@@ -48,7 +48,7 @@ Result RandomDispersalController::DoWork()
     //pick random heading that is in the 180 degree arc away from the center
     goal_location.theta = current_location.theta + (rand() * (M_PI)/INT_MAX) + M_PI/2;
 
-    cout << "first goal is : " << goal_location.theta << endl;
+   // cout << "first goal is : " << goal_location.theta << endl;
 
   }
   else

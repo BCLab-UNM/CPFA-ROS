@@ -3,7 +3,8 @@
 using namespace std;
 
 LogicController::LogicController() {
- //cout<<"start logic controller..."<<endl;
+ robotName = GetRobotName();
+ //cout<<"depot: start logic controller..."<<robotName<<endl;
   logicState = LOGIC_STATE_INTERRUPT;
   processState = PROCCESS_STATE_SEARCHING;
   rng = new random_numbers::RandomNumberGenerator();
@@ -88,6 +89,7 @@ Result LogicController::DoWork()
       result.b = noChange;
     }
 
+    //cout<<"LogicController::DoWork(). logicState="<<logicState<<endl;
     // Take the top member of the priority queue and run its do work function.
     result = control_queue.top().controller->DoWork();
     
@@ -149,27 +151,27 @@ Result LogicController::DoWork()
                {
 				   if(siteFidelityController.SiteFidelityInvalid())
 				   {
-					  cout<<"wpTestStatusTestDrift: no site fidelity..."<<endl;
+					  //cout<<"wpTestStatusTestDrift: no site fidelity..."<<endl;
 				   }
 				   else
 				   {
-					  cout<<"wpTestStatusTestDrift: has fidelity, but do not follow..."<<endl;
+					  //cout<<"wpTestStatusTestDrift: has fidelity, but do not follow..."<<endl;
 				   }
 				   if(pheromoneController.SelectPheromone())
 				   {
 		             processState = PROCESS_STATE_PHEROMONE; 
-                     cout <<"wpTestStatusDrift: select a pheromone..."<<endl;
+                     //cout <<"wpTestStatusDrift: select a pheromone..."<<endl;
                    }
                    else
                    {
 				     processState = PROCCESS_STATE_SEARCHING; 
-                     cout <<"wpTestStatusTestDrift: no pheromone trail selected ="<<processState<<"  uninformed search..."<<endl;
+                     //cout <<"wpTestStatusTestDrift: no pheromone trail selected ="<<processState<<"  uninformed search..."<<endl;
                      searchController.Reset();
 				   }
 			   }
 			   else
 			   {
-				   cout<<"wpTestStatusTestDrift: follow site fidelity..."<<endl;
+				   //cout<<"wpTestStatusTestDrift: follow site fidelity..."<<endl;
 				   }
            }
 	     
@@ -315,7 +317,7 @@ void LogicController::ProcessData() {
   // This controller priority is used when searching.
   if (processState == PROCCESS_STATE_SEARCHING)
   {
-	  cout<<"PROCCESS_STATE_SEARCHING ..."<<endl;
+	//  cout<<"PROCCESS_STATE_SEARCHING ..."<<endl;
 	prioritizedControllers = {
 	PrioritizedController{15, (Controller*)(&pickUpController)},
 	PrioritizedController{10, (Controller*)(&obstacleController)},
@@ -328,7 +330,7 @@ void LogicController::ProcessData() {
   // This priority is used when returning a target to the center collection zone.
   else if (processState  == PROCCESS_STATE_TARGET_PICKEDUP)
   {
-	  cout<<"PROCCESS_STATE_TARGET_PICKEDUP ..."<<endl;
+	 // cout<<"PROCCESS_STATE_TARGET_PICKEDUP ..."<<endl;
     prioritizedControllers = {
     PrioritizedController{5, (Controller*)(&rangeController)},
     PrioritizedController{1, (Controller*)(&pheromoneController)},
@@ -340,7 +342,7 @@ void LogicController::ProcessData() {
   }
   else if(processState == PROCCESS_STATE_RETURN_NEST)
   {
-	  cout<<"PROCCESS_STATE_RETURN_NEST..."<<endl;
+	//  cout<<"PROCCESS_STATE_RETURN_NEST..."<<endl;
 	  prioritizedControllers = {
     PrioritizedController{10, (Controller*)(&obstacleController)},
     PrioritizedController{5, (Controller*)(&rangeController)},
@@ -354,7 +356,7 @@ void LogicController::ProcessData() {
   //this priority is used when returning a target to the center collection zone
   else if (processState  == PROCCESS_STATE_DROP_OFF)
   {
-	  cout<<"PROCCESS_STATE_DROP_OFF..."<<endl;
+	//  cout<<"PROCCESS_STATE_DROP_OFF..."<<endl;
       prioritizedControllers = {
 	  PrioritizedController{5, (Controller*)(&rangeController)},
       PrioritizedController{1, (Controller*)(&dropOffController)},
@@ -365,7 +367,7 @@ void LogicController::ProcessData() {
   }
   else if (processState == PROCESS_STATE_SITE_FIDELITY)
   {
-  	  cout<<"PROCESS_STATE_SITE_FIDELITY..."<<endl;
+  	 // cout<<"PROCESS_STATE_SITE_FIDELITY..."<<endl;
     prioritizedControllers = {
       PrioritizedController{10, (Controller*)(&obstacleController)},
       PrioritizedController{5, (Controller*)(&rangeController)},
@@ -377,7 +379,7 @@ void LogicController::ProcessData() {
   }
   else if (processState == PROCESS_STATE_PHEROMONE)
   {
-     cout<<"PROCESS_STATE_PHEROMONE..."<<endl;
+    // cout<<"PROCESS_STATE_PHEROMONE..."<<endl;
     prioritizedControllers = {
       PrioritizedController{10, (Controller*)(&obstacleController)},
       PrioritizedController{5, (Controller*)(&rangeController)},
@@ -545,6 +547,17 @@ void LogicController::controllerInterconnect()
   
 }
 
+void LogicController::SetRobotName(string name)
+{
+   // cout<<"robot name ="<<robotName<<endl;
+    robotName = name;
+    }
+
+string LogicController::GetRobotName()
+{
+    return robotName;   
+    }
+  
 void LogicController::SetArenaSize(int size)
 {
 	//cout<<"set arena size "<< size<<endl;
@@ -742,17 +755,17 @@ bool LogicController::layPheromone() {
  
     double poisson = getPoissonCDF(CPFA_parameters.rate_of_laying_pheromone);
     double random_num = rng->uniformReal(0, 1);
-   cout<<"wpTest: poisson="<<poisson<<endl;
-   cout<<"wpTest: random_num="<<random_num<<endl;
+   //cout<<"wpTest: poisson="<<poisson<<endl;
+ //  cout<<"wpTest: random_num="<<random_num<<endl;
   
     if(poisson > random_num) {
-      cout << "wpTest: Laying a pheromone..." << endl;
+     // cout << "wpTest: Laying a pheromone..." << endl;
       cout << endl;
       return true;
     } 
     else 
     {
-		cout << "wpTest: Not Lay a pheromone..." << endl;
+		//cout << "wpTest: Not Lay a pheromone..." << endl;
       
       return false;
     }

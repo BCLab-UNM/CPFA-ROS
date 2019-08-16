@@ -43,14 +43,14 @@ Result SiteFidelityController::DoWork()
     cout <<"result.wpts.waypoints size="<<result.wpts.waypoints.size()<<endl;
     if (attemptCount >=ATTEMPT_MAX)
     {
-		cout <<"wpTest: give up to go to site fidelity and start to search..."<<endl;
+		//cout <<"wpTest: give up to go to site fidelity and start to search..."<<endl;
 		}
   } 
 
   else if(attemptCount<ATTEMPT_MAX)
   {
 	  attemptCount++;
-	  cout<<"wpTest: SF: travel to site fidelity, attemptCount="<<attemptCount<<endl; 
+	 // cout<<"wpTest: SF: travel to site fidelity, attemptCount="<<attemptCount<<endl; 
     result.type = waypoint;
     result.PIDMode = FAST_PID;
     result.wpts.waypoints.insert(result.wpts.waypoints.begin(), site_fidelity_location);
@@ -112,7 +112,7 @@ void SiteFidelityController::ProcessData()
 {
   if (target_picked_up)
   {
-	  cout<<"TestStatus: Create site fidelity...["<<current_location.x<<", "<<current_location.y<<"]"<<endl;
+	//  cout<<"TestStatus: Create site fidelity...["<<current_location.x<<", "<<current_location.y<<"]"<<endl;
     site_fidelity_location = current_location;
     
     target_picked_up = false;

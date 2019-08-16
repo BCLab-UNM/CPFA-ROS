@@ -125,7 +125,7 @@ Result PheromoneController::DoWork()
 			}
 			else
 			{
-				cout<<"TestStatus: num_resource_detected["<<i<<"]="<<num_resource_detected[i]<<endl;
+				//cout<<"TestStatus: num_resource_detected["<<i<<"]="<<num_resource_detected[i]<<endl;
 				if(num_resource_detected[i]> max_num_tags)
 				{
 					max_num_tags = num_resource_detected[i];
@@ -137,7 +137,7 @@ Result PheromoneController::DoWork()
 	    {
 			total_resource += max_num_tags;
 			}
-	  cout<<"wpTestStatus: the final density="<<total_resource<<endl;
+	  //cout<<"wpTestStatus: the final density="<<total_resource<<endl;
 	  detect_resource_angle.clear();
 	  num_resource_detected.clear();
 	  //cout<<"PheromoneStatus: num_resource_detected size="<<num_resource_detected.size()<<endl;
@@ -173,10 +173,10 @@ Result PheromoneController::DoWork()
   
   if(drive_to_pheromone)
   {
-	  cout <<"wpTestStatus: drive to pheromone..."<<endl;
+	 // cout <<"wpTestStatus: drive to pheromone..."<<endl;
 	  
 	 
-	  cout<<"wpTestStatus: selected_pheromone=["<<selected_pheromone.x<<", "<<selected_pheromone.y<<"]"<<endl;
+	//  cout<<"wpTestStatus: selected_pheromone=["<<selected_pheromone.x<<", "<<selected_pheromone.y<<"]"<<endl;
       //cout<<"PheromoneStatus: current_location.x="<<current_location.x<<endl;
 	  if (hypot(selected_pheromone.x - current_location.x, selected_pheromone.y - current_location.y) < 0.15 || attemptCount>=ATTEMPT_MAX) 
 	  {
@@ -184,7 +184,7 @@ Result PheromoneController::DoWork()
           drive_to_pheromone= false;
           sense_local_density_completed  = false;
           //cout <<"TestStatus: sense_local_density_completed="<<sense_local_density_completed<<endl;
-          cout <<"wpTestStatus: Reached pheromone waypoint..."<<endl;
+          //cout <<"wpTestStatus: Reached pheromone waypoint..."<<endl;
 		  result.type = behavior;
 		  result.b = COMPLETED;
 		  /*if (attemptCount >=15)
@@ -195,8 +195,8 @@ Result PheromoneController::DoWork()
 	  else if(attemptCount<ATTEMPT_MAX)
 	  {
 		  attemptCount++;
-          cout <<"wpTestStatus: travel to pheromone_waypoint ["<<selected_pheromone.x<<", "<<selected_pheromone.y<<"]"<<endl;
-          cout<<"wpTestStatus: pw attemptCount="<<attemptCount<<endl;
+         // cout <<"wpTestStatus: travel to pheromone_waypoint ["<<selected_pheromone.x<<", "<<selected_pheromone.y<<"]"<<endl;
+          //cout<<"wpTestStatus: pw attemptCount="<<attemptCount<<endl;
 		  result.type = waypoint;
 		  result.PIDMode = FAST_PID;
 		  result.wpts.waypoints.insert(result.wpts.waypoints.begin(), selected_pheromone);
@@ -222,7 +222,7 @@ void PheromoneController::UpdatePheromoneList()
     }
     else
     {
-		cout<<"wpTestStatus: the pheromone ["<<pheromones[i].getLocation().x<<","<<pheromones[i].getLocation().y<<"] is inactive"<<endl;
+	//	cout<<"wpTestStatus: the pheromone ["<<pheromones[i].getLocation().x<<","<<pheromones[i].getLocation().y<<"] is inactive"<<endl;
 		}
   }
   pheromones = newPheromoneList;
@@ -244,7 +244,7 @@ void PheromoneController::SetCenterLocation(Point centerLocation) {
 void PheromoneController::SetRoverInitLocation(Point location) 
 {
   roverInitLocation = location;
-  cout<<"TestStatus: rover init location=["<<roverInitLocation.x<<","<<roverInitLocation.y<<"]"<<endl;
+  //cout<<"TestStatus: rover init location=["<<roverInitLocation.x<<","<<roverInitLocation.y<<"]"<<endl;
 }
 
 
@@ -283,7 +283,7 @@ bool PheromoneController::SelectPheromone()
       //target_location = pheromones[i].getLocation();
       
       selected_pheromone = pheromones[i].getLocation();
-      cout << "wpTestStatus: selected pheromoneLocation=[" <<selected_pheromone.x << ", " << selected_pheromone.y<<"]"<< endl;
+      //cout << "wpTestStatus: selected pheromoneLocation=[" <<selected_pheromone.x << ", " << selected_pheromone.y<<"]"<< endl;
       //cout<<"TestStatus: centerLocation=["<<centerLocation.x <<", "<<centerLocation.y<<"]"<<endl;
       //cout<<"TestStatus: roverInitLocation=["<<roverInitLocation.x <<", "<<roverInitLocation.y<<"]"<<endl;
       
@@ -309,19 +309,19 @@ void PheromoneController::InsertPheromone( const vector<Point> &pheromone_trail,
   // the first index of the trail is the same position as the pheromone location
   Point new_location = pheromone_trail[0];
   //Pheromone pheromone(new_location, pheromone_trail, ros::Time::now(), rate_of_pheromone_decay);
-  cout<<"wpTestStatus: create pheromone..."<<endl;
+  //cout<<"wpTestStatus: create pheromone..."<<endl;
   Pheromone pheromone(new_location, pheromone_trail, current_time, pheromone_decay_rate);
 
   pheromones.push_back(pheromone);
   //pheromones[center_id].push_back(pheromone);
-  cout << "wpTestStatus: pheromoneLocation=[" << pheromone_trail[0].x << ", " << pheromone_trail[0].y<<"]" << endl;
+  //cout << "wpTestStatus: pheromoneLocation=[" << pheromone_trail[0].x << ", " << pheromone_trail[0].y<<"]" << endl;
   
   /*for(map<int, vector<Pheromone>>::iterator it= pheromones.begin(); it!=pheromones.end(); ++it) {
                 for(int i=0; i<it->second.size(); i++){
 				cout<<"pheromone["<<it->first<<"]["<<i<<"]="<<it->second[i].getLocation().x<<", "<<it->second[i].getLocation().y<<endl;
 			}
 		}*/
-  cout << "================================================================" << endl;
+  //cout << "================================================================" << endl;
 }
 
 

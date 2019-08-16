@@ -90,6 +90,7 @@ Result DriveController::DoWork()
   {
 
     //Handles route planning and navigation as well as making sure all waypoints are valid.
+    //cout<<"waypoint...currentLoc="<<currentLocation.x<<", "<<currentLocation.y<<endl;
 
     bool tooClose = true;
     //while we have waypoints and they are tooClose to drive to
@@ -99,6 +100,7 @@ Result DriveController::DoWork()
       if (hypot(waypoints.back().x-currentLocation.x, waypoints.back().y-currentLocation.y) < waypointTolerance)//repeated calculation? qilu
       {
         //if too close remove it
+        //cout<<"if too close remove it"<<endl;
         waypoints.pop_back();
       }
       else

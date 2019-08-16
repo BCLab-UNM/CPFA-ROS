@@ -108,6 +108,9 @@ public:
   //Point getTargetLocation(); //qilu 12/2017
   Point GetCurrentLocation(); //qilu 12/2017
   void UpdatePheromoneList();
+  void SetRobotName(string name);
+  string GetRobotName();
+  string robotName;
   
 protected:
   void ProcessData();

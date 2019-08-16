@@ -300,7 +300,7 @@ Result DropOffController::DoWork() {
   }
   if (!centerSeen && seenEnoughCenterTags)
   {
-	  cout<<"TestStatusA: reach nest..."<<endl;
+	 // cout<<"TestStatusA: reach nest..."<<endl;
     reachedCollectionPoint = true;
     centerApproach = false;
     returnTimer = current_time;
