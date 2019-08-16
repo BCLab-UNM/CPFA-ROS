@@ -816,7 +816,7 @@ border-color: rgb(255, 255, 255);</string>
         <string>Final (22X22) </string>
        </property>
        <property name="checked">
-        <bool>false</bool>
+        <bool>true</bool>
        </property>
       </widget>
       <widget class="QRadioButton" name="unbounded_radio_button">
@@ -948,7 +948,7 @@ padding: 1px 0px 1px 3px; /*This makes text colour work*/
         <string>Test (14X14)</string>
        </property>
        <property name="checked">
-        <bool>true</bool>
+        <bool>false</bool>
        </property>
       </widget>
      </widget>
