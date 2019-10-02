@@ -2492,7 +2492,6 @@ QString RoverGUIPlugin::addFinalsWalls()
     progress_dialog.show();
 
     QString output;
-
     // Setting wall clearance to zero - radius of a wall does not make sense. Barrier clearance values ensure models are not placed on the walls.
     output += sim_mgr.addModel("barrier_final_round", "Barrier_West", -arena_dim/2, 0, 0, 0 );
     progress_dialog.setValue(1*100.0f/4);
